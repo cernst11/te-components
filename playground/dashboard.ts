@@ -80,6 +80,7 @@ const lights = {
         sublabel: "COLOR",
         slots: ["input_text.color_slot_1", "input_text.color_slot_2", "input_text.color_slot_3"],
       },
+      { type: "custom:te-color-temp", entity: "light.ceiling", label: "CEILING" },
       { type: "custom:te-toggle", entity: "light.hallway", label: "HALL", glyph: "I" },
       {
         type: "custom:te-button",

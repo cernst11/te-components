@@ -115,6 +115,17 @@ export const STORIES: Story[] = [
     ],
   },
   {
+    model: MODELS.colorTemp,
+    blurb: "For tunable-white lights. Opens a warm→cool fader (range from the light), brightness and preset whites. The swatch shows the current white.",
+    variants: [
+      { name: "Ceiling (2200–6500K)", config: { type: t("te-color-temp"), entity: "light.ceiling", label: "WHITE" } },
+      {
+        name: "Custom presets",
+        config: { type: t("te-color-temp"), entity: "light.ceiling", label: "CEILING", presets: [{ label: "CANDLE", kelvin: 2200 }, { label: "READ", kelvin: 4500 }, 6500] },
+      },
+    ],
+  },
+  {
     model: MODELS.group,
     blurb: "Shares one tile across modules — typically DS-2 on top of a fader or knob.",
     variants: [

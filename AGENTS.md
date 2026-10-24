@@ -29,6 +29,7 @@ src/
     value.ts            domain defaults (DOMAIN_SPECS), resolveValue / valueAt / formatValue / writeValue
     actions.ts          HA-standard action runner (+ cycle-source, mute, "{{ value }}" substitution)
     hold.ts             HoldGesture (hold-to-fire / hold-to-confirm)
+    modal.ts            TeModal: base for light dialogs (backdrop, Escape, header, horizontal faders via trackDrag)
     throttle.ts         trailing-edge throttle
     child-cards.ts      hui-card children for panel/group
     form.ts             getConfigForm() schema helpers (HA visual editor)

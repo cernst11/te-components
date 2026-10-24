@@ -46,7 +46,27 @@ export const DOMAIN_SPECS: Record<string, DomainSpec> = {
   valve: { attribute: "current_position", min: 0, max: 100, step: 1, action: "valve.set_valve_position", key: "position", percent: true },
 };
 
+/** Specs for non-default attributes, keyed `domain.attribute` (e.g. a knob on a light's color temperature). */
+export const ATTRIBUTE_SPECS: Record<string, DomainSpec> = {
+  "light.color_temp_kelvin": {
+    attribute: "color_temp_kelvin",
+    min: 2000,
+    max: 6500,
+    step: 50,
+    minAttr: "min_color_temp_kelvin",
+    maxAttr: "max_color_temp_kelvin",
+    action: "light.turn_on",
+    key: "color_temp_kelvin",
+    unit: "K",
+  },
+};
+
 export const VALUE_DOMAINS = Object.keys(DOMAIN_SPECS);
+
+const specFor = (cfg: Pick<ValueConfig, "entity" | "attribute">) => {
+  const domain = domainOf(cfg.entity);
+  return ATTRIBUTE_SPECS[`${domain}.${cfg.attribute}`] ?? DOMAIN_SPECS[domain];
+};
 
 export interface ResolvedValue {
   stateObj?: HassEntity;
@@ -69,7 +89,7 @@ export function assertValueConfig(cfg: Partial<ValueConfig>) {
 
 export function resolveValue(hass: HomeAssistant | undefined, cfg: ValueConfig): ResolvedValue {
   const stateObj = hass?.states[cfg.entity];
-  const spec = DOMAIN_SPECS[domainOf(cfg.entity)];
+  const spec = specFor(cfg);
   const attrs = stateObj?.attributes ?? {};
   const fromAttr = (name?: string) => (name ? toNumber(attrs[name]) : undefined);
 
@@ -117,7 +137,7 @@ export function writeValue(host: HTMLElement, hass: HomeAssistant, cfg: ValueCon
     runAction(host, hass, cfg.set_action, cfg.entity, { value });
     return;
   }
-  const spec = DOMAIN_SPECS[domainOf(cfg.entity)];
+  const spec = specFor(cfg);
   if (!spec) return;
   const [domain, service] = spec.action.split(".");
   hass.callService(domain, service, { entity_id: cfg.entity, [spec.key]: value });

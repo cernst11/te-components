@@ -41,7 +41,15 @@ function initialStates(): Record<string, HassEntity> {
       media_position_updated_at: now(),
     }),
     ent("remote.living_room_tv", "on", { friendly_name: "Living Room TV" }),
-    ent("light.ceiling", "on", { friendly_name: "Ceiling", brightness: 200 }),
+    ent("light.ceiling", "on", {
+      friendly_name: "Ceiling",
+      brightness: 200,
+      supported_color_modes: ["color_temp"],
+      color_mode: "color_temp",
+      color_temp_kelvin: 3000,
+      min_color_temp_kelvin: 2200,
+      max_color_temp_kelvin: 6500,
+    }),
     ent("light.sofa_lamp", "on", { friendly_name: "Sofa Lamp", brightness: 120, hs_color: [30, 75] }),
     ent("light.hallway", "off", { friendly_name: "Hallway" }),
     ent("sensor.outdoor_temperature", "14.2", { friendly_name: "Outdoor", unit_of_measurement: "°C" }),
@@ -143,7 +151,8 @@ export class MockHass {
         const attrs: Record<string, unknown> = {};
         if (d.brightness !== undefined) attrs.brightness = d.brightness;
         if (d.brightness_pct !== undefined) attrs.brightness = Math.round((d.brightness_pct / 100) * 255);
-        if (d.hs_color) attrs.hs_color = d.hs_color;
+        if (d.hs_color) Object.assign(attrs, { hs_color: d.hs_color, color_temp_kelvin: undefined, color_mode: "hs" });
+        if (d.color_temp_kelvin) Object.assign(attrs, { color_temp_kelvin: d.color_temp_kelvin, hs_color: undefined, color_mode: "color_temp" });
         if (st.state === "off" && attrs.brightness === undefined) attrs.brightness = 255;
         if (attrs.brightness === 0) return this.patch(id, "off", { brightness: undefined });
         return this.patch(id, "on", attrs);

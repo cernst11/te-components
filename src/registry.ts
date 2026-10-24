@@ -20,6 +20,7 @@ export const MODELS = {
   display: { type: "te-display", model: "DS-8", subtitle: "ディスプレイ", name: "Display" },
   miniDisplay: { type: "te-mini-display", model: "DS-2", subtitle: "ミニ", name: "Mini Display" },
   colorPicker: { type: "te-color-picker", model: "CL-16", subtitle: "カラー", name: "Color Picker" },
+  colorTemp: { type: "te-color-temp", model: "CT-27", subtitle: "色温度", name: "Color Temp" },
 } as const;
 
 declare global {

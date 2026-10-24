@@ -17,6 +17,7 @@ them in.
 | **DS-8** ディスプレイ | `custom:te-display` | Main pixel screen: marquee, chips, progress |
 | **DS-2** ミニ | `custom:te-mini-display` | Small screen row: icon + name/state |
 | **CL-16** カラー | `custom:te-color-picker` | Light color wheel with saved slots |
+| **CT-27** 色温度 | `custom:te-color-temp` | Warm→cool white for tunable-white lights, with presets |
 
 ## Install
 
@@ -213,6 +214,21 @@ Sends `remote.send_command` to `entity`. Override `commands: {up, down, left, ri
 
 `entity` is a light. `slots` takes up to 3 `input_text` entities: hold a slot to save the current color,
 tap it to recall the color.
+
+</details>
+
+<details><summary><b>CT-27 color temp</b> — <code>custom:te-color-temp</code></summary>
+
+`entity` is a light that supports `color_temp`. Tap the swatch for a warm→cool fader (sends
+`color_temp_kelvin`; range from the light's `min_color_temp_kelvin`/`max_color_temp_kelvin`), brightness, and presets.
+The value line shows the current white, e.g. `2700K`.
+
+| Option | Default | |
+|---|---|---|
+| `presets` | Warm 2700 / Neutral 4000 / Day 6500 | List of `{label, kelvin}` or plain numbers |
+| `min` / `max` | from the light | Override the kelvin range |
+
+Knobs and faders can also drive color temperature: `attribute: color_temp_kelvin` on a light entity.
 
 </details>
 

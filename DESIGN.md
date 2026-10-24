@@ -136,6 +136,7 @@ editor header, playground and as the default panel title. Element names stay `te
 | `te-display` | **DS-8** | ディスプレイ | 8-segment-ish screen |
 | `te-mini-display` | **DS-2** | ミニ | small sibling of DS-8 |
 | `te-color-picker` | **CL-16** | カラー | 16M colors |
+| `te-color-temp` | **CT-27** | 色温度 | 2700K, warm white |
 
 New components pick the next unused code; numbers should carry a small joke or reference when possible.
 

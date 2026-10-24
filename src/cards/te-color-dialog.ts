@@ -1,40 +1,36 @@
-import { css, html, LitElement } from "lit";
+import { css, html } from "lit";
 import { styleMap } from "lit/directives/style-map.js";
 import { HoldGesture } from "../core/hold";
+import { TeModal } from "../core/modal";
 import { Throttle } from "../core/throttle";
-import { sharedStyles } from "../theme/shared";
 import type { BodyTheme, HomeAssistant } from "../types";
 import { hexToRgb, hsvToRgb, rgbToHex, rgbToHsv } from "../utils/color";
-import { clamp01 } from "../utils/math";
 
 /** Modal for CL-16: HS wheel, brightness fader, hold-to-save color slots (input_text). */
-export class TeColorDialog extends LitElement {
+export class TeColorDialog extends TeModal {
   static properties = {
-    hass: { attribute: false },
-    entity: {},
     slots: { attribute: false },
-    heading: {},
     _hs: { state: true },
     _bright: { state: true },
   };
 
-  declare hass?: HomeAssistant;
-  declare entity: string;
   declare slots: string[];
-  declare heading: string;
   declare _hs: [number, number];
   declare _bright: number;
 
   private holds = new Map<string, HoldGesture>();
-  private sendHs = new Throttle<[number, number]>(120, (hs) => this.call({ hs_color: hs }));
-  private sendBright = new Throttle<number>(120, (b) => this.call({ brightness_pct: Math.round(b * 100) }));
-  private dragging?: "wheel" | "bright";
+  private sendHs = new Throttle<[number, number]>(120, (hs) => this.turnOn({ hs_color: hs }));
+  private sendBright = new Throttle<number>(120, (b) => this.turnOn({ brightness_pct: Math.round(b * 100) }));
+  private brightDrag = this.trackDrag((f, final) => {
+    this._bright = f;
+    final ? this.sendBright.flush(f) : this.sendBright.push(f);
+  });
+  private wheelActive = false;
 
   constructor() {
     super();
-    this.entity = "";
-    this.slots = [];
     this.heading = "COLOR";
+    this.slots = [];
     this._hs = [30, 60];
     this._bright = 1;
   }
@@ -52,30 +48,9 @@ export class TeColorDialog extends LitElement {
     return dlg;
   }
 
-  close() {
-    this.remove();
-    this.dispatchEvent(new Event("closed"));
-  }
-
-  private onKey = (e: KeyboardEvent) => e.key === "Escape" && this.close();
-
-  connectedCallback() {
-    super.connectedCallback();
-    window.addEventListener("keydown", this.onKey);
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    window.removeEventListener("keydown", this.onKey);
-  }
-
-  private call(data: Record<string, unknown>) {
-    this.hass?.callService("light", "turn_on", { entity_id: this.entity, ...data });
-  }
-
   protected firstUpdated() {
+    super.firstUpdated();
     this.paintWheel();
-    (this.renderRoot.querySelector(".close") as HTMLElement)?.focus();
   }
 
   private paintWheel() {
@@ -108,28 +83,17 @@ export class TeColorDialog extends LitElement {
     final ? this.sendHs.flush(this._hs) : this.sendHs.push(this._hs);
   }
 
-  private brightAt(ev: PointerEvent, final: boolean) {
-    const rect = (ev.currentTarget as HTMLElement).getBoundingClientRect();
-    this._bright = clamp01((ev.clientX - rect.left - 11) / (rect.width - 22));
-    final ? this.sendBright.flush(this._bright) : this.sendBright.push(this._bright);
-  }
-
-  private drag(kind: "wheel" | "bright") {
-    const apply = (ev: PointerEvent, final: boolean) => (kind === "wheel" ? this.wheelAt(ev, final) : this.brightAt(ev, final));
-    return {
-      down: (ev: PointerEvent) => {
-        (ev.currentTarget as HTMLElement).setPointerCapture(ev.pointerId);
-        this.dragging = kind;
-        apply(ev, false);
-      },
-      move: (ev: PointerEvent) => this.dragging === kind && apply(ev, false),
-      up: (ev: PointerEvent) => {
-        if (this.dragging !== kind) return;
-        this.dragging = undefined;
-        apply(ev, true);
-      },
-    };
-  }
+  private wheelDown = (ev: PointerEvent) => {
+    (ev.currentTarget as HTMLElement).setPointerCapture(ev.pointerId);
+    this.wheelActive = true;
+    this.wheelAt(ev, false);
+  };
+  private wheelMove = (ev: PointerEvent) => this.wheelActive && this.wheelAt(ev, false);
+  private wheelUp = (ev: PointerEvent) => {
+    if (!this.wheelActive) return;
+    this.wheelActive = false;
+    this.wheelAt(ev, true);
+  };
 
   private slotHold(id: string) {
     let g = this.holds.get(id);
@@ -154,55 +118,8 @@ export class TeColorDialog extends LitElement {
   }
 
   static styles = [
-    sharedStyles,
+    TeModal.styles,
     css`
-      .backdrop {
-        position: fixed;
-        inset: 0;
-        z-index: 9999;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-        background: rgba(0, 0, 0, 0.55);
-        animation: fade 0.15s ease-out;
-      }
-      @keyframes fade {
-        from {
-          opacity: 0;
-        }
-      }
-      .dialog {
-        width: min(94vw, 420px);
-        max-height: 92vh;
-        overflow-y: auto;
-        display: flex;
-        flex-direction: column;
-        gap: 18px;
-        padding: 20px;
-        border-radius: var(--te-r-panel);
-        background: var(--te-grain), var(--te-face), var(--te-body);
-        background-blend-mode: overlay, normal, normal;
-        box-shadow: var(--te-panel-shadow), 0 30px 60px rgba(0, 0, 0, 0.45);
-      }
-      header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-      }
-      .close {
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        font-size: 16px;
-        line-height: 1;
-        background: var(--te-grain), var(--te-face), var(--te-key-light);
-        background-blend-mode: overlay, normal, normal;
-        box-shadow: var(--te-elev-1);
-      }
-      .close:active {
-        box-shadow: var(--te-pressed);
-      }
       .wheel {
         position: relative;
         width: min(70vw, 260px);
@@ -228,35 +145,6 @@ export class TeColorDialog extends LitElement {
         box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.45);
         transform: translate(-50%, -50%);
         pointer-events: none;
-      }
-      .track {
-        position: relative;
-        height: 34px;
-        touch-action: none;
-        cursor: ew-resize;
-      }
-      .groove {
-        position: absolute;
-        left: 0;
-        right: 0;
-        top: 50%;
-        height: 8px;
-        margin-top: -4px;
-        border-radius: 4px;
-        background: linear-gradient(90deg, #0e0e0e, var(--color));
-        box-shadow: var(--te-sunk-2);
-      }
-      .cap {
-        position: absolute;
-        top: 50%;
-        width: 22px;
-        height: 30px;
-        margin-top: -15px;
-        border-radius: 6px;
-        left: calc(var(--b) * (100% - 22px));
-        background: var(--te-grain), var(--te-face), var(--te-key-light);
-        background-blend-mode: overlay, normal, normal;
-        box-shadow: var(--te-elev-2);
       }
       .slots {
         display: flex;
@@ -287,10 +175,6 @@ export class TeColorDialog extends LitElement {
         transform: scale(1);
         transition: transform 650ms linear;
       }
-      .center {
-        justify-content: center;
-        margin-bottom: 8px;
-      }
     `,
   ];
 
@@ -299,59 +183,36 @@ export class TeColorDialog extends LitElement {
     const rad = (h * Math.PI) / 180;
     const [r, g, b] = hsvToRgb(h, s, 100);
     const color = `rgb(${r},${g},${b})`;
-    const wheel = this.drag("wheel");
-    const bright = this.drag("bright");
-    return html`
-      <div class="backdrop" @click=${(e: Event) => e.target === e.currentTarget && this.close()}>
-        <div class="dialog" role="dialog" aria-modal="true" aria-label=${this.heading}>
-          <header>
-            <div class="label">${this.heading}</div>
-            <button class="close" aria-label="close" @click=${() => this.close()}>&times;</button>
-          </header>
-          <div class="wheel" @pointerdown=${wheel.down} @pointermove=${wheel.move} @pointerup=${wheel.up} @pointercancel=${wheel.up}>
-            <canvas></canvas>
-            <div class="puck" style=${styleMap({ left: `${50 + Math.sin(rad) * (s / 2)}%`, top: `${50 - Math.cos(rad) * (s / 2)}%`, background: color })}></div>
-          </div>
-          <div>
-            <div class="sublabel">BRIGHTNESS</div>
-            <div
-              class="track"
-              style=${styleMap({ "--b": String(this._bright), "--color": color })}
-              @pointerdown=${bright.down}
-              @pointermove=${bright.move}
-              @pointerup=${bright.up}
-              @pointercancel=${bright.up}
-            >
-              <div class="groove"></div>
-              <div class="cap"></div>
-            </div>
-          </div>
-          ${this.slots.length
-            ? html`<div>
-                <div class="sublabel center">HOLD TO SAVE</div>
-                <div class="slots">
-                  ${this.slots.map((id) => {
-                    const hold = this.slotHold(id);
-                    const rgb = hexToRgb(this.hass?.states[id]?.state);
-                    return html`<button
-                      class="slot ${hold.holding ? "holding" : ""}"
-                      aria-label=${`color slot ${id}`}
-                      style=${styleMap({ "--slot": rgb ? `rgb(${rgb.join(",")})` : undefined })}
-                      @pointerdown=${hold.down}
-                      @pointerup=${hold.cancel}
-                      @pointerleave=${hold.cancel}
-                      @pointercancel=${hold.cancel}
-                      @click=${() => this.recall(id)}
-                    >
-                      <span class="fill"></span>
-                    </button>`;
-                  })}
-                </div>
-              </div>`
-            : ""}
-        </div>
+    return this.shell(html`
+      <div class="wheel" @pointerdown=${this.wheelDown} @pointermove=${this.wheelMove} @pointerup=${this.wheelUp} @pointercancel=${this.wheelUp}>
+        <canvas></canvas>
+        <div class="puck" style=${styleMap({ left: `${50 + Math.sin(rad) * (s / 2)}%`, top: `${50 - Math.cos(rad) * (s / 2)}%`, background: color })}></div>
       </div>
-    `;
+      ${this.fader("BRIGHTNESS", this._bright, `linear-gradient(90deg, #0e0e0e, ${color})`, this.brightDrag)}
+      ${this.slots.length
+        ? html`<div>
+            <div class="sublabel center">HOLD TO SAVE</div>
+            <div class="slots">
+              ${this.slots.map((id) => {
+                const hold = this.slotHold(id);
+                const rgb = hexToRgb(this.hass?.states[id]?.state);
+                return html`<button
+                  class="slot ${hold.holding ? "holding" : ""}"
+                  aria-label=${`color slot ${id}`}
+                  style=${styleMap({ "--slot": rgb ? `rgb(${rgb.join(",")})` : undefined })}
+                  @pointerdown=${hold.down}
+                  @pointerup=${hold.cancel}
+                  @pointerleave=${hold.cancel}
+                  @pointercancel=${hold.cancel}
+                  @click=${() => this.recall(id)}
+                >
+                  <span class="fill"></span>
+                </button>`;
+              })}
+            </div>
+          </div>`
+        : ""}
+    `);
   }
 }
 

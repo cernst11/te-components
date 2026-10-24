@@ -9,6 +9,7 @@ import "./cards/te-dpad";
 import "./cards/te-display";
 import "./cards/te-mini-display";
 import "./cards/te-color-picker";
+import "./cards/te-color-temp";
 
 export { MODELS } from "./registry";
 

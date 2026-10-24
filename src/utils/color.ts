@@ -43,3 +43,20 @@ export function hexToRgb(hex: string | undefined): RGB | null {
   const n = parseInt(m[1], 16);
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
+
+/** Approximate RGB of a black-body white at `kelvin` (Tanner Helland's fit, good for 1000–40000K). */
+export function kelvinToRgb(kelvin: number): RGB {
+  const t = kelvin / 100;
+  const r = t <= 66 ? 255 : 329.698727446 * Math.pow(t - 60, -0.1332047592);
+  const g = t <= 66 ? 99.4708025861 * Math.log(t) - 161.1195681661 : 288.1221695283 * Math.pow(t - 60, -0.0755148492);
+  const b = t >= 66 ? 255 : t <= 19 ? 0 : 138.5177312231 * Math.log(t - 10) - 305.0447927307;
+  return [r, g, b].map((v) => Math.round(Math.max(0, Math.min(255, v)))) as RGB;
+}
+
+export const kelvinCss = (kelvin: number) => `rgb(${kelvinToRgb(kelvin).join(",")})`;
+
+/** CSS gradient across a color temperature range, warm on the left. */
+export function kelvinGradient(min: number, max: number, stops = 6): string {
+  const parts = Array.from({ length: stops }, (_, i) => kelvinCss(min + ((max - min) * i) / (stops - 1)));
+  return `linear-gradient(90deg, ${parts.join(", ")})`;
+}
