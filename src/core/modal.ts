@@ -42,16 +42,81 @@ export abstract class TeModal extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     TeModal.stack.push(this);
+    TeModal.syncPage();
     window.addEventListener("keydown", this.onKey);
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     TeModal.stack = TeModal.stack.filter((m) => m !== this);
+    TeModal.syncPage();
     window.removeEventListener("keydown", this.onKey);
   }
 
+  /** Elements we made inert, and the page overflow we replaced, so closing restores exactly what was there. */
+  private static inerted = new Set<Element>();
+  private static savedOverflow?: string;
+
+  /**
+   * While any dialog is open, everything behind the topmost one is inert (no taps, no focus, hidden from
+   * screen readers) and the page can't scroll.
+   */
+  private static syncPage() {
+    const top = TeModal.stack[TeModal.stack.length - 1];
+    for (const el of TeModal.inerted) (el as HTMLElement).inert = false;
+    TeModal.inerted.clear();
+    const root = document.documentElement;
+    if (!top) {
+      if (TeModal.savedOverflow !== undefined) root.style.overflow = TeModal.savedOverflow;
+      TeModal.savedOverflow = undefined;
+      return;
+    }
+    for (const el of Array.from(document.body.children)) {
+      if (el === top || (el as HTMLElement).inert || el.tagName === "SCRIPT") continue;
+      (el as HTMLElement).inert = true;
+      TeModal.inerted.add(el);
+    }
+    if (TeModal.savedOverflow === undefined) {
+      TeModal.savedOverflow = root.style.overflow;
+      root.style.overflow = "hidden";
+    }
+  }
+
+  /**
+   * Scroll containment for wheel/touch: gestures on the backdrop never scroll the page, and inside the dialog
+   * only scroll it while it has room (overscroll-behavior alone doesn't hold when the dialog isn't overflowing).
+   */
+  private touchY = 0;
+  private blocks(target: EventTarget | null, dy: number): boolean {
+    const dlg = this.renderRoot.querySelector(".dialog") as HTMLElement | null;
+    if (!dlg || !(target instanceof Node) || !dlg.contains(target)) return true;
+    // a horizontal fader drag is not a scroll
+    if (target instanceof Element && target.closest(".track")) return false;
+    const max = dlg.scrollHeight - dlg.clientHeight;
+    if (max <= 0) return true;
+    return (dy < 0 && dlg.scrollTop <= 0) || (dy > 0 && dlg.scrollTop >= max - 1);
+  }
+
+  private onWheel = (e: WheelEvent) => {
+    if (this.blocks(e.composedPath()[0], e.deltaY)) e.preventDefault();
+  };
+
+  private onTouchStart = (e: TouchEvent) => {
+    this.touchY = e.touches[0]?.clientY ?? 0;
+  };
+
+  private onTouchMove = (e: TouchEvent) => {
+    const y = e.touches[0]?.clientY ?? this.touchY;
+    const dy = this.touchY - y;
+    this.touchY = y;
+    if (e.cancelable && this.blocks(e.composedPath()[0], dy)) e.preventDefault();
+  };
+
   protected firstUpdated() {
+    const backdrop = this.renderRoot.querySelector(".backdrop") as HTMLElement;
+    backdrop.addEventListener("wheel", this.onWheel, { passive: false });
+    backdrop.addEventListener("touchstart", this.onTouchStart, { passive: true });
+    backdrop.addEventListener("touchmove", this.onTouchMove, { passive: false });
     (this.renderRoot.querySelector(".close") as HTMLElement)?.focus();
   }
 
@@ -128,6 +193,7 @@ export abstract class TeModal extends LitElement {
         justify-content: center;
         padding: 20px;
         background: rgba(0, 0, 0, 0.55);
+        overscroll-behavior: contain;
         animation: fade 0.15s ease-out;
       }
       @keyframes fade {
@@ -139,6 +205,7 @@ export abstract class TeModal extends LitElement {
         width: min(94vw, var(--dialog-w, 420px));
         max-height: 92vh;
         overflow-y: auto;
+        overscroll-behavior: contain;
         display: flex;
         flex-direction: column;
         gap: 18px;
