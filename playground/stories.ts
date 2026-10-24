@@ -120,6 +120,14 @@ export const STORIES: Story[] = [
     ],
   },
   {
+    model: MODELS.keypad,
+    blurb: "Alarm keypad for alarm_control_panel. Type the code (mock: 1234), then an arm key; hold DISARM. Arm keys follow supported_features; LEDs show the armed mode and blink while arming. A wrong code flashes on the screen.",
+    variants: [
+      { name: "House alarm", width: 260, config: { type: t("te-keypad"), entity: "alarm_control_panel.house", label: "ALARM" } },
+      { name: "Black, two modes", width: 260, config: { type: t("te-keypad"), entity: "alarm_control_panel.house", label: "HOUSE", body: "black", tile: true, modes: ["home", "away"], screen: "vfd-blue" } },
+    ],
+  },
+  {
     model: MODELS.grille,
     blurb: "Decorative speaker grille: MIC FX dot field or a round K.O. II speaker. With an `entity` it gets an LED (lit while on/playing) and opens more-info.",
     variants: [

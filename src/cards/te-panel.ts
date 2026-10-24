@@ -3,6 +3,7 @@ import { classMap } from "lit/directives/class-map.js";
 import { styleMap } from "lit/directives/style-map.js";
 import { TeBaseCard, type BaseConfig } from "../core/base-card";
 import { buildRows, forwardHass, renderRows, rowCards, rowStyles, type Rows } from "../core/child-cards";
+import { F } from "../core/form";
 import { MODELS, registerCard } from "../registry";
 import { sharedStyles } from "../theme/shared";
 
@@ -120,6 +121,17 @@ export class TePanel extends TeBaseCard<PanelConfig> {
 
   getCardSize() {
     return 3 + this.rows.length * 3;
+  }
+
+  /** Header and look; `tabs` and the child `cards` are edited in YAML. */
+  static getConfigForm() {
+    return {
+      schema: [
+        F.grid(F.text("title"), F.text("caption"), F.text("subtitle")),
+        F.grid(F.bool("faceplate"), F.num("gap", 1), F.feedback()),
+        F.grid(F.select("body", ["silver", "black"])),
+      ],
+    };
   }
 
   getGridOptions() {

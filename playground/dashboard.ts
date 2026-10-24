@@ -201,14 +201,24 @@ const entry = {
       { type: "custom:te-slide", entity: "lock.front_door", label: "FRONT DOOR" },
       { type: "custom:te-slide", entity: "cover.garage_door", label: "GARAGE" },
     ],
-    {
-      type: "custom:te-leds",
-      label: "HOME",
-      entities: [
-        { entity: "person.alex", color: "neutral" },
-        { entity: "person.sam", color: "neutral" },
-      ],
-    },
+    [
+      {
+        type: "custom:te-leds",
+        label: "HOME",
+        entities: [
+          { entity: "person.alex", color: "neutral" },
+          { entity: "person.sam", color: "neutral" },
+        ],
+      },
+      {
+        type: "custom:te-popup",
+        label: "Alarm",
+        icon: "mdi:shield-home-outline",
+        title: "Alarm",
+        width: 320,
+        cards: [{ type: "custom:te-keypad", entity: "alarm_control_panel.house" }],
+      },
+    ],
   ],
 };
 

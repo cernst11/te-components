@@ -2,10 +2,11 @@ import { css, html } from "lit";
 import { classMap } from "lit/directives/class-map.js";
 import { styleMap } from "lit/directives/style-map.js";
 import { TeBaseCard, type BaseConfig } from "../core/base-card";
+import { pickEntities } from "../core/entity";
 import { F } from "../core/form";
 import { MODELS, registerCard } from "../registry";
 import { sharedStyles } from "../theme/shared";
-import type { HassEntity } from "../types";
+import type { HassEntity, HomeAssistant } from "../types";
 import { domainOf } from "../utils/math";
 
 interface LedConfig {
@@ -121,8 +122,11 @@ export class TeLeds extends TeBaseCard<LedsConfig> {
     `,
   ];
 
-  static getStubConfig() {
-    return { entities: [] };
+  static getStubConfig(hass?: HomeAssistant) {
+    // doors and windows first, then motion, then people
+    const openings = new Set(["door", "window", "garage_door", "opening"]);
+    const entities = pickEntities(hass, ["binary_sensor", "person"], 5, (id) => openings.has(hass!.states[id].attributes.device_class));
+    return { label: "STATUS", entities };
   }
 
   static getConfigForm() {

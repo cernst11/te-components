@@ -16,6 +16,7 @@ them in.
 | **BT-4** ボタン | `custom:te-button` | Round / square / K.O. key button |
 | **SW-5** セレクター | `custom:te-selector` | Mode selector: rotary switch or latching mode keys |
 | **SL-2** スライド | `custom:te-slide` | Slide-to-confirm switch for locks, garage doors, valves |
+| **KP-12** テンキー | `custom:te-keypad` | Alarm keypad: PIN, arm modes, hold to disarm |
 | **LD-8** インジケーター | `custom:te-leds` | Row of labelled status LEDs |
 | **VU-10** メーター | `custom:te-meter` | Level meter: LED bar or analog needle |
 | **SP-1** スピーカー | `custom:te-grille` | Decorative speaker grille, optional LED |
@@ -207,6 +208,28 @@ Pick one of several options. `entity` is usually enough; the options and service
 | `columns` | up to 4 | Keys per row |
 | `options` | from the entity | Relabel or limit: `[{value: Spotify, label: SPOT}, …]` |
 | `set_action` | — | For other entities; `"{{ value }}"` is the chosen option |
+
+</details>
+
+<details><summary><b>KP-12 alarm keypad</b> — <code>custom:te-keypad</code></summary>
+
+For `alarm_control_panel`. Type the code, then press an arm key; hold the disarm key to disarm. The arm keys
+follow the panel's `supported_features`, their LEDs show the armed mode and blink while arming. A wrong code
+(HA rejects the service call) flashes `WRONG CODE` on the screen. Panels without a `code_format` hide the
+number pad. A focused screen also takes digits, Backspace, Escape (clear) and Enter (disarm).
+
+```yaml
+type: custom:te-keypad
+entity: alarm_control_panel.house
+modes: [home, away]     # optional; default = what the panel supports
+```
+
+| Option | Default | |
+|---|---|---|
+| `modes` | supported ones | Any of `home`, `away`, `night`, `vacation`, `custom_bypass` |
+| `hold_time` | `800` | ms to hold the disarm key |
+| `screen` | `vfd-amber` | Screen style |
+| `sublabel` | `Hold to disarm` | Text on the disarm key |
 
 </details>
 

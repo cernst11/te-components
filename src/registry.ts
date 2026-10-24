@@ -29,6 +29,7 @@ export const MODELS = {
   slide: { type: "te-slide", model: "SL-2", subtitle: "スライド", name: "Slide Switch" },
   leds: { type: "te-leds", model: "LD-8", subtitle: "インジケーター", name: "LED Strip" },
   meter: { type: "te-meter", model: "VU-10", subtitle: "メーター", name: "Meter" },
+  keypad: { type: "te-keypad", model: "KP-12", subtitle: "テンキー", name: "Alarm Keypad" },
   grille: { type: "te-grille", model: "SP-1", subtitle: "スピーカー", name: "Grille" },
 } as const;
 

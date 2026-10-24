@@ -91,6 +91,8 @@ function initialStates(): Record<string, HassEntity> {
     }),
     ent("script.goodnight", "off", { friendly_name: "Goodnight" }),
     ent("lock.front_door", "locked", { friendly_name: "Front Door" }),
+    // code 1234; supports home / away / night / trigger
+    ent("alarm_control_panel.house", "disarmed", { friendly_name: "House", code_format: "number", code_arm_required: true, supported_features: 15 }),
     ent("cover.garage_door", "closed", { friendly_name: "Garage", device_class: "garage" }),
     ent("binary_sensor.front_door", "off", { friendly_name: "Front", device_class: "door" }),
     ent("binary_sensor.back_door", "on", { friendly_name: "Back", device_class: "door" }),
@@ -130,6 +132,8 @@ function initialStates(): Record<string, HassEntity> {
 const ON_OFF: Record<string, [string, string]> = { cover: ["open", "closed"] };
 
 /** In-memory HA: services mutate states and publish a fresh `hass` object (like the real frontend). */
+const ALARM_CODE = "1234";
+
 export class MockHass {
   states = initialStates();
   private subs = new Set<(h: HomeAssistant) => void>();
@@ -242,6 +246,11 @@ export class MockHass {
     const payload = { ...data, ...(target ?? {}) };
     this.log({ domain, service, data: payload });
     const ids: string[] = [payload.entity_id].flat().filter(Boolean);
+    // like HA: a wrong alarm code fails the service call and changes nothing
+    if (domain === "alarm_control_panel" && service !== "alarm_trigger" && payload.code !== ALARM_CODE) {
+      await new Promise((r) => setTimeout(r, 60));
+      throw new Error("Invalid alarm code provided");
+    }
     // copy-on-write: cards diff old vs new `hass.states`, so never mutate a published object
     this.states = { ...this.states };
     for (const id of ids) this.apply(id, domain, service, payload);
@@ -309,6 +318,18 @@ export class MockHass {
         this.later(() => this.patch(id, open ? "open" : "closed", { current_position: open ? 100 : 0 }), 2500);
         return this.patch(id, open ? "opening" : "closing");
       }
+      case "alarm_control_panel.alarm_arm_home":
+      case "alarm_control_panel.alarm_arm_away":
+      case "alarm_control_panel.alarm_arm_night": {
+        // exit delay, like a real panel
+        const mode = service.replace("alarm_arm_", "");
+        this.later(() => this.states[id].state === "arming" && this.patch(id, `armed_${mode}`), 4000);
+        return this.patch(id, "arming");
+      }
+      case "alarm_control_panel.alarm_disarm":
+        return this.patch(id, "disarmed");
+      case "alarm_control_panel.alarm_trigger":
+        return this.patch(id, "triggered");
       case "climate.set_hvac_mode":
         return this.patch(id, d.hvac_mode);
       case "input_select.select_option":

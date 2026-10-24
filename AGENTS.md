@@ -45,7 +45,8 @@ src/
                         matrix.ts (DotBuffer + MatrixPainter for DS-64), segments.ts (seven-segment cells for SG-7), animations.ts (washer/dryer/dishwasher/fan)
   cards/te-*.ts         one file per card
 playground/             Vite dev root: mock hass (mock-hass.ts), ha-icon/hui-card shims, stories.ts,
-                        dashboard.ts (example home at #dashboard; plain data, no imports)
+                        dashboard.ts (example home at #dashboard; plain data, no imports),
+                        check.html/check.ts (card-picker contract check: stub → setConfig → preview, form schema)
 scripts/export-dashboard.ts   dashboard.ts → examples/dashboard.yaml (`npm run export:dashboard`)
 ```
 
@@ -69,6 +70,13 @@ scripts/export-dashboard.ts   dashboard.ts → examples/dashboard.yaml (`npm run
 - Dialogs (TeModal) make the rest of `document.body` inert and lock page scroll while open; mount them on body.
 - After editing `playground/dashboard.ts`, run `npm run export:dashboard` so the YAML example stays in sync.
 - `insporation/` is gitignored (third-party product photos); `.avif`/`.webp` need `sips -s format png` to view.
+
+## Card picker / visual editor
+
+HA's picker calls `getStubConfig(hass, entities, entitiesFallback)`, merges it into `{ type }` and calls
+`setConfig` on a live preview (a throw = error card). The editor builds `ha-form` from `getConfigForm().schema`;
+unlabelled fields show the capitalised key name. Run `/check.html` on the dev server after touching any stub or
+form; it must report no errors. Stubs must produce a config the card accepts whenever matching entities exist.
 
 ## Testing without the Chrome extension
 

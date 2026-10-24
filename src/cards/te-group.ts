@@ -3,6 +3,7 @@ import { classMap } from "lit/directives/class-map.js";
 import { styleMap } from "lit/directives/style-map.js";
 import { TeBaseCard, type BaseConfig } from "../core/base-card";
 import { createChildCard, forwardHass } from "../core/child-cards";
+import { F } from "../core/form";
 import { MODELS, registerCard } from "../registry";
 import { sharedStyles } from "../theme/shared";
 
@@ -55,6 +56,15 @@ export class TeGroup extends TeBaseCard<GroupConfig> {
 
   getCardSize() {
     return 2 + this.children_.length * 2;
+  }
+
+  getGridOptions() {
+    return { columns: 12, min_columns: 3 };
+  }
+
+  /** Layout only; the child `cards` are edited in YAML. */
+  static getConfigForm() {
+    return { schema: [F.grid(F.select("direction", ["row", "column"]), F.num("gap", 1)), F.look()] };
   }
 
   render() {
