@@ -107,7 +107,7 @@ export class TeKnob extends TeValueCard<KnobConfig> {
     const r = this.resolved;
     const frac = this.currentFrac(r);
     return html`
-      <div class="card ${classMap({ tile: !!c.tile, dragging: this.dragging })}">
+      <div class="card control ${classMap({ tile: !!c.tile, dragging: this.dragging })}">
         <div class="label">${c.label ?? ""}</div>
         <div class="socket ${classMap({ on: c.socket })}">
           <div

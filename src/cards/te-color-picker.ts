@@ -97,7 +97,7 @@ export class TeColorPicker extends TeBaseCard<ColorPickerConfig> {
   render() {
     const c = this._config!;
     return html`
-      <div class="card ${classMap({ tile: !!c.tile })}">
+      <div class="card control ${classMap({ tile: !!c.tile })}">
         <div class="label">${c.label ?? ""}</div>
         <button class="swatch" aria-haspopup="dialog" aria-label=${c.label || "color"} style=${styleMap({ "--swatch": this.swatch() })} @click=${() => this.open()}></button>
         <div class="sublabel">${c.sublabel ?? ""}</div>

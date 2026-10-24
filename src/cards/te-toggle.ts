@@ -90,7 +90,7 @@ export class TeToggle extends TeBaseCard<ToggleConfig> {
     const st = this.stateObj();
     const on = st?.state === c.on_state;
     return html`
-      <div class="card ${classMap({ tile: !!c.tile, on })}">
+      <div class="card control ${classMap({ tile: !!c.tile, on })}">
         <div class="label">${c.label ?? ""}</div>
         <button class="btn" role="switch" aria-checked=${on ? "true" : "false"} aria-label=${c.label || st?.attributes.friendly_name || c.entity} @click=${() => this.run(c.tap_action)}>
           <span class="pill">${renderGlyph(c.glyph, 12)}</span>

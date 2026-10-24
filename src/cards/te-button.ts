@@ -175,7 +175,7 @@ export class TeButton extends TeBaseCard<ButtonConfig> {
     const content = c.icon ? renderIcon(c.icon, c.shape === "key" ? 16 : 22) : renderGlyph(c.glyph, c.shape === "key" ? 14 : 22);
     const led = active === undefined ? "" : html`<span class="led ${classMap({ on: active })}"></span>`;
     return html`
-      <div class="card ${classMap({ tile: !!c.tile, [c.shape]: true, holding: this.hold.holding })}">
+      <div class="card control ${classMap({ tile: !!c.tile, [c.shape]: true, holding: this.hold.holding })}">
         ${c.shape === "key" ? html`<div class="label">${led}</div>` : html`<div class="label">${led}${c.label ?? ""}</div>`}
         <button
           class="btn"

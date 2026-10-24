@@ -54,6 +54,16 @@ const base = css`
   .sublabel:empty {
     display: none;
   }
+  /* atomic controls (knob, toggle, button, color) always reserve both lines, so controls sharing a row
+     line up on the same axis whatever their labels */
+  .card.control .label:empty {
+    display: flex;
+    min-height: 14px;
+  }
+  .card.control .sublabel:empty {
+    display: flex;
+    min-height: 13px;
+  }
   /* value controls keep their readout line even when empty, so the live value never shifts layout */
   .sublabel.readout,
   .sublabel.readout:empty {
