@@ -29,6 +29,7 @@ src/
     value.ts            domain defaults (DOMAIN_SPECS), resolveValue / valueAt / formatValue / writeValue
     actions.ts          HA-standard action runner (+ cycle-source, mute, "{{ value }}" substitution)
     hold.ts             HoldGesture (hold-to-fire / hold-to-confirm)
+    history.ts          recorder history via hass.callWS (history/history_during_period) + time bucketing
     modal.ts            TeModal: base for light dialogs (backdrop, Escape, header, horizontal faders via trackDrag)
     throttle.ts         trailing-edge throttle
     child-cards.ts      hui-card children for panel/group
@@ -38,7 +39,8 @@ src/
   theme/shared.ts       base styles (.card, .label, .led, .screw, .socket, focus ring)
   screen/               canvas screen engine: 5x7 font, themes (vfd-amber/vfd-blue/oled/lcd),
                         cached text strips + stepped marquee, ScreenController (30fps, pauses off-screen),
-                        mini icons, te-pixel-text (static pixel text)
+                        mini icons, te-pixel-text (static pixel text),
+                        matrix.ts (DotBuffer + MatrixPainter for DS-64), animations.ts (washer/dryer/dishwasher/fan)
   cards/te-*.ts         one file per card
 playground/             Vite dev root: mock hass (mock-hass.ts), ha-icon/hui-card shims, stories.ts,
                         dashboard.ts (example home at #dashboard; plain data, no imports)

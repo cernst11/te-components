@@ -108,6 +108,23 @@ export const STORIES: Story[] = [
     ],
   },
   {
+    model: MODELS.matrix,
+    blurb: "64×64 dot matrix. Graph mode pulls history from HA; appliance mode animates while the device runs, with status, time left and progress.",
+    variants: [
+      { name: "Graph, area (VFD)", width: 300, config: { type: t("te-matrix"), entity: "sensor.outdoor_temperature", label: "OUTSIDE", decimals: 1, unit: "°" } },
+      { name: "Graph, bars (LCD)", width: 300, config: { type: t("te-matrix"), entity: "sensor.power", label: "POWER", style: "bars", screen: "lcd", hours: 12 } },
+      { name: "Graph, line (OLED)", width: 300, config: { type: t("te-matrix"), entity: "sensor.humidity", label: "HUMIDITY", style: "line", screen: "oled" } },
+      {
+        name: "Washer",
+        width: 300,
+        config: { type: t("te-matrix"), mode: "appliance", animation: "washer", entity: "sensor.washer_status", label: "WASHER", remaining_entity: "sensor.washer_remaining", progress_entity: "sensor.washer_progress" },
+      },
+      { name: "Dishwasher (VFD blue)", width: 300, config: { type: t("te-matrix"), mode: "appliance", animation: "dishwasher", entity: "sensor.dishwasher_status", label: "DISHES", remaining_entity: "sensor.dishwasher_end_time", screen: "vfd-blue" } },
+      { name: "Fan (speed from %)", width: 300, config: { type: t("te-matrix"), mode: "appliance", animation: "fan", entity: "fan.bedroom", label: "BEDROOM", screen: "oled" } },
+      { name: "Dryer, idle", width: 300, config: { type: t("te-matrix"), mode: "appliance", animation: "dryer", entity: "sensor.dryer_status", label: "DRYER" } },
+    ],
+  },
+  {
     model: MODELS.colorPicker,
     blurb: "Opens an HS wheel + brightness dialog. Hold a slot to save the current color, tap to recall.",
     variants: [

@@ -210,14 +210,12 @@ views:
             title: CLIMATE
             subtitle: クライメート
             cards:
-              - type: custom:te-display
+              - type: custom:te-matrix
                 entity: sensor.outdoor_temperature
                 label: OUTSIDE
-                screen: oled
                 decimals: 1
                 unit: °
-                text_size: 3
-                height: 64
+                hours: 24
               - type: custom:te-dial
                 entity: climate.living_room
                 label: HEAT
@@ -252,6 +250,35 @@ views:
                   cap: round
                   length: 110
                   dots: 5
+      - type: grid
+        cards:
+          - type: custom:te-panel
+            title: UTILITY
+            subtitle: ユーティリティ
+            body: black
+            cards:
+              - - type: custom:te-matrix
+                  mode: appliance
+                  animation: washer
+                  entity: sensor.washer_status
+                  label: WASHER
+                  remaining_entity: sensor.washer_remaining
+                  progress_entity: sensor.washer_progress
+                - type: custom:te-matrix
+                  mode: appliance
+                  animation: dishwasher
+                  entity: sensor.dishwasher_status
+                  label: DISHES
+                  remaining_entity: sensor.dishwasher_end_time
+                  screen: vfd-blue
+              - type: custom:te-matrix
+                entity: sensor.power
+                label: POWER
+                style: bars
+                screen: lcd
+                hours: 12
+                aspect: 0.6
+                dots: 72
       - type: grid
         cards:
           - type: custom:te-panel

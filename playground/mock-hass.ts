@@ -53,6 +53,13 @@ function initialStates(): Record<string, HassEntity> {
     ent("light.sofa_lamp", "on", { friendly_name: "Sofa Lamp", brightness: 120, hs_color: [30, 75] }),
     ent("light.hallway", "off", { friendly_name: "Hallway" }),
     ent("sensor.outdoor_temperature", "14.2", { friendly_name: "Outdoor", unit_of_measurement: "°C" }),
+    ent("sensor.washer_status", "wash", { friendly_name: "Washer" }),
+    ent("sensor.washer_remaining", "38", { friendly_name: "Washer Remaining", unit_of_measurement: "min" }),
+    ent("sensor.washer_progress", "21", { friendly_name: "Washer Progress", unit_of_measurement: "%" }),
+    ent("sensor.dryer_status", "off", { friendly_name: "Dryer" }),
+    ent("sensor.dishwasher_status", "main_wash", { friendly_name: "Dishwasher" }),
+    ent("sensor.dishwasher_end_time", new Date(Date.now() + 74 * 60_000).toISOString(), { friendly_name: "Dishwasher End", device_class: "timestamp" }),
+    ent("sensor.power", "412", { friendly_name: "Power", unit_of_measurement: "W" }),
     ent("switch.coffee_machine", "off", { friendly_name: "Coffee Machine" }),
     ...Object.keys(SCENES).map((id) => ent(id, "2026-10-24T18:00:00", { friendly_name: id.split(".")[1] })),
     ent("light.kitchen", "on", { friendly_name: "Kitchen", brightness: 180, hs_color: [28, 70], supported_color_modes: ["hs"] }),
@@ -96,7 +103,64 @@ export class MockHass {
   states = initialStates();
   private subs = new Set<(h: HomeAssistant) => void>();
 
-  constructor(private log: ServiceLog) {}
+  constructor(private log: ServiceLog) {
+    // a slow "world clock": the washer runs its cycle, sensors drift, so live screens have something to show
+    setInterval(() => this.tick(), 3000);
+  }
+
+  private tick() {
+    this.states = { ...this.states };
+    const num = (id: string) => Number(this.states[id]?.state ?? 0);
+    const washer = this.states["sensor.washer_status"];
+    if (washer) {
+      if (washer.state === "off") {
+        if (Math.random() < 0.15) {
+          this.patch("sensor.washer_status", "wash");
+          this.patch("sensor.washer_remaining", "48");
+          this.patch("sensor.washer_progress", "0");
+        }
+      } else {
+        const rem = Math.max(0, num("sensor.washer_remaining") - 1);
+        const progress = Math.round(((48 - rem) / 48) * 100);
+        this.patch("sensor.washer_remaining", String(rem));
+        this.patch("sensor.washer_progress", String(progress));
+        this.patch("sensor.washer_status", rem === 0 ? "off" : progress < 55 ? "wash" : progress < 82 ? "rinse" : "spin");
+      }
+    }
+    const drift = (id: string, step: number, decimals: number) => {
+      if (this.states[id]) this.patch(id, (num(id) + (Math.random() - 0.5) * step).toFixed(decimals));
+    };
+    drift("sensor.outdoor_temperature", 0.2, 1);
+    drift("sensor.power", 60, 0);
+    this.publish();
+  }
+
+  /** Synthetic `history/history_during_period`: a daily curve around the current value, every 10 min. */
+  private async ws(msg: Record<string, any>): Promise<any> {
+    if (msg.type !== "history/history_during_period") throw new Error(`mock: unsupported ws ${msg.type}`);
+    const start = Date.parse(msg.start_time);
+    const end = Date.parse(msg.end_time);
+    const out: Record<string, { s: string; lu: number }[]> = {};
+    for (const id of msg.entity_ids as string[]) {
+      const cur = Number(this.states[id]?.state);
+      if (Number.isNaN(cur)) continue;
+      const unit = this.states[id]?.attributes.unit_of_measurement;
+      const amp = unit === "°C" ? 3.5 : unit === "%" ? 9 : unit === "W" ? cur * 0.8 : Math.max(1, Math.abs(cur) * 0.2);
+      const rows: { s: string; lu: number }[] = [];
+      for (let t = start; t < end; t += 10 * 60_000) {
+        const hour = new Date(t).getHours() + new Date(t).getMinutes() / 60;
+        const daily = Math.sin(((hour - 9) / 24) * Math.PI * 2);
+        const noise = Math.sin(t / 1.7e6) * 0.15 + Math.sin(t / 4.1e5) * 0.08;
+        const spike = unit === "W" && Math.sin(t / 2.3e6) > 0.93 ? 2.5 : 0;
+        const nowHour = new Date(end).getHours() + new Date(end).getMinutes() / 60;
+        const base = cur - amp * Math.sin(((nowHour - 9) / 24) * Math.PI * 2);
+        rows.push({ s: (base + amp * (daily + noise + spike)).toFixed(2), lu: t / 1000 });
+      }
+      out[id] = rows;
+    }
+    await new Promise((r) => setTimeout(r, 120));
+    return out;
+  }
 
   subscribe(fn: (h: HomeAssistant) => void) {
     this.subs.add(fn);
@@ -110,7 +174,11 @@ export class MockHass {
   }
 
   snapshot(): HomeAssistant {
-    return { states: this.states, callService: (d, s, data, target) => this.call(d, s, data, target) };
+    return {
+      states: this.states,
+      callService: (d, s, data, target) => this.call(d, s, data, target),
+      callWS: <T>(msg: Record<string, unknown>) => this.ws(msg) as Promise<T>,
+    };
   }
 
   private publish() {

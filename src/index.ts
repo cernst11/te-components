@@ -8,6 +8,7 @@ import "./cards/te-button";
 import "./cards/te-dpad";
 import "./cards/te-display";
 import "./cards/te-mini-display";
+import "./cards/te-matrix";
 import "./cards/te-color-picker";
 import "./cards/te-color-temp";
 

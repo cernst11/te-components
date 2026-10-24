@@ -135,6 +135,7 @@ editor header, playground and as the default panel title. Element names stay `te
 | `te-dpad` | **DP-5** | 十字キー | 4 directions + OK = 5 |
 | `te-display` | **DS-8** | ディスプレイ | 8-segment-ish screen |
 | `te-mini-display` | **DS-2** | ミニ | small sibling of DS-8 |
+| `te-matrix` | **DS-64** | マトリクス | 64×64 dots |
 | `te-color-picker` | **CL-16** | カラー | 16M colors |
 | `te-color-temp` | **CT-27** | 色温度 | 2700K, warm white |
 
@@ -146,6 +147,8 @@ New components pick the next unused code; numbers should carry a small joke or r
 - Press = shadow switches from raised to sunk instantly (≤80ms).
 - LEDs snap on, fade off slightly (≤200ms).
 - Hold-to-confirm: radial/linear fill in accent over `hold_ms`.
+- DS-64 draws everything into a dot buffer (dim / lit / accent levels) at 15fps — graphs and appliance
+  animations are pixel art, never smooth vector lines. Secondary figures use a tiny 3×5 font.
 - Screens animate in *steps* (pixel-stepped marquee — already implemented), never smooth sub-pixel scrolling.
 - Respect `prefers-reduced-motion` (stop marquee, no glow pulses).
 

@@ -16,6 +16,7 @@ them in.
 | **DP-5** 十字キー | `custom:te-dpad` | Directional pad |
 | **DS-8** ディスプレイ | `custom:te-display` | Main pixel screen: marquee, chips, progress |
 | **DS-2** ミニ | `custom:te-mini-display` | Small screen row: icon + name/state |
+| **DS-64** マトリクス | `custom:te-matrix` | Large square dot-matrix: history graphs, appliance animations |
 | **CL-16** カラー | `custom:te-color-picker` | Light color wheel with saved slots |
 | **CT-27** 色温度 | `custom:te-color-temp` | Warm→cool white for tunable-white lights, with presets |
 
@@ -207,6 +208,49 @@ Sends `remote.send_command` to `entity`. Override `commands: {up, down, left, ri
 | `scroll` | `false` | Marquee long text |
 | `screen` | `vfd-amber` | |
 | `tap_action` | toggle / more-info | |
+
+</details>
+
+<details><summary><b>DS-64 matrix</b> — <code>custom:te-matrix</code></summary>
+
+A 64×64 dot-matrix screen. Everything is drawn in dots, so it looks like the hardware.
+
+**Graph** (default): a big value plus the entity's history, loaded from HA's recorder and updated live.
+
+```yaml
+type: custom:te-matrix
+entity: sensor.outdoor_temperature
+label: OUTSIDE
+hours: 24
+style: area        # area | line | bars
+decimals: 1
+unit: "°"
+```
+
+**Appliance**: an animation runs while the appliance is active, with status, time left and progress.
+
+```yaml
+type: custom:te-matrix
+mode: appliance
+animation: washer  # washer | dryer | dishwasher | fan
+entity: sensor.washer_status
+label: WASHER
+remaining_entity: sensor.washer_remaining   # minutes, "h:mm:ss", or a finish timestamp
+progress_entity: sensor.washer_progress     # percent
+```
+
+| Option | Default | |
+|---|---|---|
+| `mode` | `graph` (`appliance` if `animation` is set) | |
+| `screen` | `vfd-amber` | `vfd-amber`, `vfd-blue`, `oled`, `lcd` |
+| `dots` / `aspect` | `64` / `1` | Dots across; height ÷ width (`0.6` makes a wide graph) |
+| `hours`, `style`, `min`, `max` | `24`, `area`, auto | Graph window, style and y range |
+| `unit`, `decimals` | from the entity | Value formatting |
+| `active_state` | any state except off/idle/standby/done/… | State(s) that count as running |
+| `status_entity` | `entity` | Shown in the footer (e.g. `RINSE`) |
+| `tap_action` | `more-info` | |
+
+`fan` spins at the fan's `percentage`; the washer spins fast when the status contains `spin`.
 
 </details>
 

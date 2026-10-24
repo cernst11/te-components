@@ -14,6 +14,8 @@ export interface HomeAssistant {
     data?: Record<string, unknown>,
     target?: Record<string, unknown>,
   ): Promise<unknown>;
+  /** WebSocket command (history, etc.). Present in real HA; optional in the playground mock. */
+  callWS?<T = unknown>(msg: Record<string, unknown>): Promise<T>;
 }
 
 export type BodyTheme = "silver" | "black";

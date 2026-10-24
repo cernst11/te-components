@@ -105,7 +105,7 @@ const climate = {
   title: "CLIMATE",
   subtitle: "クライメート",
   cards: [
-    { type: "custom:te-display", entity: "sensor.outdoor_temperature", label: "OUTSIDE", screen: "oled", decimals: 1, unit: "°", text_size: 3, height: 64 },
+    { type: "custom:te-matrix", entity: "sensor.outdoor_temperature", label: "OUTSIDE", decimals: 1, unit: "°", hours: 24 },
     { type: "custom:te-dial", entity: "climate.living_room", label: "HEAT", sublabel: "TARGET", size: 170 },
     { type: "custom:te-mini-display", entity: "sensor.temperature", icon: "thermometer", label: "Inside", compact: true, screen: "oled" },
     { type: "custom:te-mini-display", entity: "sensor.humidity", icon: "droplet", label: "Humidity", compact: true, screen: "oled" },
@@ -114,6 +114,36 @@ const climate = {
       { type: "custom:te-knob", entity: "fan.bedroom", cap: "black", label: "FAN", socket: true },
       { type: "custom:te-fader", entity: "cover.blinds", label: "BLINDS", cap: "round", length: 110, dots: 5 },
     ],
+  ],
+};
+
+const utility = {
+  type: "custom:te-panel",
+  title: "UTILITY",
+  subtitle: "ユーティリティ",
+  body: "black",
+  cards: [
+    [
+      {
+        type: "custom:te-matrix",
+        mode: "appliance",
+        animation: "washer",
+        entity: "sensor.washer_status",
+        label: "WASHER",
+        remaining_entity: "sensor.washer_remaining",
+        progress_entity: "sensor.washer_progress",
+      },
+      {
+        type: "custom:te-matrix",
+        mode: "appliance",
+        animation: "dishwasher",
+        entity: "sensor.dishwasher_status",
+        label: "DISHES",
+        remaining_entity: "sensor.dishwasher_end_time",
+        screen: "vfd-blue",
+      },
+    ],
+    { type: "custom:te-matrix", entity: "sensor.power", label: "POWER", style: "bars", screen: "lcd", hours: 12, aspect: 0.6, dots: 72 },
   ],
 };
 
@@ -145,7 +175,7 @@ export const DASHBOARD = {
       path: "home",
       type: "sections",
       max_columns: 4,
-      sections: [livingRoom, lights, climate, scenes].map((panel) => ({ type: "grid", cards: [panel] })),
+      sections: [livingRoom, lights, climate, utility, scenes].map((panel) => ({ type: "grid", cards: [panel] })),
     },
   ],
 };
