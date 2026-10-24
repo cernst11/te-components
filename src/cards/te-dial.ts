@@ -6,7 +6,7 @@ import { F } from "../core/form";
 import { assertValueConfig, VALUE_DOMAINS } from "../core/value";
 import { TeValueCard, type DragStart, type ValueCardConfig } from "../core/value-card";
 import { MODELS, registerCard } from "../registry";
-import { screenName, screenTheme } from "../screen/themes";
+import { screenName } from "../screen/themes";
 import { sharedStyles } from "../theme/shared";
 import type { HomeAssistant } from "../types";
 import { clamp01 } from "../utils/math";
@@ -125,9 +125,7 @@ export class TeDial extends TeValueCard<DialConfig> {
     const r = this.resolved;
     const frac = this.currentFrac(r);
     const text = this.displayValue(r);
-    // fit the text inside ~80% of the round hub; VFD chars are ~9.5 dots wide, pixel chars ~6
-    const perChar = screenTheme(c.screen).pixel ? 6 : 9.5;
-    const textSize = Math.min(2, (c.size * 0.42 * 0.8) / (Math.max(3, text.length) * perChar));
+
     return html`
       <div class="card ${classMap({ tile: !!c.tile, dragging: this.dragging })}">
         <div class="label">${c.label ?? ""}</div>
@@ -150,7 +148,7 @@ export class TeDial extends TeValueCard<DialConfig> {
         >
           <div class="rotor"><div class="hairline"></div><div class="marker"></div></div>
           <div class="hub">
-            <te-pixel-text .text=${text} .screen=${c.screen} .size=${textSize}></te-pixel-text>
+            <te-pixel-text .text=${text} .screen=${c.screen} .size=${2} .fit=${c.size * 0.42 * 0.78}></te-pixel-text>
           </div>
         </div>
         <div class="sublabel">${c.sublabel ?? ""}</div>

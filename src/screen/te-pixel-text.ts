@@ -1,5 +1,5 @@
 import { css, html, LitElement, type PropertyValues } from "lit";
-import { dotMetrics, StripCache } from "./render";
+import { dotMetrics, StripCache, textWidth } from "./render";
 import { screenTheme } from "./themes";
 
 /** Static pixel-font text rendered with the screen engine (no animation loop). */
@@ -8,11 +8,14 @@ export class TePixelText extends LitElement {
     text: {},
     screen: {},
     size: { type: Number },
+    fit: { type: Number },
   };
 
   declare text: string;
   declare screen: string;
   declare size: number;
+  /** Max width in CSS px; the dot size shrinks until the text fits. */
+  declare fit?: number;
   private cache = new StripCache();
 
   constructor() {
@@ -37,7 +40,10 @@ export class TePixelText extends LitElement {
     const canvas = this.renderRoot.querySelector("canvas")!;
     const dpr = window.devicePixelRatio || 1;
     const theme = screenTheme(this.screen);
-    const strip = this.cache.get(this.text || " ", dotMetrics(this.size, dpr, theme), theme.fg, theme);
+    const text = this.text || " ";
+    let size = this.size;
+    while (this.fit && size > 0.5 && textWidth(text, dotMetrics(size, dpr, theme)) / dpr > this.fit) size -= 0.25;
+    const strip = this.cache.get(text, dotMetrics(size, dpr, theme), theme.fg, theme);
     canvas.width = strip.canvas.width;
     canvas.height = strip.canvas.height;
     canvas.style.width = `${strip.canvas.width / dpr}px`;
