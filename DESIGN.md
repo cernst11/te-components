@@ -1,6 +1,6 @@
-# TE Components — Design Guidelines (v0.2)
+# TE Components — Design Guidelines (v0.3)
 
-Status: **agreed direction (2026-10-24)**, not yet implemented. See "Decisions" at the bottom.
+Status: **agreed and implemented (2026-10-24)** — 14 components shipped (§6, §6a). See "Decisions" at the bottom.
 
 References (in `insporation/`): K.O. II (EP-133), K.O. Sidekick mixer, TX-6 (silver + black),
 TP-7 (silver + black), OP-1 field, MIC FX, Panic Playdate.
@@ -115,8 +115,18 @@ like the TX-6 middle row). LEDs/indicators showing "on" are exempt — that's wh
 | Fader | TX-6, K.O. II | Black slot groove, small round or flat cap, LED dot column beside/above. |
 | Key / button | K.O. II, OP-1 | Rounded-square keys (primary shape) and round buttons; label printed *on* key top-left for K.O.-style keys, centered glyph for transport (`● ▶ ■ + −`). |
 | Toggle | TX-6 FX | Round bezel with a pill-shaped LED window; orange = on. |
+| D-pad | OP-1 / game controllers | One molded cross (single shape, never two bars); the whole cross rocks toward the pressed arm. Accent OK key in the middle. |
 | Display | TX-6 / TP-7 / K.O. | Sunk black glass; pixel text; status chips as outlined boxes (`L R`, `04`). |
+| Mini display | TX-6 channel strip | Small screen row: pixel icon + name/value; compact = two lines. Pairs with a fader in a GR-2 tile. |
+| Matrix | OP-1 / Playdate screen | Square 64×64 dot matrix; everything is pixel art in 3 levels (dim / lit / accent). Header label, 2× value, tiny 3×5 figures. Graphs step, never smooth; appliance animations run only while the device is active. |
+| Color picker | OP-1 color knob caps | Round cap tinted with the light's color; opens the CL-16 dialog (HS wheel, brightness fader, hold-to-save slots). |
+| Color temp | — | Round cap tinted with the current white (amber→blue); opens a dialog with a kelvin-gradient fader, brightness and preset chips with LEDs. Range comes from the light. |
+| Group | TX-6 channel strip | One shared body tile under several modules; no extra chrome. |
 | Panel | K.O. II / Sidekick | Body + faceplate with screws, model name, orange JP subtitle, optional tab strip on top edge (`OUTPUT  INPUT  USB`). |
+| Popup | — | Trigger is a K.O. key (or any card); dialog = panel material on a dimmed backdrop, uppercase heading + round × key, cards in CH-1 rows. Nested dialogs stack; Escape closes the top one. |
+
+**Shared rules learned in use:** every atomic control reserves its label line and value line (so a row of
+mixed controls lines up, and a live value never shifts layout); tap targets grow with overlays, never padding.
 
 ### 6a. Model names
 
