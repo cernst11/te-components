@@ -20,8 +20,8 @@ interface SelectorConfig extends BaseConfig, OptionsConfig {
   columns?: number;
 }
 
-/** Pointer travel per detent on the rotary switch. */
-const DETENT_PX = 28;
+/** Pointer movement within this radius of the knob center is ignored (angles swing wildly there). */
+const DEAD_ZONE_PX = 8;
 /** Keep showing the chosen option this long while HA catches up. */
 const PENDING_MS = 1500;
 /** Rotary geometry (px): box, knob center, label radius. */
@@ -40,7 +40,7 @@ export class TeSelector extends TeBaseCard<SelectorConfig> {
 
   declare _pending?: { value: string; until: number };
   declare _dragIndex?: number;
-  private drag?: { x: number; y: number; index: number; moved: boolean };
+  private drag?: { x: number; y: number; cx: number; cy: number; index: number; lastDeg: number; turned: number; moved: boolean };
 
   static styles = [
     sharedStyles,
@@ -232,21 +232,39 @@ export class TeSelector extends TeBaseCard<SelectorConfig> {
     this.step(map[e.key]);
   };
 
-  // Rotary drag: relative, one detent per DETENT_PX; commits on release. A tap advances (wrapping).
+  // Rotary drag: relative *angular* rotation around the knob center (like DL-7), snapping one option per
+  // detent angle; commits on release. A tap advances (wrapping).
   private onDown = (e: PointerEvent) => {
     const { index } = this.state();
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    this.drag = { x: e.clientX, y: e.clientY, index: Math.max(0, index), moved: false };
+    const el = e.currentTarget as HTMLElement;
+    el.setPointerCapture(e.pointerId);
+    const r = el.getBoundingClientRect();
+    const cx = r.left + r.width / 2;
+    const cy = r.top + r.height / 2;
+    this.drag = { x: e.clientX, y: e.clientY, cx, cy, index: Math.max(0, index), lastDeg: this.pointerDeg(e, cx, cy), turned: 0, moved: false };
   };
+
+  private pointerDeg(e: PointerEvent, cx: number, cy: number) {
+    return (Math.atan2(e.clientY - cy, e.clientX - cx) * 180) / Math.PI;
+  }
 
   private onMove = (e: PointerEvent) => {
     const d = this.drag;
     if (!d) return;
-    const travel = d.y - e.clientY + (e.clientX - d.x);
-    if (Math.abs(travel) > 3) d.moved = true;
+    if (Math.hypot(e.clientX - d.x, e.clientY - d.y) > 3) d.moved = true;
+    const deg = this.pointerDeg(e, d.cx, d.cy);
+    let delta = deg - d.lastDeg;
+    if (delta > 180) delta -= 360;
+    if (delta < -180) delta += 360;
+    d.lastDeg = deg;
+    if (Math.hypot(e.clientX - d.cx, e.clientY - d.cy) > DEAD_ZONE_PX) d.turned += delta;
     if (!d.moved) return;
     const n = this.state().items.length;
-    this._dragIndex = Math.max(0, Math.min(n - 1, d.index + Math.round(travel / DETENT_PX)));
+    const step = n > 1 ? this.angleOf(1, n) - this.angleOf(0, n) : 360;
+    const index = Math.max(0, Math.min(n - 1, d.index + Math.round(d.turned / step)));
+    // clamp the accumulated turn at the ends so reversing responds immediately
+    d.turned = Math.max((0 - d.index - 0.5) * step, Math.min((n - 1 - d.index + 0.5) * step, d.turned));
+    this._dragIndex = index;
   };
 
   private onUp = () => {

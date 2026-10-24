@@ -197,7 +197,7 @@ Pick one of several options. `entity` is usually enough; the options and service
 
 | Option | Default | |
 |---|---|---|
-| `style` | `rotary` | `rotary` (detented switch: drag one click per detent, tap to step, tap a label) or `keys` (latching keys with LEDs) |
+| `style` | `rotary` | `rotary` (detented switch: turn it around its center, one click per detent; tap to step, tap a label) or `keys` (latching keys with LEDs) |
 | `cap` | `grey` | Rotary knob cap color |
 | `columns` | up to 4 | Keys per row |
 | `options` | from the entity | Relabel or limit: `[{value: Spotify, label: SPOT}, …]` |

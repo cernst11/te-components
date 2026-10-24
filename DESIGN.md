@@ -171,7 +171,7 @@ New components pick the next unused code; numbers should carry a small joke or r
 
 ## 8. Interaction & Accessibility
 
-- Knob: vertical drag (existing) **+** scroll wheel **+** arrow keys. Dial: *relative* rotation (turn it like a platter — never jumps to the finger) + keys.
+- Knob: vertical drag (existing) **+** scroll wheel **+** arrow keys. Dial and SW-5 rotary: *relative angular* rotation around the center (turn it like a real knob — never jumps to the finger; SW-5 snaps per detent) + keys.
 - All value controls expose `role="slider"` with `aria-valuemin/max/now/text`.
 - Buttons are real `<button>`s activated by `click` (keyboard works for free).
 - Focus ring: 2px accent outline offset 2px, only on `:focus-visible`.
