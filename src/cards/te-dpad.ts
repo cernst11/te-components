@@ -51,18 +51,38 @@ export class TeDpad extends TeBaseCard<DpadConfig> {
     sharedStyles,
     css`
       .pad {
-        position: relative;
         width: 168px;
         height: 168px;
+        perspective: 420px;
+      }
+      /* the whole molded piece (cross, arrows, OK) rocks on a center pivot */
+      .rocker {
+        position: relative;
+        width: 100%;
+        height: 100%;
         display: grid;
         grid-template: repeat(3, 1fr) / repeat(3, 1fr);
-        perspective: 500px;
+        transform-style: preserve-3d;
+        transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateZ(var(--tz, 0px));
+        transition: transform 0.12s ease-out;
       }
+      .pressed .rocker {
+        transition-duration: 0.06s;
+      }
+      .p-up { --rx: 7deg; --tilt: linear-gradient(to bottom, rgba(0, 0, 0, 0.09), transparent 45% 55%, rgba(255, 255, 255, 0.1)); }
+      .p-down { --rx: -7deg; --tilt: linear-gradient(to top, rgba(0, 0, 0, 0.09), transparent 45% 55%, rgba(255, 255, 255, 0.1)); }
+      .p-left { --ry: -7deg; --tilt: linear-gradient(to right, rgba(0, 0, 0, 0.09), transparent 45% 55%, rgba(255, 255, 255, 0.1)); }
+      .p-right { --ry: 7deg; --tilt: linear-gradient(to left, rgba(0, 0, 0, 0.09), transparent 45% 55%, rgba(255, 255, 255, 0.1)); }
+      .p-ok { --tz: -4px; --tilt: linear-gradient(rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.04)); }
       .cross {
         position: absolute;
         inset: 0;
-        transition: transform 0.08s ease-out;
         filter: drop-shadow(0 1px 1px var(--te-occl)) drop-shadow(0 6px 8px var(--te-cast));
+        transition: filter 0.12s ease-out;
+      }
+      /* pressed: the piece sits lower, so its cast shadow shortens */
+      .pressed .cross {
+        filter: drop-shadow(0 1px 1px var(--te-occl)) drop-shadow(0 3px 4px var(--te-cast));
       }
       .cross svg,
       .face {
@@ -74,8 +94,9 @@ export class TeDpad extends TeBaseCard<DpadConfig> {
       /* molded face: grain + light falloff, clipped to the one cross silhouette */
       .face {
         clip-path: path("${unsafeCSS(CROSS)}");
-        background: var(--te-grain), var(--te-face), var(--te-key-light);
-        background-blend-mode: overlay, normal, normal;
+        /* --tilt: the pressed side turns away from the light, the opposite side catches it */
+        background: var(--tilt, linear-gradient(transparent, transparent)), var(--te-grain), var(--te-face), var(--te-key-light);
+        background-blend-mode: normal, overlay, normal, normal;
       }
       /* edge bevel on every up-facing (highlight) and down-facing (shade) edge of the outline */
       .hi {
@@ -84,10 +105,6 @@ export class TeDpad extends TeBaseCard<DpadConfig> {
       .lo {
         fill: var(--te-lo);
       }
-      .p-up .cross { transform: rotateX(8deg); }
-      .p-down .cross { transform: rotateX(-8deg); }
-      .p-left .cross { transform: rotateY(-8deg); }
-      .p-right .cross { transform: rotateY(8deg); }
       .dir {
         position: relative;
         z-index: 1;
@@ -121,11 +138,10 @@ export class TeDpad extends TeBaseCard<DpadConfig> {
         background: var(--te-grain), var(--te-face), var(--te-accent);
         background-blend-mode: overlay, normal, normal;
         box-shadow: var(--te-elev-1);
-        transition: box-shadow 0.08s ease-out, transform 0.08s ease-out;
+        transition: box-shadow 0.08s ease-out;
       }
-      .ok:active {
+      .p-ok .ok {
         box-shadow: var(--te-pressed);
-        transform: translateY(1px);
       }
     `,
   ];
@@ -160,15 +176,20 @@ export class TeDpad extends TeBaseCard<DpadConfig> {
     this.run(c.actions[dir] ?? { action: "perform-action", perform_action: "remote.send_command", data: { command: c.commands[dir] } });
   }
 
+  private setPressed(dir: Dir | null) {
+    this._pressed = dir;
+  }
+
   private dirButton(dir: Exclude<Dir, "ok">) {
-    const set = (v: Dir | null) => () => (this._pressed = v);
     return html`<button
       class="dir ${dir}"
       aria-label=${dir}
-      @pointerdown=${set(dir)}
-      @pointerup=${set(null)}
-      @pointerleave=${set(null)}
-      @pointercancel=${set(null)}
+      @pointerdown=${() => this.setPressed(dir)}
+      @pointerup=${() => this.setPressed(null)}
+      @pointerleave=${() => this.setPressed(null)}
+      @pointercancel=${() => this.setPressed(null)}
+      @keydown=${(e: KeyboardEvent) => (e.key === "Enter" || e.key === " ") && this.setPressed(dir)}
+      @keyup=${() => this.setPressed(null)}
       @click=${() => this.press(dir)}
     >
       <svg viewBox="0 0 24 24"><path fill="currentColor" d=${ICONS[dir]} /></svg>
@@ -180,8 +201,9 @@ export class TeDpad extends TeBaseCard<DpadConfig> {
     return html`
       <div class="card ${classMap({ tile: !!c.tile })}">
         <div class="label">${c.label ?? ""}</div>
-        <div class="pad ${this._pressed ? `p-${this._pressed}` : ""}">
-          <div class="cross">
+        <div class="pad ${this._pressed ? `pressed p-${this._pressed}` : ""}">
+          <div class="rocker">
+            <div class="cross">
             <div class="face"></div>
             <svg viewBox="0 0 168 168" aria-hidden="true">
               ${svg`<defs>
@@ -193,8 +215,19 @@ export class TeDpad extends TeBaseCard<DpadConfig> {
             </svg>
           </div>
           ${this.dirButton("up")} ${this.dirButton("left")}
-          <button class="ok" aria-label="ok" @click=${() => this.press("ok")}>OK</button>
+          <button
+            class="ok"
+            aria-label="ok"
+            @pointerdown=${() => this.setPressed("ok")}
+            @pointerup=${() => this.setPressed(null)}
+            @pointerleave=${() => this.setPressed(null)}
+            @pointercancel=${() => this.setPressed(null)}
+            @click=${() => this.press("ok")}
+          >
+            OK
+          </button>
           ${this.dirButton("right")} ${this.dirButton("down")}
+          </div>
         </div>
         <div class="sublabel">${c.sublabel ?? ""}</div>
       </div>
