@@ -177,7 +177,7 @@ export class TeSelector extends TeBaseCard<SelectorConfig> {
         F.labels(),
         F.grid(F.select("style", STYLES), F.select("cap", CAPS), F.num("columns", 1)),
         F.attribute(),
-        F.look(),
+        F.look(F.feedback()),
       ],
     };
   }
@@ -213,6 +213,7 @@ export class TeSelector extends TeBaseCard<SelectorConfig> {
 
   private choose(item: OptionItem) {
     if (!this.hass) return;
+    this.feedback("press");
     this._pending = { value: item.value, until: Date.now() + PENDING_MS };
     setTimeout(() => this.requestUpdate(), PENDING_MS + 50);
     selectOption(this, this.hass, this._config!, item.value);
@@ -264,6 +265,7 @@ export class TeSelector extends TeBaseCard<SelectorConfig> {
     const index = Math.max(0, Math.min(n - 1, d.index + Math.round(d.turned / step)));
     // clamp the accumulated turn at the ends so reversing responds immediately
     d.turned = Math.max((0 - d.index - 0.5) * step, Math.min((n - 1 - d.index + 0.5) * step, d.turned));
+    if (index !== (this._dragIndex ?? d.index)) this.feedback(index === 0 || index === n - 1 ? "stop" : "tick");
     this._dragIndex = index;
   };
 

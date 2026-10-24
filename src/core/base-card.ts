@@ -1,6 +1,7 @@
 import { LitElement, type PropertyDeclarations, type PropertyValues } from "lit";
 import type { BodyTheme, HomeAssistant } from "../types";
 import { runAction, type ActionConfig } from "./actions";
+import { feedback, feedbackMode, type FeedbackKind, type FeedbackMode } from "./feedback";
 
 export interface BaseConfig {
   type: string;
@@ -9,6 +10,8 @@ export interface BaseConfig {
   sublabel?: string;
   tile?: boolean;
   body?: BodyTheme;
+  /** Haptic ticks / click sounds; also settable for the whole dashboard with the `te-feedback` theme variable. */
+  feedback?: FeedbackMode;
 }
 
 /**
@@ -24,6 +27,7 @@ export abstract class TeBaseCard<C extends BaseConfig = BaseConfig> extends LitE
   declare hass?: HomeAssistant;
   declare _config?: C;
   private _themeBody?: string;
+  private _themeFeedback?: FeedbackMode;
 
   setConfig(config: Record<string, any>) {
     if (!config || typeof config !== "object") throw new Error("Invalid configuration");
@@ -39,7 +43,9 @@ export abstract class TeBaseCard<C extends BaseConfig = BaseConfig> extends LitE
   connectedCallback() {
     super.connectedCallback();
     // Global theme switch: set `te-theme: black` in an HA theme (or on a parent CH-1 panel).
-    this._themeBody = getComputedStyle(this).getPropertyValue("--te-theme").trim() || undefined;
+    const style = getComputedStyle(this);
+    this._themeBody = style.getPropertyValue("--te-theme").trim() || undefined;
+    this._themeFeedback = feedbackMode(style.getPropertyValue("--te-feedback"));
     this.applyBody();
   }
 
@@ -72,6 +78,12 @@ export abstract class TeBaseCard<C extends BaseConfig = BaseConfig> extends LitE
   }
 
   protected run(action: ActionConfig | undefined, entityId = this._config?.entity, vars?: Record<string, unknown>) {
+    if (action && action.action !== "none") this.feedback("press");
     runAction(this, this.hass, action, entityId, vars);
+  }
+
+  /** Haptic/sound cue if enabled for this card (config) or dashboard (theme); a no-op by default. */
+  protected feedback(kind: FeedbackKind) {
+    feedback(feedbackMode(this._config?.feedback) ?? this._themeFeedback ?? "off", kind);
   }
 }

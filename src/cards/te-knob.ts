@@ -73,7 +73,7 @@ export class TeKnob extends TeValueCard<KnobConfig> {
 
   static getConfigForm() {
     return {
-      schema: [F.entity(VALUE_DOMAINS), F.labels(), F.grid(F.select("cap", CAPS), F.select("size", Object.keys(SIZES)), F.bool("socket"), F.bool("show_value")), F.range(), F.look()],
+      schema: [F.entity(VALUE_DOMAINS), F.labels(), F.grid(F.select("cap", CAPS), F.select("size", Object.keys(SIZES)), F.bool("socket"), F.bool("show_value")), F.range(), F.look(F.feedback())],
     };
   }
 

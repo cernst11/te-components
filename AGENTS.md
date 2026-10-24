@@ -29,11 +29,12 @@ src/
     value.ts            domain defaults (DOMAIN_SPECS), resolveValue / valueAt / formatValue / writeValue
     actions.ts          HA-standard action runner (+ cycle-source, mute, "{{ value }}" substitution)
     hold.ts             HoldGesture (hold-to-fire / hold-to-confirm)
+    feedback.ts         opt-in haptics (HA `haptic` event / vibrate) + WebAudio clicks; detentOf(); base `feedback(kind)`
     options.ts          option sources per domain (OPTION_SPECS) + select service, for SW-5
     history.ts          recorder history via hass.callWS (history/history_during_period) + time bucketing
     modal.ts            TeModal: base for dialogs (backdrop, Escape closes topmost only, header, faders via trackDrag)
     throttle.ts         trailing-edge throttle
-    child-cards.ts      hui-card children + shared row layout (buildRows/renderRows/rowStyles) for panel/popup
+    child-cards.ts      hui-card children + shared row layout (buildRows/renderRows/rowStyles, `{ bracket, cards }` bracket rows) for panel/popup
     form.ts             getConfigForm() schema helpers (HA visual editor)
     entity.ts           pickEntity (stub configs), isToggleable
   theme/tokens.ts       ALL design tokens incl. lighting/elevation; black body via :host([data-body=black])
@@ -63,6 +64,9 @@ scripts/export-dashboard.ts   dashboard.ts → examples/dashboard.yaml (`npm run
 - `useDefineForClassFields: false` — reactive props are `declare`d and initialized in the constructor.
 - Vite 8 needs `rolldownOptions.output.minify` to minify ES lib builds.
 - MockHass must copy-on-write `states`: cards skip re-render when `old.states[id] === new.states[id]`.
+- Feedback is resolved per card: `feedback:` config, else `--te-feedback` read in `connectedCallback` (HA theme,
+  or CH-1/GR-2 set it for children). `run()` already gives a press cue; value cards tick per detent.
+- Dialogs (TeModal) make the rest of `document.body` inert and lock page scroll while open; mount them on body.
 - After editing `playground/dashboard.ts`, run `npm run export:dashboard` so the YAML example stays in sync.
 - `insporation/` is gitignored (third-party product photos); `.avif`/`.webp` need `sips -s format png` to view.
 

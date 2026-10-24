@@ -182,7 +182,7 @@ export class TeFader extends TeValueCard<FaderConfig> {
         F.bool("show_value"),
         F.action("label_tap_action"),
         F.range(),
-        F.look(),
+        F.look(F.feedback()),
       ],
     };
   }

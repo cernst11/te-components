@@ -45,7 +45,7 @@ export class TeColorPicker extends TeBaseCard<ColorPickerConfig> {
 
   static getConfigForm() {
     return {
-      schema: [F.entity(["light"]), F.labels(), { name: "slots", selector: { entity: { domain: "input_text", multiple: true } } }, F.look()],
+      schema: [F.entity(["light"]), F.labels(), { name: "slots", selector: { entity: { domain: "input_text", multiple: true } } }, F.look(F.feedback())],
     };
   }
 

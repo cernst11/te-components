@@ -1,6 +1,6 @@
 import { css, html, type PropertyValues } from "lit";
 import { TeBaseCard, type BaseConfig } from "../core/base-card";
-import { buildRows, createChildCard, forwardHass, renderRows, rowStyles, type Rows } from "../core/child-cards";
+import { buildRows, createChildCard, forwardHass, renderRows, rowCards, rowStyles, type Rows } from "../core/child-cards";
 import { F } from "../core/form";
 import { TeModal } from "../core/modal";
 import { MODELS, registerCard } from "../registry";
@@ -85,7 +85,7 @@ export class TePopup extends TeBaseCard<PopupConfig> {
   protected shouldUpdate(changed: PropertyValues) {
     if (changed.has("hass") && this.hass) {
       if (this.trigger) forwardHass([this.trigger], this.hass);
-      forwardHass(this.rows.flat(), this.hass);
+      forwardHass(rowCards(this.rows), this.hass);
     }
     // the trigger and popup contents re-render themselves; only re-render here for config changes
     return !!this._config && (changed.size > 1 || !changed.has("hass"));

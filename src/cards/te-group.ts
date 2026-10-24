@@ -61,7 +61,7 @@ export class TeGroup extends TeBaseCard<GroupConfig> {
     const c = this._config!;
     return html`<div
       class="group ${classMap({ tile: !!c.tile })}"
-      style=${styleMap({ flexDirection: c.direction, gap: `${c.gap}px`, "--te-theme": c.body })}
+      style=${styleMap({ flexDirection: c.direction, gap: `${c.gap}px`, "--te-theme": c.body, "--te-feedback": c.feedback })}
     >
       ${this.children_}
     </div>`;

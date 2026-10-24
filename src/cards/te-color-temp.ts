@@ -63,7 +63,7 @@ export class TeColorTemp extends TeBaseCard<ColorTempConfig> {
 
   static getConfigForm() {
     return {
-      schema: [F.entity(["light"]), F.labels(), F.grid(F.num("min", 50), F.num("max", 50)), F.look()],
+      schema: [F.entity(["light"]), F.labels(), F.grid(F.num("min", 50), F.num("max", 50)), F.look(F.feedback())],
     };
   }
 

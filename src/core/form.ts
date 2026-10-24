@@ -1,4 +1,5 @@
 import { SCREEN_NAMES } from "../screen/themes";
+import { FEEDBACK_MODES } from "./feedback";
 
 /** Building blocks for `getConfigForm()` (HA's built-in ha-form visual editor). */
 const select = (name: string, options: readonly string[]) => ({
@@ -30,4 +31,6 @@ export const F = {
     ],
   }),
   look: (...extra: object[]) => ({ type: "grid", name: "", schema: [...extra, { name: "tile", selector: { boolean: {} } }, select("body", ["silver", "black"])] }),
+  /** Haptics / click sounds, for interactive cards: `F.look(F.feedback())`. */
+  feedback: () => select("feedback", FEEDBACK_MODES),
 };

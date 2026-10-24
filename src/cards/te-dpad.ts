@@ -151,7 +151,7 @@ export class TeDpad extends TeBaseCard<DpadConfig> {
   }
 
   static getConfigForm() {
-    return { schema: [F.entity(["remote", "media_player"]), F.labels(), F.look()] };
+    return { schema: [F.entity(["remote", "media_player"]), F.labels(), F.look(F.feedback())] };
   }
 
   protected normalizeConfig(c: Record<string, any>): DpadConfig {

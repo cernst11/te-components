@@ -124,7 +124,7 @@ export class TeButton extends TeBaseCard<ButtonConfig> {
         F.action("hold_action"),
         F.grid(F.num("hold_time", 50), F.bool("hold_to_confirm")),
         { type: "expandable", name: "", title: "Active LED", schema: [{ name: "active_entity", selector: { entity: {} } }, F.text("active_attribute"), F.text("active_state")] },
-        F.look(),
+        F.look(F.feedback()),
       ].map((s: any) => (s.name === "entity" ? { ...s, required: false } : s)),
     };
   }

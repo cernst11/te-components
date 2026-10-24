@@ -120,6 +120,15 @@ export const STORIES: Story[] = [
     ],
   },
   {
+    model: MODELS.grille,
+    blurb: "Decorative speaker grille: MIC FX dot field or a round K.O. II speaker. With an `entity` it gets an LED (lit while on/playing) and opens more-info.",
+    variants: [
+      { name: "Dot field", width: 300, config: { type: t("te-grille") } },
+      { name: "Round speaker + LED", width: 180, config: { type: t("te-grille"), pattern: "round", height: 120, pitch: 8, entity: "media_player.living_room", label: "SPEAKER" } },
+      { name: "Black, fine pitch", width: 300, config: { type: t("te-grille"), body: "black", tile: true, height: 48, pitch: 6 } },
+    ],
+  },
+  {
     model: MODELS.pads,
     blurb: "K.O. II pads for scenes, scripts and switches. Scenes run scene.turn_on and the last one activated stays lit; switches toggle and light while on.",
     variants: [
@@ -312,7 +321,7 @@ export const STORIES: Story[] = [
   },
   {
     model: MODELS.panel,
-    blurb: "Device chassis. Rows of child cards; an array entry becomes a row.",
+    blurb: "Device chassis. Rows of child cards; an array entry becomes a row, and `{ bracket, cards }` adds K.O. II bracket labels over it.",
     variants: [
       {
         name: "K.O. style mixer",
@@ -326,11 +335,14 @@ export const STORIES: Story[] = [
           tabs: ["Output", { label: "Aux", color: "accent" }, { label: "Input", color: "accent" }, { label: "USB", color: "grey" }],
           cards: [
             { type: t("te-display"), entity: "media_player.living_room", progress: true, height: 70 },
-            [
-              { type: t("te-knob"), entity: "media_player.living_room", cap: "orange", label: "GAIN" },
-              { type: t("te-knob"), entity: "light.kitchen", cap: "white", label: "HIGH" },
-              { type: t("te-knob"), entity: "fan.bedroom", cap: "black", label: "LOW" },
-            ],
+            {
+              bracket: [{ label: "TRIM" }, { label: "EQ — HIGH / LOW", span: 2 }],
+              cards: [
+                { type: t("te-knob"), entity: "media_player.living_room", cap: "orange", label: "GAIN" },
+                { type: t("te-knob"), entity: "light.kitchen", cap: "white", label: "HIGH" },
+                { type: t("te-knob"), entity: "fan.bedroom", cap: "black", label: "LOW" },
+              ],
+            },
             [
               { type: t("te-fader"), entity: "media_player.living_room", sublabel: "1" },
               { type: t("te-fader"), entity: "light.living_room", sublabel: "2" },
@@ -353,6 +365,7 @@ export const STORIES: Story[] = [
               { type: t("te-knob"), entity: "fan.bedroom", cap: "white", size: "s" },
               { type: t("te-knob"), entity: "media_player.living_room", cap: "orange", size: "s" },
             ],
+            { type: t("te-grille"), height: 40, pitch: 6 },
             [
               { type: t("te-fader"), entity: "light.kitchen", length: 110 },
               { type: t("te-fader"), entity: "light.living_room", length: 110 },

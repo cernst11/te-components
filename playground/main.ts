@@ -136,6 +136,19 @@ window.addEventListener("hashchange", () => {
 $<HTMLSelectElement>("body").addEventListener("change", render);
 $<HTMLSelectElement>("screen").addEventListener("change", render);
 $<HTMLSelectElement>("backdrop").addEventListener("change", (e) => (document.documentElement.dataset.backdrop = (e.target as HTMLSelectElement).value));
+// the same switch HA themes get via `te-feedback`; cards read it when they connect, so re-render
+$<HTMLSelectElement>("feedback").addEventListener("change", (e) => {
+  document.documentElement.style.setProperty("--te-feedback", (e.target as HTMLSelectElement).value);
+  render();
+});
+window.addEventListener("haptic", (e) => {
+  const type = String((e as CustomEvent).detail);
+  if (type === "selection") return; // detent ticks would flood the log
+  const li = document.createElement("li");
+  li.innerHTML = `<b>haptic</b> `;
+  li.append(type);
+  logEl.prepend(li);
+});
 $("reset").addEventListener("click", () => hass.reset());
 $("clear").addEventListener("click", () => logEl.replaceChildren());
 window.addEventListener("hass-more-info", (e) => {

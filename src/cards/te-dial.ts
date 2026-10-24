@@ -96,7 +96,7 @@ export class TeDial extends TeValueCard<DialConfig> {
   }
 
   static getConfigForm() {
-    return { schema: [F.entity(VALUE_DOMAINS), F.labels(), F.grid(F.screen(), F.num("size", 1)), F.range(), F.look()] };
+    return { schema: [F.entity(VALUE_DOMAINS), F.labels(), F.grid(F.screen(), F.num("size", 1)), F.range(), F.look(F.feedback())] };
   }
 
   protected normalizeConfig(c: Record<string, any>): DialConfig {

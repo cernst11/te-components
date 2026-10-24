@@ -73,7 +73,7 @@ export class TeToggle extends TeBaseCard<ToggleConfig> {
   }
 
   static getConfigForm() {
-    return { schema: [F.entity(), F.labels(), F.grid(F.text("glyph"), F.text("on_state")), F.action("tap_action"), F.look()] };
+    return { schema: [F.entity(), F.labels(), F.grid(F.text("glyph"), F.text("on_state")), F.action("tap_action"), F.look(F.feedback())] };
   }
 
   protected normalizeConfig(c: Record<string, any>): ToggleConfig {

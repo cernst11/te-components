@@ -18,6 +18,7 @@ them in.
 | **SL-2** スライド | `custom:te-slide` | Slide-to-confirm switch for locks, garage doors, valves |
 | **LD-8** インジケーター | `custom:te-leds` | Row of labelled status LEDs |
 | **VU-10** メーター | `custom:te-meter` | Level meter: LED bar or analog needle |
+| **SP-1** スピーカー | `custom:te-grille` | Decorative speaker grille, optional LED |
 | **PD-16** パッド | `custom:te-pads` | K.O. II pad grid for scenes, scripts, switches |
 | **DP-5** 十字キー | `custom:te-dpad` | Directional pad |
 | **DS-8** ディスプレイ | `custom:te-display` | Main pixel screen: marquee, chips, progress |
@@ -87,6 +88,7 @@ All cards accept:
 | `label` / `sublabel` | — | Printed above / below the control |
 | `tile` | `false` | Draw the card on its own body tile |
 | `body` | `silver` | `silver` or `black` (TX-6 / TP-7 black) |
+| `feedback` | `off` | Interactive cards: `haptic`, `sound` or `both` — a tick per knob/selector detent, a click per key press. Set `te-feedback` in your HA theme to turn it on everywhere |
 
 ### Value controls (knob, fader, dial)
 
@@ -263,6 +265,27 @@ segments: 16
 | `peak` | `true` | Hold the highest recent segment for 2.5s |
 | `screen` | `vfd-amber` | Bar window style |
 | `show_value` | `true` | Value under the meter |
+
+</details>
+
+<details><summary><b>SP-1 grille</b> — <code>custom:te-grille</code></summary>
+
+A decorative speaker grille module — the MIC FX dot field or a round K.O. II speaker. Give it an `entity`
+(a speaker) and it gets an LED that lights while playing, and opens more-info on tap.
+
+```yaml
+type: custom:te-grille
+pattern: round        # or grid
+height: 120
+entity: media_player.kitchen
+```
+
+| Option | Default | |
+|---|---|---|
+| `pattern` | `grid` | `grid` (dot field across the card) or `round` (concentric rings) |
+| `height` | `72` | px |
+| `pitch` | `7` | Hole spacing in px |
+| `entity` | — | Optional; lights the LED while on/playing |
 
 </details>
 
@@ -457,6 +480,19 @@ Group: `cards`, `direction` (`row`/`column`), `gap`, `tile` (default `true`).
 
 Panel: `title`, `caption`, `subtitle`, `faceplate`, `tabs` (strings or `{label, color}`), `gap` (default 8),
 `cards` (rows).
+
+**Bracket labels** (K.O. II `BPM — METRONOME`): write a row as `{ bracket, cards }`. A string spans the
+whole row; a list splits it, each item spanning `span` cards (default 1). Works in PP-3 popups too.
+
+```yaml
+cards:
+  - bracket: [{ label: TRANSPORT, span: 3 }, OUT]
+    cards:
+      - { type: custom:te-button, glyph: prev }
+      - { type: custom:te-button, glyph: play }
+      - { type: custom:te-button, glyph: next }
+      - { type: custom:te-knob, entity: media_player.tv, label: VOL }
+```
 `body` on a panel or group is inherited by its children.
 
 </details>
@@ -466,6 +502,8 @@ Panel: `title`, `caption`, `subtitle`, `faceplate`, `tabs` (strings or `{label, 
 - **Black body everywhere:** add `te-theme: black` to your HA theme, or set `body: black` per card or panel.
 - **Accent color:** `te-theme-accent: "#e8551d"` in your HA theme.
 - **Font:** `te-font-family: "Inter"` (the font must be loaded by your theme).
+- **Haptics / click sounds:** `te-feedback: haptic` (or `sound`, `both`). Haptics work in the HA companion
+  apps (and Android browsers); sounds need a first tap on the page before browsers allow audio.
 
 ## Migrating from the original single-file version
 

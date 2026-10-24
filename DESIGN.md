@@ -1,6 +1,6 @@
 # TE Components — Design Guidelines (v0.3)
 
-Status: **agreed and implemented (2026-10-24)** — 20 components shipped (§6, §6a). See "Decisions" at the bottom.
+Status: **agreed and implemented (2026-10-24)** — 21 components shipped (§6, §6a). See "Decisions" at the bottom.
 
 References (in `insporation/`): K.O. II (EP-133), K.O. Sidekick mixer, TX-6 (silver + black),
 TP-7 (silver + black), OP-1 field, MIC FX, Panic Playdate.
@@ -30,7 +30,7 @@ TP-7 (silver + black), OP-1 field, MIC FX, Panic Playdate.
 | **Faceplate** | K.O. top label plate, MIC FX | Slightly lighter inset panel with 4 corner screws; holds model name. |
 | **Cap plastic** | K.O. knobs, OP-1 knobs | Matte, solid color, soft single drop shadow. Colors: orange, white, grey, black, navy, tan. |
 | **Screen window** | TX-6 OLED, TP-7, K.O. LCD | Black glass, sunk flush into body, subtle diagonal glass sheen. |
-| **Grille** | K.O. II speaker, MIC FX | Dot-hole grid — usable as a decorative module. |
+| **Grille** | K.O. II speaker, MIC FX | Dot-hole grid — the SP-1 module (`grid` dot field or `round` speaker rings). Each hole = dark bore + light lip below it; only whole holes, never clipped at an edge. |
 
 ### Depth: "studio render", not neumorphism
 
@@ -102,7 +102,9 @@ like the TX-6 middle row). LEDs/indicators showing "on" are exempt — that's wh
 - **Label placement:** label **above** the control, value/sublabel **below** (K.O. Sidekick: `GAIN` above
   knob, `HIGH` below). Always centered on the control axis.
 - **Grouping:** use hairline **bracket lines** (K.O. II `BPM — METRONOME`, `GAIN`/`SWING` brackets) and
-  thin dividers instead of boxes/borders to show relationships.
+  thin dividers instead of boxes/borders to show relationships. Implemented as `{ bracket, cards }` rows in
+  CH-1/PP-3: 9px dim uppercase label centred on a hairline whose ends drop into 5px ticks, inset from the
+  outer controls, spanning one or more cards.
 - **Corner radius:** body 20px (panel) / 8px (tile); keys 6px; caps fully round.
 - Must work in HA **sections view** (`getGridOptions`) and masonry; minimum width ≈ one control slot.
 
@@ -129,7 +131,8 @@ like the TX-6 middle row). LEDs/indicators showing "on" are exempt — that's wh
 | Color temp | — | Round cap tinted with the current white (amber→blue); opens a dialog with a kelvin-gradient fader, brightness and preset chips with LEDs. Range comes from the light. |
 | Group | TX-6 channel strip | One shared body tile under several modules; no extra chrome. |
 | Panel | K.O. II / Sidekick | Body + faceplate with screws, model name, orange JP subtitle, optional tab strip on top edge (`OUTPUT  INPUT  USB`). |
-| Popup | — | Trigger is a K.O. key (or any card); dialog = panel material on a dimmed backdrop, uppercase heading + round × key, cards in CH-1 rows. Nested dialogs stack; Escape closes the top one. |
+| Grille | K.O. II / MIC FX | Decorative; holes on the pitch grid, lip highlight carries the hole on black. Optional LED (lit while the speaker plays), tap = more-info. |
+| Popup | — | Trigger is a K.O. key (or any card); dialog = panel material on a dimmed backdrop, uppercase heading + round × key, cards in CH-1 rows. Nested dialogs stack; Escape closes the top one. While open, the page behind is inert and can't scroll. |
 
 **Shared rules learned in use:** every atomic control reserves its label line and value line (so a row of
 mixed controls lines up, and a live value never shifts layout); tap targets grow with overlays, never padding.
@@ -154,6 +157,7 @@ editor header, playground and as the default panel title. Element names stay `te
 | `te-slide` | **SL-2** | スライド | two positions |
 | `te-leds` | **LD-8** | インジケーター | a row of 8 LEDs |
 | `te-meter` | **VU-10** | メーター | a 10-segment VU ladder |
+| `te-grille` | **SP-1** | スピーカー | one speaker |
 | `te-dpad` | **DP-5** | 十字キー | 4 directions + OK = 5 |
 | `te-display` | **DS-8** | ディスプレイ | 8-segment-ish screen |
 | `te-mini-display` | **DS-2** | ミニ | small sibling of DS-8 |
@@ -174,6 +178,12 @@ New components pick the next unused code; numbers should carry a small joke or r
   animations are pixel art, never smooth vector lines. Secondary figures use a tiny 3×5 font.
 - Screens animate in *steps* (pixel-stepped marquee — already implemented), never smooth sub-pixel scrolling.
 - Respect `prefers-reduced-motion` (stop marquee, no glow pulses).
+- **Haptics / click sounds — optional, off by default** (`feedback: haptic | sound | both` per card, or
+  `te-feedback` in the HA theme for everything). One cue per *detent*, not per pixel: a tick per step when a
+  range has ≤48 steps, else 24 per full travel (like an encoder); a heavier "stop" at the ends; a press click
+  for keys/actions; a double "confirm" when SL-2 commits. Ticks closer than 28ms collapse. Haptics use HA's
+  `haptic` event (companion apps) with `navigator.vibrate` as browser fallback; sounds are synthesized WebAudio
+  clicks (no assets).
 
 ## 8. Interaction & Accessibility
 

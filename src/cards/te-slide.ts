@@ -157,7 +157,7 @@ export class TeSlide extends TeBaseCard<SlideConfig> {
   }
 
   static getConfigForm() {
-    return { schema: [F.entity(), F.labels(), F.grid(F.text("left_label"), F.text("right_label")), F.look()] };
+    return { schema: [F.entity(), F.labels(), F.grid(F.text("left_label"), F.text("right_label")), F.look(F.feedback())] };
   }
 
   protected normalizeConfig(c: Record<string, any>): SlideConfig {
@@ -192,6 +192,7 @@ export class TeSlide extends TeBaseCard<SlideConfig> {
 
   private commit(side: "left" | "right") {
     if (!this.hass) return;
+    this.feedback("confirm");
     const end = this.spec()[side];
     this._pending = { side, until: Date.now() + PENDING_MS };
     setTimeout(() => this.requestUpdate(), PENDING_MS + 50);
@@ -217,7 +218,11 @@ export class TeSlide extends TeBaseCard<SlideConfig> {
     const s = this.start;
     if (!s) return;
     if (this._drag === undefined && Math.abs(e.clientX - s.x) < 3) return;
+    const prev = this._drag ?? s.pos;
     this._drag = clamp01(s.pos + (e.clientX - s.x) / Math.max(1, s.width));
+    // a detent where the slide will commit, so you can feel when to let go
+    const past = (p: number) => (s.pos < 0.5 ? p >= COMMIT : s.pos > 0.5 ? p <= 1 - COMMIT : false);
+    if (past(this._drag) && !past(prev)) this.feedback("stop");
   };
 
   private onUp = () => {

@@ -130,7 +130,7 @@ export class TePads extends TeBaseCard<PadsConfig> {
   }
 
   static getConfigForm() {
-    return { schema: [F.labels(), F.grid(F.num("columns", 1), F.num("hold_time", 50)), F.look()] };
+    return { schema: [F.labels(), F.grid(F.num("columns", 1), F.num("hold_time", 50)), F.look(F.feedback())] };
   }
 
   protected normalizeConfig(c: Record<string, any>): PadsConfig {

@@ -24,8 +24,8 @@ to DESIGN.md §6a). Status: `[ ]` todo · `[~]` in progress · `[x]` done.
 
 ## Design system
 
-- [ ] Speaker grille module and K.O. II bracket labels (DESIGN.md §2, §5).
-- [ ] Optional haptics / click sounds (knob detents, key presses).
+- [x] Speaker grille module (SP-1) and K.O. II bracket labels (`{ bracket, cards }` rows) (DESIGN.md §2, §5).
+- [x] Optional haptics / click sounds (knob detents, key presses) — `feedback:` / `te-feedback`.
 
 ## Release
 

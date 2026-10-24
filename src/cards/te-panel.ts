@@ -2,7 +2,7 @@ import { css, html, type PropertyValues } from "lit";
 import { classMap } from "lit/directives/class-map.js";
 import { styleMap } from "lit/directives/style-map.js";
 import { TeBaseCard, type BaseConfig } from "../core/base-card";
-import { buildRows, forwardHass, renderRows, rowStyles, type Rows } from "../core/child-cards";
+import { buildRows, forwardHass, renderRows, rowCards, rowStyles, type Rows } from "../core/child-cards";
 import { MODELS, registerCard } from "../registry";
 import { sharedStyles } from "../theme/shared";
 
@@ -114,7 +114,7 @@ export class TePanel extends TeBaseCard<PanelConfig> {
   }
 
   protected shouldUpdate(changed: PropertyValues) {
-    if (changed.has("hass")) forwardHass(this.rows.flat(), this.hass);
+    if (changed.has("hass")) forwardHass(rowCards(this.rows), this.hass);
     return !!this._config && (changed.size > 1 || !changed.has("hass"));
   }
 
@@ -134,7 +134,7 @@ export class TePanel extends TeBaseCard<PanelConfig> {
     const top = c.tabs.length ? 36 : 10;
     const screws = [`top:${top}px;left:10px`, `top:${top}px;right:10px`, "bottom:10px;left:10px", "bottom:10px;right:10px"];
     return html`
-      <div class="chassis ${classMap({ faceplate: c.faceplate })}" style=${styleMap({ "--te-theme": c.body, "--gap": `${c.gap}px` })}>
+      <div class="chassis ${classMap({ faceplate: c.faceplate })}" style=${styleMap({ "--te-theme": c.body, "--te-feedback": c.feedback, "--gap": `${c.gap}px` })}>
         ${c.tabs.length
           ? html`<div class="tabs">${c.tabs.map((t) => html`<div class="tab" style=${styleMap({ "--bg": bg(t), "--ink": ink(t) })}>${t.label}</div>`)}</div>`
           : ""}

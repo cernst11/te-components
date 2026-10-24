@@ -46,19 +46,26 @@ const livingRoom = {
         { entity: tv, attribute: "source", value: "Plex", label: "PLEX" },
       ],
     },
-    [
-      { type: "custom:te-button", glyph: "prev", label: "PREV", tap_action: media("media_previous_track") },
-      { type: "custom:te-button", glyph: "play", label: "PLAY", entity: tv, active_state: "playing", tap_action: media("media_play_pause") },
-      { type: "custom:te-button", glyph: "next", label: "NEXT", tap_action: media("media_next_track") },
-      { type: "custom:te-knob", entity: tv, cap: "orange", size: "m", label: "VOL" },
-    ],
+    {
+      bracket: [{ label: "TRANSPORT", span: 3 }, { label: "OUT" }],
+      cards: [
+        { type: "custom:te-button", glyph: "prev", label: "PREV", tap_action: media("media_previous_track") },
+        { type: "custom:te-button", glyph: "play", label: "PLAY", entity: tv, active_state: "playing", tap_action: media("media_play_pause") },
+        { type: "custom:te-button", glyph: "next", label: "NEXT", tap_action: media("media_next_track") },
+        { type: "custom:te-knob", entity: tv, cap: "orange", size: "m", label: "VOL" },
+      ],
+    },
     { type: "custom:te-dpad", entity: remote },
-    [
-      { type: "custom:te-toggle", entity: tv, label: "POWER", on_state: "playing" },
-      { type: "custom:te-button", shape: "key", color: "grey", label: "Source", entity: tv, tap_action: { action: "cycle-source" } },
-      { type: "custom:te-button", shape: "key", color: "dark", label: "Home", icon: "mdi:home-outline", tap_action: send("HOME") },
-      { type: "custom:te-button", shape: "key", color: "dark", label: "Back", icon: "mdi:arrow-left", tap_action: send("BACK") },
-    ],
+    {
+      bracket: [{ label: "POWER" }, { label: "INPUT — MENU", span: 3 }],
+      cards: [
+        { type: "custom:te-toggle", entity: tv, label: "POWER", on_state: "playing" },
+        { type: "custom:te-button", shape: "key", color: "grey", label: "Source", entity: tv, tap_action: { action: "cycle-source" } },
+        { type: "custom:te-button", shape: "key", color: "dark", label: "Home", icon: "mdi:home-outline", tap_action: send("HOME") },
+        { type: "custom:te-button", shape: "key", color: "dark", label: "Back", icon: "mdi:arrow-left", tap_action: send("BACK") },
+      ],
+    },
+    { type: "custom:te-grille", entity: tv, height: 34, pitch: 6 },
   ],
 };
 

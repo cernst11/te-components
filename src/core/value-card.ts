@@ -1,4 +1,5 @@
 import { TeBaseCard, type BaseConfig } from "./base-card";
+import { detentOf } from "./feedback";
 import { Throttle } from "./throttle";
 import { formatValue, fracOf, resolveValue, valueAt, writeValue, type ResolvedValue, type ValueConfig } from "./value";
 import { clamp01 } from "../utils/math";
@@ -36,6 +37,8 @@ export abstract class TeValueCard<C extends ValueCardConfig> extends TeBaseCard<
 
   private _drag?: DragStart & { id: number; moved: boolean };
   private _release?: ReturnType<typeof setTimeout>;
+  /** Last detent passed, for one tick per detent while dragging. */
+  private _detent?: number;
   private _throttle = new Throttle<number>(120, (v) => {
     if (this.hass && this._config) writeValue(this, this.hass, this._config, v);
   });
@@ -75,6 +78,7 @@ export abstract class TeValueCard<C extends ValueCardConfig> extends TeBaseCard<
 
   private setLocal(frac: number, final: boolean) {
     const r = this.resolved;
+    this.detentFeedback(r, clamp01(frac));
     this._local = clamp01(frac);
     const v = valueAt(r, this._local);
     if (final) this._throttle.flush(v);
@@ -83,12 +87,22 @@ export abstract class TeValueCard<C extends ValueCardConfig> extends TeBaseCard<
     if (!this.dragging) this._release = setTimeout(() => (this._local = null), LOCAL_HOLD_MS);
   }
 
+  private detentFeedback(r: ResolvedValue, frac: number) {
+    const steps = (r.max - r.min) / (r.step || 1);
+    const d = detentOf(frac, steps);
+    const prev = this._detent;
+    this._detent = d;
+    if (prev === undefined || prev === d) return;
+    this.feedback(frac <= 0 || frac >= 1 ? "stop" : "tick");
+  }
+
   protected onPointerDown = (ev: PointerEvent) => {
     if (ev.button !== 0 || !this.hass) return;
     const el = ev.currentTarget as HTMLElement;
     el.setPointerCapture(ev.pointerId);
     this.dragging = true;
     this._drag = { id: ev.pointerId, x: ev.clientX, y: ev.clientY, frac: this.currentFrac(), rect: el.getBoundingClientRect(), moved: false };
+    this._detent = detentOf(this._drag.frac, (this.resolved.max - this.resolved.min) / (this.resolved.step || 1));
     this.onDragStart(ev, this._drag);
     if (this.absoluteDrag) this.setLocal(this.dragFrac(ev, this._drag), false);
   };
@@ -113,7 +127,11 @@ export abstract class TeValueCard<C extends ValueCardConfig> extends TeBaseCard<
   private nudge(to: (cur: number, r: ResolvedValue) => number) {
     const r = this.resolved;
     const cur = this._local !== null ? valueAt(r, this._local) : (r.value ?? r.min);
-    this.setLocal(fracOf(r, to(cur, r)), false);
+    const next = fracOf(r, to(cur, r));
+    // every key press / wheel notch is a detent, even on fine ranges
+    if (clamp01(next) !== fracOf(r, cur)) this.feedback(next <= 0 || next >= 1 ? "stop" : "tick");
+    this._detent = undefined;
+    this.setLocal(next, false);
   }
 
   protected onKeyDown = (ev: KeyboardEvent) => {
