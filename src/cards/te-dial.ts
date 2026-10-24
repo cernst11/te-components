@@ -17,9 +17,11 @@ interface DialConfig extends ValueCardConfig {
   size: number;
 }
 
-/** DL-7 — TP-7 style platter. Drag around the hub to set a value. */
+/** DL-7 — TP-7 style platter. Turn it (relative rotation) to change the value. */
 export class TeDial extends TeValueCard<DialConfig> {
-  protected absoluteDrag = true;
+  /** Last pointer angle (deg) and accumulated rotation for the current drag. */
+  private lastAngle = 0;
+  private turned = 0;
 
   static styles = [
     sharedStyles,
@@ -110,14 +112,27 @@ export class TeDial extends TeValueCard<DialConfig> {
     return { columns: 6, rows: 4, min_rows: 3 };
   }
 
+  private angleOf(ev: PointerEvent, s: DragStart): { deg: number; nearHub: boolean } {
+    const dx = ev.clientX - (s.rect.left + s.rect.width / 2);
+    const dy = ev.clientY - (s.rect.top + s.rect.height / 2);
+    return { deg: (Math.atan2(dx, -dy) * 180) / Math.PI, nearHub: Math.hypot(dx, dy) < s.rect.width * 0.21 };
+  }
+
+  protected onDragStart(ev: PointerEvent, s: DragStart) {
+    this.lastAngle = this.angleOf(ev, s).deg;
+    this.turned = 0;
+  }
+
+  /** Relative: rotating the platter by N° moves the value by N/270 of the range — no jump to the finger. */
   protected dragFrac(ev: PointerEvent, s: DragStart) {
-    const cx = s.rect.left + s.rect.width / 2;
-    const cy = s.rect.top + s.rect.height / 2;
-    let deg = (Math.atan2(ev.clientX - cx, -(ev.clientY - cy)) * 180) / Math.PI;
-    // dead zone at the bottom snaps to the nearer end
-    if (deg > 135) deg = 135;
-    if (deg < -135) deg = -135;
-    return clamp01((deg + 135) / 270);
+    const { deg, nearHub } = this.angleOf(ev, s);
+    let delta = deg - this.lastAngle;
+    if (delta > 180) delta -= 360;
+    if (delta < -180) delta += 360;
+    this.lastAngle = deg;
+    // angles swing wildly near the center; ignore movement over the hub
+    if (!nearHub) this.turned = Math.max(-s.frac * 270, Math.min((1 - s.frac) * 270, this.turned + delta));
+    return clamp01(s.frac + this.turned / 270);
   }
 
   render() {

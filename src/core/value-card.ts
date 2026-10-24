@@ -29,7 +29,7 @@ export abstract class TeValueCard<C extends ValueCardConfig> extends TeBaseCard<
   /** Fraction shown while dragging / until HA reports the new value. */
   declare _local: number | null;
   protected dragging = false;
-  /** Absolute controls (fader, dial) jump to the pointer; relative ones (knob) don't. */
+  /** Absolute controls (fader) jump to the pointer; relative ones (knob, dial) don't. */
   protected absoluteDrag = false;
 
   private _drag?: DragStart & { id: number; moved: boolean };
@@ -44,6 +44,9 @@ export abstract class TeValueCard<C extends ValueCardConfig> extends TeBaseCard<
   }
 
   protected abstract dragFrac(ev: PointerEvent, start: DragStart): number;
+
+  /** Called once per drag before any `dragFrac`, for controls that track incremental state. */
+  protected onDragStart(_ev: PointerEvent, _start: DragStart): void {}
 
   protected get resolved(): ResolvedValue {
     return resolveValue(this.hass, this._config!);
@@ -74,6 +77,7 @@ export abstract class TeValueCard<C extends ValueCardConfig> extends TeBaseCard<
     el.setPointerCapture(ev.pointerId);
     this.dragging = true;
     this._drag = { id: ev.pointerId, x: ev.clientX, y: ev.clientY, frac: this.currentFrac(), rect: el.getBoundingClientRect(), moved: false };
+    this.onDragStart(ev, this._drag);
     if (this.absoluteDrag) this.setLocal(this.dragFrac(ev, this._drag), false);
   };
 

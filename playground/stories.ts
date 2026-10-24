@@ -37,7 +37,7 @@ export const STORIES: Story[] = [
   },
   {
     model: MODELS.dial,
-    blurb: "Absolute angular drag around the hub; the hub is a pixel screen.",
+    blurb: "Turn it like a platter: rotation is relative to where you grab, so the value never jumps to your finger. The hub is a pixel screen.",
     variants: [
       { name: "Thermostat (VFD amber)", config: { type: t("te-dial"), entity: "climate.living_room", label: "TP-7", sublabel: "LIVING" } },
       { name: "BPM (OLED)", config: { type: t("te-dial"), entity: "input_number.bpm", label: "TEMPO", screen: "oled", size: 150 } },
@@ -66,7 +66,7 @@ export const STORIES: Story[] = [
   },
   {
     model: MODELS.dpad,
-    blurb: "Cross tilts toward the pressed direction. Sends remote.send_command DPAD_* by default.",
+    blurb: "One molded cross that tilts toward the pressed direction. Sends remote.send_command DPAD_* by default.",
     variants: [{ name: "Remote", config: { type: t("te-dpad"), entity: "remote.tv", label: "NAV" } }],
   },
   {

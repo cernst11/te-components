@@ -1,4 +1,4 @@
-import { css, html } from "lit";
+import { css, html, svg, unsafeCSS } from "lit";
 import { classMap } from "lit/directives/class-map.js";
 import type { ActionConfig } from "../core/actions";
 import { TeBaseCard, type BaseConfig } from "../core/base-card";
@@ -26,6 +26,9 @@ interface DpadConfig extends BaseConfig {
   /** Full action override per direction. */
   actions: Partial<Record<Dir, ActionConfig>>;
 }
+
+/** One continuous plus-shape outline (168×168): rounded outer corners, filleted inner corners. */
+const CROSS = "M70,0H98A14,14 0 0 1 112,14V48A8,8 0 0 0 120,56H154A14,14 0 0 1 168,70V98A14,14 0 0 1 154,112H120A8,8 0 0 0 112,120V154A14,14 0 0 1 98,168H70A14,14 0 0 1 56,154V120A8,8 0 0 0 48,112H14A14,14 0 0 1 0,98V70A14,14 0 0 1 14,56H48A8,8 0 0 0 56,48V14A14,14 0 0 1 70,0Z";
 
 const ICONS: Record<Exclude<Dir, "ok">, string> = {
   up: "M7 14l5-5 5 5z",
@@ -61,24 +64,25 @@ export class TeDpad extends TeBaseCard<DpadConfig> {
         transition: transform 0.08s ease-out;
         filter: drop-shadow(0 1px 1px var(--te-occl)) drop-shadow(0 6px 8px var(--te-cast));
       }
-      .bar {
+      .cross svg,
+      .face {
         position: absolute;
-        border-radius: 14px;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+      /* molded face: grain + light falloff, clipped to the one cross silhouette */
+      .face {
+        clip-path: path("${unsafeCSS(CROSS)}");
         background: var(--te-grain), var(--te-face), var(--te-key-light);
         background-blend-mode: overlay, normal, normal;
-        box-shadow: inset 0 1px 0 var(--te-hi), inset 0 -1px 0 var(--te-lo);
       }
-      .bar.v {
-        left: 33.3%;
-        width: 33.4%;
-        top: 0;
-        bottom: 0;
+      /* edge bevel on every up-facing (highlight) and down-facing (shade) edge of the outline */
+      .hi {
+        fill: var(--te-hi);
       }
-      .bar.h {
-        top: 33.3%;
-        height: 33.4%;
-        left: 0;
-        right: 0;
+      .lo {
+        fill: var(--te-lo);
       }
       .p-up .cross { transform: rotateX(8deg); }
       .p-down .cross { transform: rotateX(-8deg); }
@@ -177,7 +181,17 @@ export class TeDpad extends TeBaseCard<DpadConfig> {
       <div class="card ${classMap({ tile: !!c.tile })}">
         <div class="label">${c.label ?? ""}</div>
         <div class="pad ${this._pressed ? `p-${this._pressed}` : ""}">
-          <div class="cross"><div class="bar v"></div><div class="bar h"></div></div>
+          <div class="cross">
+            <div class="face"></div>
+            <svg viewBox="0 0 168 168" aria-hidden="true">
+              ${svg`<defs>
+                <mask id="top"><path d=${CROSS} fill="#fff" /><path d=${CROSS} fill="#000" transform="translate(0 1.5)" /></mask>
+                <mask id="bottom"><path d=${CROSS} fill="#fff" /><path d=${CROSS} fill="#000" transform="translate(0 -1.5)" /></mask>
+              </defs>
+              <rect class="hi" width="168" height="168" mask="url(#top)" />
+              <rect class="lo" width="168" height="168" mask="url(#bottom)" />`}
+            </svg>
+          </div>
           ${this.dirButton("up")} ${this.dirButton("left")}
           <button class="ok" aria-label="ok" @click=${() => this.press("ok")}>OK</button>
           ${this.dirButton("right")} ${this.dirButton("down")}
