@@ -152,12 +152,18 @@ export class TeFader extends TeValueCard<FaderConfig> {
         height: 6px;
         margin: -3px 0 0;
       }
+      /* the tap target grows via an overlay, not padding, so the reserved line never changes height */
       .sublabel.tappable {
+        position: relative;
         cursor: pointer;
-        padding: 2px 6px;
+      }
+      .sublabel.tappable::after {
+        content: "";
+        position: absolute;
+        inset: -4px -8px;
         border-radius: 4px;
       }
-      .sublabel.tappable:active {
+      .sublabel.tappable:active::after {
         background: var(--te-led-off);
       }
     `,
