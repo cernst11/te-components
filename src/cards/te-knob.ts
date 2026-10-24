@@ -73,7 +73,7 @@ export class TeKnob extends TeValueCard<KnobConfig> {
 
   static getConfigForm() {
     return {
-      schema: [F.entity(VALUE_DOMAINS), F.labels(), F.grid(F.select("cap", CAPS), F.select("size", Object.keys(SIZES)), F.bool("socket")), F.range(), F.look()],
+      schema: [F.entity(VALUE_DOMAINS), F.labels(), F.grid(F.select("cap", CAPS), F.select("size", Object.keys(SIZES)), F.bool("socket"), F.bool("show_value")), F.range(), F.look()],
     };
   }
 
@@ -106,7 +106,6 @@ export class TeKnob extends TeValueCard<KnobConfig> {
     const c = this._config!;
     const r = this.resolved;
     const frac = this.currentFrac(r);
-    const showValue = this.dragging || this._local !== null;
     return html`
       <div class="card ${classMap({ tile: !!c.tile, dragging: this.dragging })}">
         <div class="label">${c.label ?? ""}</div>
@@ -136,7 +135,7 @@ export class TeKnob extends TeValueCard<KnobConfig> {
             <div class="rotor"><div class="notch"></div></div>
           </div>
         </div>
-        <div class="sublabel">${showValue ? this.displayValue(r) : (c.sublabel ?? "")}</div>
+        <div class=${this.readoutClass}>${this.readoutText(r)}</div>
       </div>
     `;
   }

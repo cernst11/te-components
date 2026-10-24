@@ -32,7 +32,12 @@ export const STORIES: Story[] = [
     variants: [
       { name: "Light", config: { type: t("te-fader"), entity: "light.kitchen", sublabel: "KITCHEN" } },
       { name: "Volume, 10 dots", config: { type: t("te-fader"), entity: "media_player.living_room", sublabel: "VOL", dots: 10 } },
+      { name: "No dots", config: { type: t("te-fader"), entity: "light.living_room", sublabel: "LIVING", dots: 0 } },
+      { name: "TX-6 round cap", config: { type: t("te-fader"), entity: "fan.bedroom", sublabel: "FAN", cap: "round" } },
+      { name: "TX-6 round, no dots", config: { type: t("te-fader"), entity: "light.kitchen", cap: "round", dots: 0 } },
       { name: "Horizontal cover", config: { type: t("te-fader"), entity: "cover.blinds", orientation: "horizontal", label: "BLINDS", tile: true }, width: 260 },
+      { name: "Horizontal, no dots", config: { type: t("te-fader"), entity: "media_player.living_room", orientation: "horizontal", label: "VOL", dots: 0, tile: true }, width: 260 },
+      { name: "Horizontal round", config: { type: t("te-fader"), entity: "light.living_room", orientation: "horizontal", cap: "round", label: "LIVING", tile: true }, width: 260 },
     ],
   },
   {

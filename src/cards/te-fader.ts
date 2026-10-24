@@ -14,6 +14,8 @@ import { clamp01, domainOf } from "../utils/math";
 interface FaderConfig extends ValueCardConfig {
   orientation: "vertical" | "horizontal";
   dots: number;
+  /** `flat` K.O. style cap with a line, or `round` TX-6 style ball cap. */
+  cap: "flat" | "round";
   length: number;
   gradient?: string;
   /** Tapping the sublabel; defaults to mute for media players, toggle otherwise. */
@@ -122,6 +124,34 @@ export class TeFader extends TeValueCard<FaderConfig> {
         height: auto;
         margin: 0 0 0 -1px;
       }
+      .cap.round {
+        width: ${CAP_SHORT}px;
+        height: ${CAP_SHORT}px;
+        margin-left: ${-CAP_SHORT / 2}px;
+        border-radius: 50%;
+        background:
+          var(--te-grain),
+          radial-gradient(circle at 34% 28%, #fff 0%, var(--te-cap-white) 50%, color-mix(in srgb, var(--te-cap-white) 80%, black) 100%);
+        background-blend-mode: overlay, normal;
+        box-shadow: var(--te-elev-3);
+      }
+      .horizontal .cap.round {
+        width: ${CAP_SHORT}px;
+        height: ${CAP_SHORT}px;
+        margin: ${-CAP_SHORT / 2}px 0 0;
+      }
+      .cap.round::after {
+        display: none;
+      }
+      .round-groove .groove {
+        width: 6px;
+        margin-left: -3px;
+      }
+      .horizontal.round-groove .groove {
+        width: auto;
+        height: 6px;
+        margin: -3px 0 0;
+      }
       .sublabel.tappable {
         cursor: pointer;
         padding: 2px 6px;
@@ -142,7 +172,8 @@ export class TeFader extends TeValueCard<FaderConfig> {
       schema: [
         F.entity(VALUE_DOMAINS),
         F.labels(),
-        F.grid(F.select("orientation", ["vertical", "horizontal"]), F.num("dots", 1), F.num("length", 1)),
+        F.grid(F.select("orientation", ["vertical", "horizontal"]), F.select("cap", ["flat", "round"]), F.num("dots", 1), F.num("length", 1)),
+        F.bool("show_value"),
         F.action("label_tap_action"),
         F.range(),
         F.look(),
@@ -158,6 +189,7 @@ export class TeFader extends TeValueCard<FaderConfig> {
       entity: c.entity,
       orientation: c.orientation === "horizontal" ? "horizontal" : "vertical",
       dots: Math.max(0, Math.min(24, c.dots ?? 6)),
+      cap: c.cap === "round" ? "round" : "flat",
       length: c.length ?? 150,
       tile: c.tile === true,
       label_tap_action: c.label_tap_action ?? defaultLabelTap(c.entity),
@@ -189,11 +221,10 @@ export class TeFader extends TeValueCard<FaderConfig> {
     // vertical ladder lights bottom-up, horizontal left-to-right
     const dots = Array.from({ length: c.dots }, (_, i) => (horizontal ? i < lit : c.dots - i <= lit));
     const tappable = c.label_tap_action.action !== "none";
-    const showValue = this.dragging || this._local !== null;
     return html`
-      <div class="card ${classMap({ tile: !!c.tile, horizontal, dragging: this.dragging })}">
+      <div class="card ${classMap({ tile: !!c.tile, horizontal, dragging: this.dragging, "round-groove": c.cap === "round" })}">
         <div class="label">${c.label ?? ""}</div>
-        <div class="dots">${dots.map((on) => html`<div class="led ${classMap({ on })}"></div>`)}</div>
+        ${c.dots ? html`<div class="dots">${dots.map((on) => html`<div class="led ${classMap({ on })}"></div>`)}</div>` : ""}
         <div
           class="track"
           role="slider"
@@ -213,11 +244,9 @@ export class TeFader extends TeValueCard<FaderConfig> {
           @wheel=${this.onWheel}
         >
           <div class="groove"></div>
-          <div class="cap"></div>
+          <div class="cap ${c.cap}"></div>
         </div>
-        <div class="sublabel ${classMap({ tappable })}" @click=${() => tappable && this.run(c.label_tap_action)}>
-          ${showValue ? this.displayValue(r) : (c.sublabel ?? "")}
-        </div>
+        <div class=${tappable ? `${this.readoutClass} tappable` : this.readoutClass} @click=${() => tappable && this.run(c.label_tap_action)}>${this.readoutText(r)}</div>
       </div>
     `;
   }

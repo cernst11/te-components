@@ -88,7 +88,9 @@ For these domains, `entity` is all you need. The card reads and writes the right
 | `fan` | `percentage` | `fan.set_percentage` |
 | `cover` / `valve` | `current_position` | `*.set_*_position` |
 
-Override with `attribute`, `min`, `max`, `step`, `unit`, `decimals`, `percent`. For any other entity, provide
+Override with `attribute`, `min`, `max`, `step`, `unit`, `decimals`, `percent`. Knobs and faders show the
+live value in the sublabel line while you adjust them; that line is always reserved so nothing shifts.
+Set `show_value: false` to turn it off. For any other entity, provide
 `set_action` and put `"{{ value }}"` where the new value goes:
 
 ```yaml
@@ -129,7 +131,8 @@ Buttons, toggles and screens use Home Assistant's standard action objects (`tap_
 | Option | Default | |
 |---|---|---|
 | `orientation` | `vertical` | or `horizontal` |
-| `dots` | `6` | LED ladder length (0 hides it) |
+| `cap` | `flat` | `flat` (K.O. cap with line) or `round` (TX-6 ball cap) |
+| `dots` | `6` | LED ladder length; `0` removes it |
 | `length` | `150` | Track length in px |
 | `gradient` | — | CSS background for the groove |
 | `label_tap_action` | mute / toggle | What tapping the sublabel does |

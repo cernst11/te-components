@@ -54,6 +54,13 @@ const base = css`
   .sublabel:empty {
     display: none;
   }
+  /* value controls keep their readout line even when empty, so the live value never shifts layout */
+  .sublabel.readout,
+  .sublabel.readout:empty {
+    display: flex;
+    min-height: 13px;
+    font-variant-numeric: tabular-nums;
+  }
   button {
     font: inherit;
     color: inherit;
