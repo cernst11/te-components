@@ -70,6 +70,40 @@ export const STORIES: Story[] = [
     ],
   },
   {
+    model: MODELS.selector,
+    blurb: "Pick one of several modes. Rotary: drag (one click per detent), tap to step, or tap a label. Keys: latching mode keys with LEDs. Reads options from the entity (input_select, select, HVAC modes, fan presets, media sources, light effects).",
+    variants: [
+      { name: "HVAC mode, rotary", config: { type: t("te-selector"), entity: "climate.living_room", label: "MODE" } },
+      { name: "Fan preset, orange cap", config: { type: t("te-selector"), entity: "fan.bedroom", label: "PRESET", cap: "orange" } },
+      { name: "House mode, keys", width: 300, config: { type: t("te-selector"), entity: "input_select.house_mode", label: "HOUSE", style: "keys" } },
+      { name: "Source, keys (relabelled)", width: 300, config: { type: t("te-selector"), entity: "media_player.living_room", style: "keys", options: [{ value: "Jellyfin", label: "JF" }, { value: "Spotify", label: "SPOT" }, { value: "Radio", label: "FM" }], label: "SOURCE" } },
+    ],
+  },
+  {
+    model: MODELS.pads,
+    blurb: "K.O. II pads for scenes, scripts and switches. Scenes run scene.turn_on and the last one activated stays lit; switches toggle and light while on.",
+    variants: [
+      {
+        name: "Scenes + scripts",
+        width: 320,
+        config: {
+          type: t("te-pads"),
+          label: "SCENES",
+          pads: [
+            { entity: "scene.movie", label: "Movie", glyph: "play" },
+            { entity: "scene.dinner", label: "Dinner" },
+            { entity: "scene.night", label: "Night", color: "dark" },
+            { entity: "scene.away", label: "Away", color: "grey" },
+            { entity: "script.goodnight", label: "Goodnight", icon: "mdi:weather-night" },
+            { entity: "script.leave_home", label: "Leave", icon: "mdi:exit-run" },
+            { entity: "switch.fx_1", label: "Porch" },
+            { entity: "switch.coffee_machine", label: "Coffee", color: "accent" },
+          ],
+        },
+      },
+    ],
+  },
+  {
     model: MODELS.dpad,
     blurb: "One molded cross that tilts toward the pressed direction. Sends remote.send_command DPAD_* by default.",
     variants: [{ name: "Remote", config: { type: t("te-dpad"), entity: "remote.tv", label: "NAV" } }],
@@ -96,6 +130,16 @@ export const STORIES: Story[] = [
       { name: "Sensor (OLED)", width: 300, config: { type: t("te-display"), entity: "sensor.temperature", label: "TEMP", unit: "°", decimals: 1, screen: "oled", text_size: 3 } },
       { name: "Demo (LCD)", width: 380, config: { type: t("te-display"), demo: true, label: "DEMO", progress: true, screen: "lcd", chips: [{ entity: "x", label: "FX" }, { entity: "x", label: "LOOP" }] } },
       { name: "Demo (VFD blue)", width: 380, config: { type: t("te-display"), demo: true, progress: true, screen: "vfd-blue" } },
+    ],
+  },
+  {
+    model: MODELS.segment,
+    blurb: "Seven-segment numerals with ghost segments and glow. An entity value, a clock (blinking colon), or an HA timer counting down. `digits` pads with unlit 8s.",
+    variants: [
+      { name: "Clock (VFD)", width: 320, config: { type: t("te-segment"), clock: true, label: "TIME" } },
+      { name: "Timer (LCD)", width: 320, config: { type: t("te-segment"), entity: "timer.pasta", label: "PASTA", screen: "lcd" } },
+      { name: "Value, 4 digits (VFD blue)", width: 320, config: { type: t("te-segment"), entity: "sensor.co2", label: "CO2", digits: 4, screen: "vfd-blue" } },
+      { name: "Temperature (OLED)", width: 320, config: { type: t("te-segment"), entity: "sensor.temperature", label: "INSIDE", decimals: 1, screen: "oled", height: 80 } },
     ],
   },
   {

@@ -14,9 +14,12 @@ them in.
 | **DL-7** ダイヤル | `custom:te-dial` | Platter dial with hub screen |
 | **TG-1** トグル | `custom:te-toggle` | Round button with pill LED |
 | **BT-4** ボタン | `custom:te-button` | Round / square / K.O. key button |
+| **SW-5** セレクター | `custom:te-selector` | Mode selector: rotary switch or latching mode keys |
+| **PD-16** パッド | `custom:te-pads` | K.O. II pad grid for scenes, scripts, switches |
 | **DP-5** 十字キー | `custom:te-dpad` | Directional pad |
 | **DS-8** ディスプレイ | `custom:te-display` | Main pixel screen: marquee, chips, progress |
 | **DS-2** ミニ | `custom:te-mini-display` | Small screen row: icon + name/state |
+| **SG-7** セグメント | `custom:te-segment` | Seven-segment numerals: value, clock, timer |
 | **DS-64** マトリクス | `custom:te-matrix` | Large square dot-matrix: history graphs, appliance animations |
 | **CL-16** カラー | `custom:te-color-picker` | Light color wheel with saved slots |
 | **CT-27** 色温度 | `custom:te-color-temp` | Warm→cool white for tunable-white lights, with presets |
@@ -179,6 +182,50 @@ Buttons, toggles and screens use Home Assistant's standard action objects (`tap_
 
 </details>
 
+<details><summary><b>SW-5 selector</b> — <code>custom:te-selector</code></summary>
+
+Pick one of several options. `entity` is usually enough; the options and service come from the domain:
+
+| Domain | Options | Writes |
+|---|---|---|
+| `input_select` / `select` | `options` | `*.select_option` |
+| `climate` | `hvac_modes` | `climate.set_hvac_mode` |
+| `fan` | `preset_modes` | `fan.set_preset_mode` |
+| `media_player` | `source_list` | `media_player.select_source` |
+| `light` | `effect_list` | `light.turn_on` (`effect`) |
+| `water_heater` | `operation_list` | `water_heater.set_operation_mode` |
+
+| Option | Default | |
+|---|---|---|
+| `style` | `rotary` | `rotary` (detented switch: drag one click per detent, tap to step, tap a label) or `keys` (latching keys with LEDs) |
+| `cap` | `grey` | Rotary knob cap color |
+| `columns` | up to 4 | Keys per row |
+| `options` | from the entity | Relabel or limit: `[{value: Spotify, label: SPOT}, …]` |
+| `set_action` | — | For other entities; `"{{ value }}"` is the chosen option |
+
+</details>
+
+<details><summary><b>PD-16 pads</b> — <code>custom:te-pads</code></summary>
+
+```yaml
+type: custom:te-pads
+columns: 4
+pads:
+  - entity: scene.movie
+    label: Movie
+    glyph: play
+  - entity: script.goodnight
+    icon: mdi:weather-night
+  - entity: switch.coffee_machine
+    color: accent
+```
+
+Scenes run `scene.turn_on`, scripts `script.turn_on`, automations `automation.trigger`, buttons `press`;
+anything else toggles. The most recently activated scene stays lit; other entities light while `on`.
+Each pad takes `label`, `icon`/`glyph`, `color` (`light`, `grey`, `dark`, `accent`), `tap_action`, `hold_action`.
+
+</details>
+
 <details><summary><b>DP-5 d-pad</b> — <code>custom:te-dpad</code></summary>
 
 Sends `remote.send_command` to `entity`. Override `commands: {up, down, left, right, ok}` or give full
@@ -197,6 +244,27 @@ Sends `remote.send_command` to `entity`. Override `commands: {up, down, left, ri
 | `height` | `92` | px |
 | `text_size` | `2` | Dot size in px |
 | `demo` | `false` | Cycle fake tracks (no entity needed) |
+
+</details>
+
+<details><summary><b>SG-7 segment</b> — <code>custom:te-segment</code></summary>
+
+Big seven-segment numerals with unlit ghost segments and glow.
+
+```yaml
+type: custom:te-segment
+entity: timer.pasta      # counts down while active; colon blinks
+screen: lcd
+```
+
+| Option | Default | |
+|---|---|---|
+| `clock` | `false` | Show the time instead of an entity (`seconds`, `hour12`) |
+| `digits` | content length | Fixed cell count; unused cells show unlit 8s |
+| `attribute`, `unit`, `decimals` | from the entity | |
+| `screen` | `vfd-amber` | `vfd-amber`, `vfd-blue`, `oled`, `lcd` |
+| `height` | `96` | px |
+| `tap_action` | `more-info` | |
 
 </details>
 

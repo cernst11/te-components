@@ -71,9 +71,26 @@ function initialStates(): Record<string, HassEntity> {
     ent("light.living_room", "on", { friendly_name: "Living Room", brightness: 90, hs_color: [210, 55] }),
     ent("switch.fx_1", "off", { friendly_name: "FX I" }),
     ent("switch.fx_2", "on", { friendly_name: "FX II" }),
-    ent("fan.bedroom", "on", { friendly_name: "Bedroom Fan", percentage: 40, percentage_step: 10 }),
+    ent("fan.bedroom", "on", { friendly_name: "Bedroom Fan", percentage: 40, percentage_step: 10, preset_modes: ["eco", "breeze", "sleep", "turbo"], preset_mode: "breeze" }),
     ent("cover.blinds", "open", { friendly_name: "Blinds", current_position: 70 }),
-    ent("climate.living_room", "heat", { friendly_name: "Living Room", temperature: 21.5, current_temperature: 20.8, min_temp: 15, max_temp: 28, target_temp_step: 0.5 }),
+    ent("climate.living_room", "heat", {
+      friendly_name: "Living Room",
+      temperature: 21.5,
+      current_temperature: 20.8,
+      min_temp: 15,
+      max_temp: 28,
+      target_temp_step: 0.5,
+      hvac_modes: ["off", "heat", "cool", "heat_cool", "auto", "dry"],
+    }),
+    ent("input_select.house_mode", "home", { friendly_name: "House Mode", options: ["home", "away", "night", "vacation"] }),
+    ent("timer.pasta", "active", {
+      friendly_name: "Pasta",
+      duration: "0:10:00",
+      finishes_at: new Date(Date.now() + 7 * 60_000 + 42_000).toISOString(),
+      remaining: "0:07:42",
+    }),
+    ent("script.goodnight", "off", { friendly_name: "Goodnight" }),
+    ent("script.leave_home", "off", { friendly_name: "Leave Home" }),
     ent("input_number.bpm", "120", { friendly_name: "BPM", min: 60, max: 180, step: 1 }),
     ent("sensor.temperature", "21.4", { friendly_name: "Temperature", unit_of_measurement: "°C" }),
     ent("sensor.humidity", "48", { friendly_name: "Humidity", unit_of_measurement: "%" }),
@@ -261,6 +278,12 @@ export class MockHass {
         return this.patch(id, now());
       case "media_player.select_source":
         return this.patch(id, undefined, { source: d.source, app_name: d.source });
+      case "climate.set_hvac_mode":
+        return this.patch(id, d.hvac_mode);
+      case "input_select.select_option":
+        return this.patch(id, d.option);
+      case "fan.set_preset_mode":
+        return this.patch(id, undefined, { preset_mode: d.preset_mode });
       case "climate.set_temperature":
         return this.patch(id, undefined, { temperature: d.temperature });
       case "fan.set_percentage":

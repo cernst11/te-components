@@ -6,10 +6,13 @@ import "./cards/te-fader";
 import "./cards/te-dial";
 import "./cards/te-toggle";
 import "./cards/te-button";
+import "./cards/te-selector";
+import "./cards/te-pads";
 import "./cards/te-dpad";
 import "./cards/te-display";
 import "./cards/te-mini-display";
 import "./cards/te-matrix";
+import "./cards/te-segment";
 import "./cards/te-color-picker";
 import "./cards/te-color-temp";
 

@@ -1,6 +1,6 @@
 # TE Components — Design Guidelines (v0.3)
 
-Status: **agreed and implemented (2026-10-24)** — 14 components shipped (§6, §6a). See "Decisions" at the bottom.
+Status: **agreed and implemented (2026-10-24)** — 17 components shipped (§6, §6a). See "Decisions" at the bottom.
 
 References (in `insporation/`): K.O. II (EP-133), K.O. Sidekick mixer, TX-6 (silver + black),
 TP-7 (silver + black), OP-1 field, MIC FX, Panic Playdate.
@@ -89,8 +89,8 @@ like the TX-6 middle row). LEDs/indicators showing "on" are exempt — that's wh
 - **Model names / titles:** large, *light* weight (300–400), tight tracking — `TX-6`, `K.O. II`.
   Every component has its own model name (see §6a).
 - **Subtitle:** Japanese katakana in accent orange (K.O.: `サンプラー`, `ミキサー`) — keep as the signature move.
-- **Screens:** pixel fonts only — the 5×7 dot-matrix (existing) and a larger 7-segment/pixel numeral style
-  for big values (`50`, `18.3`). Courier New is removed; compact mode uses a small pixel font.
+- **Screens:** pixel fonts only — the 5×7 dot-matrix, a tiny 3×5 for secondary figures (DS-64), and
+  seven-segment numerals for big values (SG-7). Courier New is removed; compact mode uses a small pixel font.
 - **Font family** **[?]** — TE uses a proprietary face. Options: (a) system stack (current),
   (b) bundle a free geometric grotesk (e.g. *Inter*, *Space Grotesk*), (c) let the user's HA theme decide.
 
@@ -115,6 +115,9 @@ like the TX-6 middle row). LEDs/indicators showing "on" are exempt — that's wh
 | Fader | TX-6, K.O. II | Black slot groove, small round or flat cap, LED dot column beside/above. |
 | Key / button | K.O. II, OP-1 | Rounded-square keys (primary shape) and round buttons; label printed *on* key top-left for K.O.-style keys, centered glyph for transport (`● ▶ ■ + −`). |
 | Toggle | TX-6 FX | Round bezel with a pill-shaped LED window; orange = on. |
+| Selector | TP-7 / OP-1 mode switches | Rotary: knob cap with detent ticks and printed labels around it, labels anchored away from the knob; the active tick is an accent LED. Keys: K.O. keys with an LED above each; the active key stays pressed in (latched). |
+| Pads | K.O. II pads | Square rubbery pads, label top-left, number bottom-right, icon/glyph bottom-left. The active pad is lit from inside (accent rim + underglow). |
+| Segment | VFD clocks / LED meters | Seven-segment numerals with a slight italic slant, unlit ghost segments (VFD/LCD), glow. Unit in small pixel type; clock and running-timer colons blink at 1Hz. |
 | D-pad | OP-1 / game controllers | One molded cross (single shape, never two bars); the whole cross rocks toward the pressed arm. Accent OK key in the middle. |
 | Display | TX-6 / TP-7 / K.O. | Sunk black glass; pixel text; status chips as outlined boxes (`L R`, `04`). |
 | Mini display | TX-6 channel strip | Small screen row: pixel icon + name/value; compact = two lines. Pairs with a fader in a GR-2 tile. |
@@ -143,10 +146,13 @@ editor header, playground and as the default panel title. Element names stay `te
 | `te-dial` | **DL-7** | ダイヤル | nod to TP-7's platter |
 | `te-toggle` | **TG-1** | トグル | one bit: on/off |
 | `te-button` | **BT-4** | ボタン | — |
+| `te-selector` | **SW-5** | セレクター | a 5-way mode switch |
+| `te-pads` | **PD-16** | パッド | a 4×4 pad grid |
 | `te-dpad` | **DP-5** | 十字キー | 4 directions + OK = 5 |
 | `te-display` | **DS-8** | ディスプレイ | 8-segment-ish screen |
 | `te-mini-display` | **DS-2** | ミニ | small sibling of DS-8 |
 | `te-matrix` | **DS-64** | マトリクス | 64×64 dots |
+| `te-segment` | **SG-7** | セグメント | seven segments |
 | `te-color-picker` | **CL-16** | カラー | 16M colors |
 | `te-color-temp` | **CT-27** | 色温度 | 2700K, warm white |
 

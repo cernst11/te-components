@@ -29,6 +29,7 @@ src/
     value.ts            domain defaults (DOMAIN_SPECS), resolveValue / valueAt / formatValue / writeValue
     actions.ts          HA-standard action runner (+ cycle-source, mute, "{{ value }}" substitution)
     hold.ts             HoldGesture (hold-to-fire / hold-to-confirm)
+    options.ts          option sources per domain (OPTION_SPECS) + select service, for SW-5
     history.ts          recorder history via hass.callWS (history/history_during_period) + time bucketing
     modal.ts            TeModal: base for dialogs (backdrop, Escape closes topmost only, header, faders via trackDrag)
     throttle.ts         trailing-edge throttle
@@ -40,7 +41,7 @@ src/
   screen/               canvas screen engine: 5x7 font, themes (vfd-amber/vfd-blue/oled/lcd),
                         cached text strips + stepped marquee, ScreenController (30fps, pauses off-screen),
                         mini icons, te-pixel-text (static pixel text),
-                        matrix.ts (DotBuffer + MatrixPainter for DS-64), animations.ts (washer/dryer/dishwasher/fan)
+                        matrix.ts (DotBuffer + MatrixPainter for DS-64), segments.ts (seven-segment cells for SG-7), animations.ts (washer/dryer/dishwasher/fan)
   cards/te-*.ts         one file per card
 playground/             Vite dev root: mock hass (mock-hass.ts), ha-icon/hui-card shims, stories.ts,
                         dashboard.ts (example home at #dashboard; plain data, no imports)
@@ -64,6 +65,13 @@ scripts/export-dashboard.ts   dashboard.ts → examples/dashboard.yaml (`npm run
 - MockHass must copy-on-write `states`: cards skip re-render when `old.states[id] === new.states[id]`.
 - After editing `playground/dashboard.ts`, run `npm run export:dashboard` so the YAML example stays in sync.
 - `insporation/` is gitignored (third-party product photos); `.avif`/`.webp` need `sips -s format png` to view.
+
+## Testing without the Chrome extension
+
+Headless Chrome can be driven over the DevTools protocol with Node's built-in `WebSocket`
+(`--headless=new --remote-debugging-port`, then `Runtime.evaluate` + `Page.captureScreenshot`). Pure drawing
+code (DotBuffer, animations) can be rendered to ASCII with `node --experimental-transform-types` plus a resolve
+hook that appends `.ts` to relative imports.
 
 ## Publishing
 

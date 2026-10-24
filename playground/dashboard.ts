@@ -16,8 +16,6 @@ const send = (command: string) => ({
 
 const media = (service: string) => ({ action: "perform-action", perform_action: `media_player.${service}`, target: { entity_id: tv } });
 
-const scene = (id: string) => ({ action: "perform-action", perform_action: "scene.turn_on", target: { entity_id: id } });
-
 /** DS-2 screen over a horizontal fader, sharing one tile. */
 const lightTile = (entity: string, icon: string, label: string) => ({
   type: "custom:te-group",
@@ -36,6 +34,7 @@ const livingRoom = {
   subtitle: "リビング",
   body: "black",
   cards: [
+    { type: "custom:te-segment", clock: true, height: 64 },
     {
       type: "custom:te-display",
       entity: tv,
@@ -107,9 +106,11 @@ const climate = {
   cards: [
     { type: "custom:te-matrix", entity: "sensor.outdoor_temperature", label: "OUTSIDE", decimals: 1, unit: "°", hours: 24 },
     { type: "custom:te-dial", entity: "climate.living_room", label: "HEAT", sublabel: "TARGET", size: 170 },
-    { type: "custom:te-mini-display", entity: "sensor.temperature", icon: "thermometer", label: "Inside", compact: true, screen: "oled" },
-    { type: "custom:te-mini-display", entity: "sensor.humidity", icon: "droplet", label: "Humidity", compact: true, screen: "oled" },
-    { type: "custom:te-mini-display", entity: "sensor.co2", icon: "molecule", label: "CO2", compact: true, screen: "oled" },
+    { type: "custom:te-selector", entity: "climate.living_room", label: "MODE" },
+    [
+      { type: "custom:te-mini-display", entity: "sensor.humidity", icon: "droplet", label: "Humidity", compact: true, screen: "oled" },
+      { type: "custom:te-mini-display", entity: "sensor.co2", icon: "molecule", label: "CO2", compact: true, screen: "oled" },
+    ],
     [
       { type: "custom:te-knob", entity: "fan.bedroom", cap: "black", label: "FAN", socket: true },
       { type: "custom:te-fader", entity: "cover.blinds", label: "BLINDS", cap: "round", length: 110, dots: 5 },
@@ -167,8 +168,8 @@ const utility = {
           ],
         ],
       },
-      { type: "custom:te-toggle", entity: "switch.coffee_machine", label: "COFFEE", glyph: "I" },
     ],
+    { type: "custom:te-segment", entity: "timer.pasta", label: "PASTA", screen: "lcd", height: 72 },
   ],
 };
 
@@ -178,17 +179,20 @@ const scenes = {
   subtitle: "シーン",
   tabs: ["Scene", { label: "Live", color: "accent" }, { label: "Auto", color: "grey" }],
   cards: [
-    [
-      { type: "custom:te-button", shape: "key", color: "grey", label: "Movie", glyph: "play", tap_action: scene("scene.movie") },
-      { type: "custom:te-button", shape: "key", color: "light", label: "Dinner", glyph: "dot", tap_action: scene("scene.dinner") },
-      { type: "custom:te-button", shape: "key", color: "dark", label: "Night", glyph: "minus", tap_action: scene("scene.night") },
-      { type: "custom:te-button", shape: "key", color: "light", label: "Away", glyph: "stop", tap_action: scene("scene.away") },
-    ],
-    [
-      { type: "custom:te-toggle", entity: "switch.coffee_machine", label: "COFFEE", glyph: "I" },
-      { type: "custom:te-toggle", entity: "switch.fx_1", label: "PORCH", glyph: "I" },
-      { type: "custom:te-toggle", entity: "fan.bedroom", label: "FAN", glyph: "II" },
-    ],
+    {
+      type: "custom:te-pads",
+      pads: [
+        { entity: "scene.movie", label: "Movie", glyph: "play" },
+        { entity: "scene.dinner", label: "Dinner" },
+        { entity: "scene.night", label: "Night", color: "dark" },
+        { entity: "scene.away", label: "Away", color: "grey" },
+        { entity: "script.goodnight", label: "Goodnight", icon: "mdi:weather-night" },
+        { entity: "switch.coffee_machine", label: "Coffee", icon: "mdi:coffee" },
+        { entity: "switch.fx_1", label: "Porch", icon: "mdi:outdoor-lamp" },
+        { entity: "fan.bedroom", label: "Fan", icon: "mdi:fan" },
+      ],
+    },
+    { type: "custom:te-selector", entity: "input_select.house_mode", label: "HOUSE", style: "keys" },
   ],
 };
 
