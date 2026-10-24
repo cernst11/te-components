@@ -1,0 +1,315 @@
+# TE Components example dashboard (sections view).
+# Settings → Dashboards → Add dashboard → ⋮ → Raw configuration editor, then paste.
+# Replace the entity ids with your own.
+title: Home
+views:
+  - title: Home
+    path: home
+    type: sections
+    max_columns: 4
+    sections:
+      - type: grid
+        cards:
+          - type: custom:te-panel
+            title: LIVING
+            caption: TV
+            subtitle: リビング
+            body: black
+            cards:
+              - type: custom:te-display
+                entity: media_player.living_room_tv
+                progress: true
+                height: 84
+                chips:
+                  - entity: media_player.living_room_tv
+                    attribute: source
+                    value: Netflix
+                    label: NFLX
+                  - entity: media_player.living_room_tv
+                    attribute: source
+                    value: YouTube
+                    label: YT
+                  - entity: media_player.living_room_tv
+                    attribute: source
+                    value: Plex
+                    label: PLEX
+              - - type: custom:te-button
+                  glyph: prev
+                  label: PREV
+                  tap_action:
+                    action: perform-action
+                    perform_action: media_player.media_previous_track
+                    target:
+                      entity_id: media_player.living_room_tv
+                - type: custom:te-button
+                  glyph: play
+                  label: PLAY
+                  entity: media_player.living_room_tv
+                  active_state: playing
+                  tap_action:
+                    action: perform-action
+                    perform_action: media_player.media_play_pause
+                    target:
+                      entity_id: media_player.living_room_tv
+                - type: custom:te-button
+                  glyph: next
+                  label: NEXT
+                  tap_action:
+                    action: perform-action
+                    perform_action: media_player.media_next_track
+                    target:
+                      entity_id: media_player.living_room_tv
+                - type: custom:te-knob
+                  entity: media_player.living_room_tv
+                  cap: orange
+                  size: m
+                  label: VOL
+              - type: custom:te-dpad
+                entity: remote.living_room_tv
+              - - type: custom:te-toggle
+                  entity: media_player.living_room_tv
+                  label: POWER
+                  on_state: playing
+                - type: custom:te-button
+                  shape: key
+                  color: grey
+                  label: Source
+                  entity: media_player.living_room_tv
+                  tap_action:
+                    action: cycle-source
+                - type: custom:te-button
+                  shape: key
+                  color: dark
+                  label: Home
+                  icon: mdi:home-outline
+                  tap_action:
+                    action: perform-action
+                    perform_action: remote.send_command
+                    target:
+                      entity_id: remote.living_room_tv
+                    data:
+                      command: HOME
+                - type: custom:te-button
+                  shape: key
+                  color: dark
+                  label: Back
+                  icon: mdi:arrow-left
+                  tap_action:
+                    action: perform-action
+                    perform_action: remote.send_command
+                    target:
+                      entity_id: remote.living_room_tv
+                    data:
+                      command: BACK
+      - type: grid
+        cards:
+          - type: custom:te-panel
+            title: LIGHTS
+            caption: 4 ZONES
+            subtitle: ライト
+            faceplate: true
+            cards:
+              - - type: custom:te-group
+                  direction: column
+                  gap: 2
+                  cards:
+                    - type: custom:te-mini-display
+                      entity: light.ceiling
+                      icon: downlight
+                      label: Ceiling
+                      compact: true
+                    - type: custom:te-fader
+                      entity: light.ceiling
+                      orientation: horizontal
+                      dots: 0
+                      cap: round
+                      length: 100
+                      show_value: false
+                - type: custom:te-group
+                  direction: column
+                  gap: 2
+                  cards:
+                    - type: custom:te-mini-display
+                      entity: light.sofa_lamp
+                      icon: lamp
+                      label: Sofa
+                      compact: true
+                    - type: custom:te-fader
+                      entity: light.sofa_lamp
+                      orientation: horizontal
+                      dots: 0
+                      cap: round
+                      length: 100
+                      show_value: false
+              - - type: custom:te-group
+                  direction: column
+                  gap: 2
+                  cards:
+                    - type: custom:te-mini-display
+                      entity: light.kitchen
+                      icon: bulb
+                      label: Kitchen
+                      compact: true
+                    - type: custom:te-fader
+                      entity: light.kitchen
+                      orientation: horizontal
+                      dots: 0
+                      cap: round
+                      length: 100
+                      show_value: false
+                - type: custom:te-group
+                  direction: column
+                  gap: 2
+                  cards:
+                    - type: custom:te-mini-display
+                      entity: light.hallway
+                      icon: downlight
+                      label: Hall
+                      compact: true
+                    - type: custom:te-fader
+                      entity: light.hallway
+                      orientation: horizontal
+                      dots: 0
+                      cap: round
+                      length: 100
+                      show_value: false
+              - - type: custom:te-color-picker
+                  entity: light.sofa_lamp
+                  label: SOFA
+                  sublabel: COLOR
+                  slots:
+                    - input_text.color_slot_1
+                    - input_text.color_slot_2
+                    - input_text.color_slot_3
+                - type: custom:te-toggle
+                  entity: light.hallway
+                  label: HALL
+                  glyph: I
+                - type: custom:te-button
+                  shape: key
+                  color: accent
+                  label: All off
+                  sublabel: HOLD
+                  hold_to_confirm: true
+                  hold_time: 700
+                  tap_action:
+                    action: perform-action
+                    perform_action: light.turn_off
+                    target:
+                      entity_id:
+                        - light.ceiling
+                        - light.sofa_lamp
+                        - light.kitchen
+                        - light.hallway
+      - type: grid
+        cards:
+          - type: custom:te-panel
+            title: CLIMATE
+            subtitle: クライメート
+            cards:
+              - type: custom:te-display
+                entity: sensor.outdoor_temperature
+                label: OUTSIDE
+                screen: oled
+                decimals: 1
+                unit: °
+                text_size: 3
+                height: 64
+              - type: custom:te-dial
+                entity: climate.living_room
+                label: HEAT
+                sublabel: TARGET
+                size: 170
+              - type: custom:te-mini-display
+                entity: sensor.temperature
+                icon: thermometer
+                label: Inside
+                compact: true
+                screen: oled
+              - type: custom:te-mini-display
+                entity: sensor.humidity
+                icon: droplet
+                label: Humidity
+                compact: true
+                screen: oled
+              - type: custom:te-mini-display
+                entity: sensor.co2
+                icon: molecule
+                label: CO2
+                compact: true
+                screen: oled
+              - - type: custom:te-knob
+                  entity: fan.bedroom
+                  cap: black
+                  label: FAN
+                  socket: true
+                - type: custom:te-fader
+                  entity: cover.blinds
+                  label: BLINDS
+                  cap: round
+                  length: 110
+                  dots: 5
+      - type: grid
+        cards:
+          - type: custom:te-panel
+            title: SCENES
+            subtitle: シーン
+            tabs:
+              - Scene
+              - label: Live
+                color: accent
+              - label: Auto
+                color: grey
+            cards:
+              - - type: custom:te-button
+                  shape: key
+                  color: grey
+                  label: Movie
+                  glyph: play
+                  tap_action:
+                    action: perform-action
+                    perform_action: scene.turn_on
+                    target:
+                      entity_id: scene.movie
+                - type: custom:te-button
+                  shape: key
+                  color: light
+                  label: Dinner
+                  glyph: dot
+                  tap_action:
+                    action: perform-action
+                    perform_action: scene.turn_on
+                    target:
+                      entity_id: scene.dinner
+                - type: custom:te-button
+                  shape: key
+                  color: dark
+                  label: Night
+                  glyph: minus
+                  tap_action:
+                    action: perform-action
+                    perform_action: scene.turn_on
+                    target:
+                      entity_id: scene.night
+                - type: custom:te-button
+                  shape: key
+                  color: light
+                  label: Away
+                  glyph: stop
+                  tap_action:
+                    action: perform-action
+                    perform_action: scene.turn_on
+                    target:
+                      entity_id: scene.away
+              - - type: custom:te-toggle
+                  entity: switch.coffee_machine
+                  label: COFFEE
+                  glyph: I
+                - type: custom:te-toggle
+                  entity: switch.fx_1
+                  label: PORCH
+                  glyph: I
+                - type: custom:te-toggle
+                  entity: fan.bedroom
+                  label: FAN
+                  glyph: II

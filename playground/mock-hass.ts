@@ -11,8 +11,42 @@ const ent = (entity_id: string, state: string, attributes: Record<string, any> =
   last_updated: now(),
 });
 
+/** Episodes the mock TV steps through on next/previous. */
+const EPISODES = [
+  { media_title: "Severance S2E4 - Woe's Hollow", media_duration: 2940 },
+  { media_title: "Severance S2E5 - Trojan's Horse", media_duration: 3060 },
+  { media_title: "Severance S2E6 - Attila", media_duration: 2880 },
+];
+
+/** Light levels (0..255, 0 = off) each mock scene applies. */
+const SCENES: Record<string, Record<string, number>> = {
+  "scene.movie": { "light.ceiling": 0, "light.sofa_lamp": 60, "light.kitchen": 0, "light.hallway": 20 },
+  "scene.dinner": { "light.ceiling": 150, "light.sofa_lamp": 120, "light.kitchen": 255, "light.hallway": 80 },
+  "scene.night": { "light.ceiling": 0, "light.sofa_lamp": 0, "light.kitchen": 0, "light.hallway": 15 },
+  "scene.away": { "light.ceiling": 0, "light.sofa_lamp": 0, "light.kitchen": 0, "light.hallway": 0 },
+};
+
 function initialStates(): Record<string, HassEntity> {
   const list = [
+    ent("media_player.living_room_tv", "playing", {
+      friendly_name: "Living Room TV",
+      volume_level: 0.3,
+      is_volume_muted: false,
+      app_name: "Netflix",
+      source: "Netflix",
+      source_list: ["Netflix", "YouTube", "Plex", "HDMI 1"],
+      ...EPISODES[0],
+      episode: 0,
+      media_position: 1210,
+      media_position_updated_at: now(),
+    }),
+    ent("remote.living_room_tv", "on", { friendly_name: "Living Room TV" }),
+    ent("light.ceiling", "on", { friendly_name: "Ceiling", brightness: 200 }),
+    ent("light.sofa_lamp", "on", { friendly_name: "Sofa Lamp", brightness: 120, hs_color: [30, 75] }),
+    ent("light.hallway", "off", { friendly_name: "Hallway" }),
+    ent("sensor.outdoor_temperature", "14.2", { friendly_name: "Outdoor", unit_of_measurement: "°C" }),
+    ent("switch.coffee_machine", "off", { friendly_name: "Coffee Machine" }),
+    ...Object.keys(SCENES).map((id) => ent(id, "2026-10-24T18:00:00", { friendly_name: id.split(".")[1] })),
     ent("light.kitchen", "on", { friendly_name: "Kitchen", brightness: 180, hs_color: [28, 70], supported_color_modes: ["hs"] }),
     ent("light.desk_lamp", "off", { friendly_name: "Desk Lamp" }),
     ent("light.living_room", "on", { friendly_name: "Living Room", brightness: 90, hs_color: [210, 55] }),
@@ -72,7 +106,6 @@ export class MockHass {
   }
 
   private publish() {
-    this.states = { ...this.states };
     const h = this.snapshot();
     this.subs.forEach((fn) => fn(h));
   }
@@ -87,6 +120,8 @@ export class MockHass {
     const payload = { ...data, ...(target ?? {}) };
     this.log({ domain, service, data: payload });
     const ids: string[] = [payload.entity_id].flat().filter(Boolean);
+    // copy-on-write: cards diff old vs new `hass.states`, so never mutate a published object
+    this.states = { ...this.states };
     for (const id of ids) this.apply(id, domain, service, payload);
     // simulate HA round-trip latency
     await new Promise((r) => setTimeout(r, 60));
@@ -101,6 +136,7 @@ export class MockHass {
       case "homeassistant.toggle":
       case `${id.split(".")[0]}.toggle`:
         if (id.startsWith("media_player.")) this.patch(id, st.state === "off" ? "playing" : "off");
+        else if (id.startsWith("light.") && st.state === "off") this.patch(id, "on", { brightness: st.attributes.brightness ?? 255 });
         else this.patch(id, st.state === on ? off : on);
         return;
       case "light.turn_on": {
@@ -118,6 +154,24 @@ export class MockHass {
         return this.patch(id, undefined, { volume_level: d.volume_level });
       case "media_player.volume_mute":
         return this.patch(id, undefined, { is_volume_muted: d.is_volume_muted });
+      case "media_player.media_play_pause": {
+        const a = st.attributes;
+        const pos = st.state === "playing" ? a.media_position + (Date.now() - Date.parse(a.media_position_updated_at)) / 1000 : a.media_position;
+        return this.patch(id, st.state === "playing" ? "paused" : "playing", { media_position: pos, media_position_updated_at: now() });
+      }
+      case "media_player.media_next_track":
+      case "media_player.media_previous_track": {
+        if (st.attributes.episode === undefined) return;
+        const step = service === "media_next_track" ? 1 : EPISODES.length - 1;
+        const episode = (st.attributes.episode + step) % EPISODES.length;
+        return this.patch(id, "playing", { ...EPISODES[episode], episode, media_position: 0, media_position_updated_at: now() });
+      }
+      case "scene.turn_on":
+        for (const [light, level] of Object.entries(SCENES[id] ?? {})) {
+          if (level === 0) this.patch(light, "off", { brightness: undefined });
+          else this.patch(light, "on", { brightness: level });
+        }
+        return this.patch(id, now());
       case "media_player.select_source":
         return this.patch(id, undefined, { source: d.source, app_name: d.source });
       case "climate.set_temperature":

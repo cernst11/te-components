@@ -19,6 +19,8 @@ interface PanelConfig extends BaseConfig {
   tabs: Tab[];
   /** Put the title on a lighter screwed-on faceplate (K.O. / MIC FX). */
   faceplate: boolean;
+  /** Space between rows and between cards in a row, px. */
+  gap: number;
   cards: (Record<string, unknown> | Record<string, unknown>[])[];
 }
 
@@ -98,11 +100,13 @@ export class TePanel extends TeBaseCard<PanelConfig> {
       }
       .body {
         display: grid;
+        gap: var(--gap);
       }
       .row {
         display: grid;
         grid-auto-flow: column;
         grid-auto-columns: 1fr;
+        gap: var(--gap);
       }
       .item {
         min-width: 0;
@@ -116,7 +120,7 @@ export class TePanel extends TeBaseCard<PanelConfig> {
 
   protected normalizeConfig(c: Record<string, any>): PanelConfig {
     const tabs: Tab[] = (c.tabs ?? []).map((t: any) => (typeof t === "string" ? { label: t, color: "light" } : { color: "light", ...t }));
-    const cfg: PanelConfig = { ...c, type: c.type, title: c.title ?? "", caption: c.caption ?? "", subtitle: c.subtitle ?? "", tabs, faceplate: c.faceplate === true, cards: c.cards ?? [] };
+    const cfg: PanelConfig = { ...c, type: c.type, title: c.title ?? "", caption: c.caption ?? "", subtitle: c.subtitle ?? "", tabs, faceplate: c.faceplate === true, gap: c.gap ?? 8, cards: c.cards ?? [] };
     this.rows = cfg.cards.map((entry) => (Array.isArray(entry) ? entry : [entry]).map((child) => createChildCard(child, this.hass)));
     return cfg;
   }
@@ -138,15 +142,17 @@ export class TePanel extends TeBaseCard<PanelConfig> {
     const c = this._config!;
     const ink = (t: Tab) => (t.color === "light" ? "var(--te-ink)" : "#f4f3ef");
     const bg = (t: Tab) => (t.color === "accent" ? "var(--te-accent)" : `var(--te-key-${t.color})`);
-    const screws = ["top:10px;left:10px", "top:10px;right:10px", "bottom:10px;left:10px", "bottom:10px;right:10px"];
+    // top screws drop below the tab strip when there is one
+    const top = c.tabs.length ? 36 : 10;
+    const screws = [`top:${top}px;left:10px`, `top:${top}px;right:10px`, "bottom:10px;left:10px", "bottom:10px;right:10px"];
     return html`
-      <div class="chassis ${classMap({ faceplate: c.faceplate })}" style=${styleMap({ "--te-theme": c.body })}>
+      <div class="chassis ${classMap({ faceplate: c.faceplate })}" style=${styleMap({ "--te-theme": c.body, "--gap": `${c.gap}px` })}>
         ${c.tabs.length
           ? html`<div class="tabs">${c.tabs.map((t) => html`<div class="tab" style=${styleMap({ "--bg": bg(t), "--ink": ink(t) })}>${t.label}</div>`)}</div>`
           : ""}
         ${c.faceplate ? "" : screws.map((s) => html`<div class="screw" style=${s}></div>`)}
         <header>
-          ${c.faceplate ? screws.map((s) => html`<div class="screw" style=${s.replace(/10px/g, "8px")}></div>`) : ""}
+          ${c.faceplate ? ["top:8px;left:8px", "top:8px;right:8px", "bottom:8px;left:8px", "bottom:8px;right:8px"].map((s) => html`<div class="screw" style=${s}></div>`) : ""}
           <div class="title"><span>${c.title}</span><span class="caption">${c.caption}</span></div>
           <div class="subtitle">${c.subtitle}</div>
         </header>

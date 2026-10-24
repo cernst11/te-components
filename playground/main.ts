@@ -2,6 +2,8 @@ import "./shims";
 import "../src/index";
 import { MockHass } from "./mock-hass";
 import { STORIES } from "./stories";
+import { DASHBOARD } from "./dashboard";
+import { toYaml } from "./yaml";
 import type { HomeAssistant } from "../src/types";
 
 type CardEl = HTMLElement & { setConfig(c: unknown): void; hass?: HomeAssistant };
@@ -24,28 +26,6 @@ hass.subscribe((h) => {
   current = h;
   cards.forEach((c) => (c.hass = h));
 });
-
-/** Tiny YAML emitter for showing configs the way users would paste them. */
-function toYaml(v: unknown, indent = 0): string {
-  const pad = "  ".repeat(indent);
-  if (Array.isArray(v)) {
-    return v
-      .map((item) => {
-        const body = toYaml(item, indent + 1).trimStart();
-        return `${pad}- ${body}`;
-      })
-      .join("\n");
-  }
-  if (v && typeof v === "object") {
-    return Object.entries(v as Record<string, unknown>)
-      .map(([k, val]) => {
-        if (val && typeof val === "object") return `${pad}${k}:\n${toYaml(val, indent + 1)}`;
-        return `${pad}${k}: ${typeof val === "string" && /[:#{}\[\],&*!|>'"%@`]|^\s|^$/.test(val) ? JSON.stringify(val) : val}`;
-      })
-      .join("\n");
-  }
-  return `${pad}${v}`;
-}
 
 function applyOverrides(cfg: Record<string, any>): Record<string, any> {
   const body = $<HTMLSelectElement>("body").value;
@@ -74,10 +54,37 @@ function createCard(config: Record<string, any>): HTMLElement {
   return el;
 }
 
+function renderDashboard(main: HTMLElement) {
+  const view = DASHBOARD.views[0];
+  const bar = document.createElement("div");
+  bar.className = "ha-bar";
+  bar.innerHTML = `<span class="ha-title">${DASHBOARD.title}</span><span class="ha-hint">sections view · mock entities</span><button>COPY YAML</button>`;
+  const yaml = toYaml(DASHBOARD);
+  const btn = bar.querySelector("button")!;
+  btn.addEventListener("click", async () => {
+    await navigator.clipboard.writeText(yaml).catch(() => undefined);
+    btn.textContent = "COPIED";
+    setTimeout(() => (btn.textContent = "COPY YAML"), 1200);
+  });
+  const grid = document.createElement("div");
+  grid.className = "ha-sections";
+  for (const section of view.sections) {
+    const col = document.createElement("div");
+    col.className = "ha-section";
+    for (const card of section.cards) col.append(createCard(applyOverrides(card)));
+    grid.append(col);
+  }
+  main.append(bar, grid);
+}
+
 function render() {
   cards.clear();
   const main = $("main");
   main.replaceChildren();
+  const dashboard = location.hash === "#dashboard";
+  document.body.classList.toggle("mode-dashboard", dashboard);
+  document.querySelectorAll("nav a").forEach((a) => a.classList.toggle("active", (a.getAttribute("href") === "#dashboard") === dashboard));
+  if (dashboard) return renderDashboard(main);
   for (const story of STORIES) {
     const section = document.createElement("section");
     section.className = "story";
@@ -115,7 +122,17 @@ function render() {
   }
 }
 
-$("nav").innerHTML = STORIES.map((s) => `<a href="#${s.model.type}"><span>${s.model.model}</span><span>${s.model.name}</span></a>`).join("");
+$("nav").innerHTML =
+  `<a href="#dashboard" class="nav-dash"><span>DASHBOARD</span><span>DEMO</span></a>` +
+  STORIES.map((s) => `<a href="#${s.model.type}"><span>${s.model.model}</span><span>${s.model.name}</span></a>`).join("");
+let lastMode = location.hash === "#dashboard";
+window.addEventListener("hashchange", () => {
+  const mode = location.hash === "#dashboard";
+  if (mode === lastMode) return;
+  lastMode = mode;
+  render();
+  if (!mode) document.getElementById(location.hash.slice(1))?.scrollIntoView();
+});
 $<HTMLSelectElement>("body").addEventListener("change", render);
 $<HTMLSelectElement>("screen").addEventListener("change", render);
 $<HTMLSelectElement>("backdrop").addEventListener("change", (e) => (document.documentElement.dataset.backdrop = (e.target as HTMLSelectElement).value));

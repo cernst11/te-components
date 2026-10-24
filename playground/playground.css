@@ -218,3 +218,120 @@ pre {
   color: var(--accent);
   font-weight: 600;
 }
+
+/* ---- dashboard mode: mimics an HA sections view ---- */
+nav .nav-dash {
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+nav a.active span:first-child {
+  color: var(--accent);
+}
+body.mode-dashboard main {
+  padding: 0 0 320px;
+  gap: 0;
+}
+.ha-bar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 24px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+}
+.ha-title {
+  font-size: 20px;
+  font-weight: 400;
+}
+.ha-hint {
+  font-size: 11px;
+  color: var(--dim);
+  letter-spacing: 0.04em;
+}
+.ha-bar button {
+  margin-left: auto;
+}
+.ha-sections {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 24px;
+  align-items: start;
+  padding: 24px;
+}
+.ha-section {
+  display: grid;
+  gap: 12px;
+  max-width: 480px;
+}
+
+/* ---- phones ---- */
+@media (max-width: 720px) {
+  body {
+    grid-template-columns: 1fr;
+  }
+  .side {
+    position: static;
+    height: auto;
+    padding: 14px 16px;
+    gap: 12px;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+  }
+  nav {
+    display: flex;
+    gap: 6px 14px;
+    flex-wrap: wrap;
+  }
+  nav a span:last-child {
+    display: none;
+  }
+  nav .nav-dash {
+    margin: 0;
+    padding: 5px 0;
+    border: none;
+  }
+  .controls {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .controls button {
+    grid-column: 1 / -1;
+  }
+  main,
+  body.mode-dashboard main {
+    padding: 16px 16px 200px;
+  }
+  body.mode-dashboard main {
+    padding: 0 0 200px;
+  }
+  .ha-bar {
+    padding: 10px 16px;
+  }
+  .ha-hint {
+    display: none;
+  }
+  .ha-sections {
+    grid-template-columns: 1fr;
+    padding: 16px;
+    gap: 16px;
+  }
+  .ha-section {
+    max-width: none;
+  }
+  .story h2 {
+    font-size: 26px;
+  }
+  .stage {
+    max-width: calc(100vw - 32px);
+  }
+  .log {
+    width: 100%;
+    height: 120px;
+    border-right: none;
+    z-index: 6;
+  }
+}

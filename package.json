@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "export:dashboard": "node scripts/export-dashboard.ts"
   },
   "dependencies": {
     "lit": "^3.3.3"

@@ -65,6 +65,10 @@ cards:
 
 Each `cards` entry is a row. A list inside it puts cards side by side.
 
+A complete example dashboard (TV remote, lights, climate, scenes) is in
+[`examples/dashboard.yaml`](examples/dashboard.yaml). Paste it into **Edit dashboard → ⋮ → Raw configuration
+editor** and swap in your own entity IDs.
+
 ## Common options
 
 All cards accept:
@@ -216,7 +220,8 @@ tap it to recall the color.
 
 Group: `cards`, `direction` (`row`/`column`), `gap`, `tile` (default `true`).
 
-Panel: `title`, `caption`, `subtitle`, `faceplate`, `tabs` (strings or `{label, color}`), `cards` (rows).
+Panel: `title`, `caption`, `subtitle`, `faceplate`, `tabs` (strings or `{label, color}`), `gap` (default 8),
+`cards` (rows).
 `body` on a panel or group is inherited by its children.
 
 </details>
@@ -250,6 +255,8 @@ Panel: `title`, `caption`, `subtitle`, `faceplate`, `tabs` (strings or `{label, 
 ```sh
 npm install
 npm run dev        # playground at http://localhost:5173 with a mock Home Assistant
+                   # (#dashboard shows a full example home: TV, lights, climate, scenes)
+npm run export:dashboard   # regenerate examples/dashboard.yaml from playground/dashboard.ts
 npm run build      # dist/te-components.js
 npm run typecheck
 ```

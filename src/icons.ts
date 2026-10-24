@@ -12,6 +12,8 @@ const GLYPHS: Record<string, TemplateResult> = {
   play: svg`<path d="M8 5.5v13l10-6.5z" fill="currentColor"/>`,
   stop: svg`<rect x="6.5" y="6.5" width="11" height="11" fill="currentColor"/>`,
   pause: svg`<path d="M7 6h3.5v12H7zM13.5 6H17v12h-3.5z" fill="currentColor"/>`,
+  prev: svg`<path d="M6 6h2v12H6zm3.5 6 8.5 6V6z" fill="currentColor"/>`,
+  next: svg`<path d="M16 6h2v12h-2zM6 18l8.5-6L6 6z" fill="currentColor"/>`,
   plus: svg`<path d="M11.25 5h1.5v6.25H19v1.5h-6.25V19h-1.5v-6.25H5v-1.5h6.25z" fill="currentColor"/>`,
   minus: svg`<path d="M5 11.25h14v1.5H5z" fill="currentColor"/>`,
   dot: svg`<circle cx="12" cy="12" r="2.5" fill="currentColor"/>`,

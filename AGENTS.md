@@ -39,7 +39,9 @@ src/
                         cached text strips + stepped marquee, ScreenController (30fps, pauses off-screen),
                         mini icons, te-pixel-text (static pixel text)
   cards/te-*.ts         one file per card
-playground/             Vite dev root: mock hass (mock-hass.ts), ha-icon/hui-card shims, stories.ts
+playground/             Vite dev root: mock hass (mock-hass.ts), ha-icon/hui-card shims, stories.ts,
+                        dashboard.ts (example home at #dashboard; plain data, no imports)
+scripts/export-dashboard.ts   dashboard.ts → examples/dashboard.yaml (`npm run export:dashboard`)
 ```
 
 ### Adding a component
@@ -56,6 +58,8 @@ playground/             Vite dev root: mock hass (mock-hass.ts), ha-icon/hui-car
 - Static `properties` on subclasses only list new props; Lit merges the base ones.
 - `useDefineForClassFields: false` — reactive props are `declare`d and initialized in the constructor.
 - Vite 8 needs `rolldownOptions.output.minify` to minify ES lib builds.
+- MockHass must copy-on-write `states`: cards skip re-render when `old.states[id] === new.states[id]`.
+- After editing `playground/dashboard.ts`, run `npm run export:dashboard` so the YAML example stays in sync.
 - `insporation/` is gitignored (third-party product photos); `.avif`/`.webp` need `sips -s format png` to view.
 
 ## Publishing
