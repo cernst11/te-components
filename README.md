@@ -558,3 +558,14 @@ npm run typecheck
 ```
 
 See `DESIGN.md` for the design guidelines and `AGENTS.md` for architecture notes.
+
+## License
+
+Copyright © 2026 cernst11. Licensed under the [GNU General Public License v3.0 or later](LICENSE).
+
+You may use, study, change and share this code. If you distribute a modified version, it must stay under the
+GPL with its source available. For use under other terms (e.g. in a closed-source product), contact the author
+about a commercial license.
+
+Visually inspired by Teenage Engineering hardware. Not affiliated with or endorsed by Teenage Engineering;
+product names mentioned are their trademarks.

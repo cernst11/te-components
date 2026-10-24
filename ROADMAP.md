@@ -32,7 +32,8 @@ to DESIGN.md §6a). Status: `[ ]` todo · `[~]` in progress · `[x]` done.
 - [~] Visual editor previews verified in HA's card picker. `playground/check.html` replays HA's picker/editor
       contract (from the frontend source) for every card: no errors. Still to do: one pass in a real HA.
 - [ ] Real-HA test pass: DS-64 history, phone layout.
-- [ ] LICENSE + GitHub repo, first HACS release.
+- [x] LICENSE (GPL-3.0-or-later, CLA for outside contributions) + GitHub repo (cernst11/te-components).
+- [ ] First GitHub release → HACS install.
 
 ## Done
 

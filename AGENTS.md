@@ -91,6 +91,12 @@ HACS plugin: `hacs.json` → `te-components.js`. Publishing a GitHub release run
 `.github/workflows/release.yml`, which builds the bundle and attaches it to the release. `validate.yml`
 runs the build and the HACS validation on every push.
 
+## License
+
+GPL-3.0-or-later (owner's choice 2026-10-24: open source, keeps the option of commercial dual licensing).
+Outside contributions need a CLA (CONTRIBUTING.md). The build prepends a license banner to the bundle.
+Don't use Teenage Engineering names/branding as product branding ("inspired by" in docs only).
+
 ## Conventions
 
 - `DESIGN.md` is the source of truth for visuals; follow it, and update it when the owner changes direction.
