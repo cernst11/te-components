@@ -15,6 +15,9 @@ them in.
 | **TG-1** トグル | `custom:te-toggle` | Round button with pill LED |
 | **BT-4** ボタン | `custom:te-button` | Round / square / K.O. key button |
 | **SW-5** セレクター | `custom:te-selector` | Mode selector: rotary switch or latching mode keys |
+| **SL-2** スライド | `custom:te-slide` | Slide-to-confirm switch for locks, garage doors, valves |
+| **LD-8** インジケーター | `custom:te-leds` | Row of labelled status LEDs |
+| **VU-10** メーター | `custom:te-meter` | Level meter: LED bar or analog needle |
 | **PD-16** パッド | `custom:te-pads` | K.O. II pad grid for scenes, scripts, switches |
 | **DP-5** 十字キー | `custom:te-dpad` | Directional pad |
 | **DS-8** ディスプレイ | `custom:te-display` | Main pixel screen: marquee, chips, progress |
@@ -202,6 +205,64 @@ Pick one of several options. `entity` is usually enough; the options and service
 | `columns` | up to 4 | Keys per row |
 | `options` | from the entity | Relabel or limit: `[{value: Spotify, label: SPOT}, …]` |
 | `set_action` | — | For other entities; `"{{ value }}"` is the chosen option |
+
+</details>
+
+<details><summary><b>SL-2 slide switch</b> — <code>custom:te-slide</code></summary>
+
+Slide the thumb all the way across to commit; let go early and it springs back, so a stray tap can't open the
+garage. Arrow keys work too.
+
+| Domain | Left | Right |
+|---|---|---|
+| `lock` | locked (`lock.lock`) | unlocked (`lock.unlock`) |
+| `cover` | closed (`cover.close_cover`) | open (`cover.open_cover`) |
+| `valve` | closed | open |
+| anything else | off (`*.turn_off`) | on (`*.turn_on`) |
+
+While the entity is `locking`/`opening`/… the thumb waits at the target and its LED blinks. The safe end lights
+neutral, the open end orange. Relabel with `left_label` / `right_label`.
+
+</details>
+
+<details><summary><b>LD-8 LED strip</b> — <code>custom:te-leds</code></summary>
+
+```yaml
+type: custom:te-leds
+summary: OPEN            # prints "2 OPEN" under the strip
+entities:
+  - binary_sensor.front_door
+  - entity: binary_sensor.hall_motion
+    label: Motion
+  - entity: person.alex
+    color: neutral        # ink instead of orange, for plain status
+```
+
+Lit means `on`/`open` for sensors and switches, `home` for people, not `locked` for locks, not `closed` for
+covers, not `disarmed` for alarms. Leaks, smoke, `triggered` and `jammed` blink. Override with `on_state` and
+`blink`. Tap an LED for more-info. `columns` wraps the row.
+
+</details>
+
+<details><summary><b>VU-10 meter</b> — <code>custom:te-meter</code></summary>
+
+```yaml
+type: custom:te-meter
+entity: sensor.power
+max: 2000
+warn: 1200          # segments above light orange
+segments: 16
+```
+
+| Option | Default | |
+|---|---|---|
+| `style` | `bar` | `bar` (LED segments in a screen window) or `needle` (analog VU, accent arc above `warn`) |
+| `orientation` | `horizontal` | Bar only |
+| `min` / `max` | 0 / 100, or from the domain | Sensors usually need `max` |
+| `warn` | — | Threshold in the entity's units |
+| `peak` | `true` | Hold the highest recent segment for 2.5s |
+| `screen` | `vfd-amber` | Bar window style |
+| `show_value` | `true` | Value under the meter |
 
 </details>
 

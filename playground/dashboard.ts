@@ -109,8 +109,8 @@ const climate = {
     { type: "custom:te-selector", entity: "climate.living_room", label: "MODE" },
     [
       { type: "custom:te-mini-display", entity: "sensor.humidity", icon: "droplet", label: "Humidity", compact: true, screen: "oled" },
-      { type: "custom:te-mini-display", entity: "sensor.co2", icon: "molecule", label: "CO2", compact: true, screen: "oled" },
     ],
+    { type: "custom:te-meter", entity: "sensor.co2", label: "CO2", style: "needle", min: 400, max: 1600, warn: 1000, unit: "ppm" },
     [
       { type: "custom:te-knob", entity: "fan.bedroom", cap: "black", label: "FAN", socket: true },
       { type: "custom:te-fader", entity: "cover.blinds", label: "BLINDS", cap: "round", length: 110, dots: 5 },
@@ -173,6 +173,38 @@ const utility = {
   ],
 };
 
+const entry = {
+  type: "custom:te-panel",
+  title: "ENTRY",
+  subtitle: "エントランス",
+  faceplate: true,
+  cards: [
+    {
+      type: "custom:te-leds",
+      summary: "OPEN",
+      entities: [
+        "binary_sensor.front_door",
+        "binary_sensor.back_door",
+        "binary_sensor.kitchen_window",
+        { entity: "binary_sensor.hall_motion", label: "Motion" },
+        { entity: "binary_sensor.washer_leak", label: "Leak" },
+      ],
+    },
+    [
+      { type: "custom:te-slide", entity: "lock.front_door", label: "FRONT DOOR" },
+      { type: "custom:te-slide", entity: "cover.garage_door", label: "GARAGE" },
+    ],
+    {
+      type: "custom:te-leds",
+      label: "HOME",
+      entities: [
+        { entity: "person.alex", color: "neutral" },
+        { entity: "person.sam", color: "neutral" },
+      ],
+    },
+  ],
+};
+
 const scenes = {
   type: "custom:te-panel",
   title: "SCENES",
@@ -204,7 +236,7 @@ export const DASHBOARD = {
       path: "home",
       type: "sections",
       max_columns: 4,
-      sections: [livingRoom, lights, climate, utility, scenes].map((panel) => ({ type: "grid", cards: [panel] })),
+      sections: [livingRoom, lights, climate, entry, utility, scenes].map((panel) => ({ type: "grid", cards: [panel] })),
     },
   ],
 };

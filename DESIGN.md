@@ -1,6 +1,6 @@
 # TE Components — Design Guidelines (v0.3)
 
-Status: **agreed and implemented (2026-10-24)** — 17 components shipped (§6, §6a). See "Decisions" at the bottom.
+Status: **agreed and implemented (2026-10-24)** — 20 components shipped (§6, §6a). See "Decisions" at the bottom.
 
 References (in `insporation/`): K.O. II (EP-133), K.O. Sidekick mixer, TX-6 (silver + black),
 TP-7 (silver + black), OP-1 field, MIC FX, Panic Playdate.
@@ -117,6 +117,9 @@ like the TX-6 middle row). LEDs/indicators showing "on" are exempt — that's wh
 | Toggle | TX-6 FX | Round bezel with a pill-shaped LED window; orange = on. |
 | Selector | TP-7 / OP-1 mode switches | Rotary: knob cap with detent ticks and printed labels around it, labels anchored away from the knob; the active tick is an accent LED. Keys: K.O. keys with an LED above each; the active key stays pressed in (latched). |
 | Pads | K.O. II pads | Square rubbery pads, label top-left, number bottom-right, icon/glyph bottom-left. The active pad is lit from inside (accent rim + underglow). |
+| Slide switch | TP-7 side switch | Ridged pill thumb in a sunk groove, end labels with LEDs. Only a full slide commits (that *is* the confirmation); the safe end's LED is neutral ink, the open end's is accent; blinking while the entity moves. |
+| LED strip | TX-6 channel LEDs | 8px LEDs above tiny labels; accent = needs attention, neutral ink = plain status; alarms blink (steps, not fades). |
+| Meter | TX-6 VU / analog VU meters | Bar: LED segments in a screen window, accent above `warn`, peak segment holds. Needle: cream plate, ink scale, accent warn arc and needle, ease-out swing (no overshoot). |
 | Segment | VFD clocks / LED meters | Seven-segment numerals with a slight italic slant, unlit ghost segments (VFD/LCD), glow. Unit in small pixel type; clock and running-timer colons blink at 1Hz. |
 | D-pad | OP-1 / game controllers | One molded cross (single shape, never two bars); the whole cross rocks toward the pressed arm. Accent OK key in the middle. |
 | Display | TX-6 / TP-7 / K.O. | Sunk black glass; pixel text; status chips as outlined boxes (`L R`, `04`). |
@@ -148,6 +151,9 @@ editor header, playground and as the default panel title. Element names stay `te
 | `te-button` | **BT-4** | ボタン | — |
 | `te-selector` | **SW-5** | セレクター | a 5-way mode switch |
 | `te-pads` | **PD-16** | パッド | a 4×4 pad grid |
+| `te-slide` | **SL-2** | スライド | two positions |
+| `te-leds` | **LD-8** | インジケーター | a row of 8 LEDs |
+| `te-meter` | **VU-10** | メーター | a 10-segment VU ladder |
 | `te-dpad` | **DP-5** | 十字キー | 4 directions + OK = 5 |
 | `te-display` | **DS-8** | ディスプレイ | 8-segment-ish screen |
 | `te-mini-display` | **DS-2** | ミニ | small sibling of DS-8 |

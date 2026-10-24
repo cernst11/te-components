@@ -26,6 +26,9 @@ export const MODELS = {
   selector: { type: "te-selector", model: "SW-5", subtitle: "セレクター", name: "Selector" },
   pads: { type: "te-pads", model: "PD-16", subtitle: "パッド", name: "Pads" },
   segment: { type: "te-segment", model: "SG-7", subtitle: "セグメント", name: "Segment" },
+  slide: { type: "te-slide", model: "SL-2", subtitle: "スライド", name: "Slide Switch" },
+  leds: { type: "te-leds", model: "LD-8", subtitle: "インジケーター", name: "LED Strip" },
+  meter: { type: "te-meter", model: "VU-10", subtitle: "メーター", name: "Meter" },
 } as const;
 
 declare global {

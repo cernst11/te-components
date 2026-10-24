@@ -90,6 +90,16 @@ function initialStates(): Record<string, HassEntity> {
       remaining: "0:07:42",
     }),
     ent("script.goodnight", "off", { friendly_name: "Goodnight" }),
+    ent("lock.front_door", "locked", { friendly_name: "Front Door" }),
+    ent("cover.garage_door", "closed", { friendly_name: "Garage", device_class: "garage" }),
+    ent("binary_sensor.front_door", "off", { friendly_name: "Front", device_class: "door" }),
+    ent("binary_sensor.back_door", "on", { friendly_name: "Back", device_class: "door" }),
+    ent("binary_sensor.kitchen_window", "off", { friendly_name: "Kitchen", device_class: "window" }),
+    ent("binary_sensor.hall_motion", "on", { friendly_name: "Hall", device_class: "motion" }),
+    ent("binary_sensor.washer_leak", "off", { friendly_name: "Leak", device_class: "moisture" }),
+    ent("person.alex", "home", { friendly_name: "Alex" }),
+    ent("person.sam", "not_home", { friendly_name: "Sam" }),
+    ent("sensor.phone_battery", "76", { friendly_name: "Phone", unit_of_measurement: "%", device_class: "battery" }),
     ent("script.leave_home", "off", { friendly_name: "Leave Home" }),
     ent("input_number.bpm", "120", { friendly_name: "BPM", min: 60, max: 180, step: 1 }),
     ent("sensor.temperature", "21.4", { friendly_name: "Temperature", unit_of_measurement: "°C" }),
@@ -158,7 +168,7 @@ export class MockHass {
       if (this.states[id]) this.patch(id, (num(id) + (Math.random() - 0.5) * step).toFixed(decimals));
     };
     drift("sensor.outdoor_temperature", 0.2, 1);
-    drift("sensor.power", 60, 0);
+    drift("sensor.power", 260, 0);
     this.publish();
   }
 
@@ -211,6 +221,15 @@ export class MockHass {
   private publish() {
     const h = this.snapshot();
     this.subs.forEach((fn) => fn(h));
+  }
+
+  /** A state change that lands later (locks and garage doors take a moment). */
+  private later(fn: () => void, ms: number) {
+    setTimeout(() => {
+      this.states = { ...this.states };
+      fn();
+      this.publish();
+    }, ms);
   }
 
   private patch(id: string, state?: string, attrs: Record<string, unknown> = {}) {
@@ -278,6 +297,18 @@ export class MockHass {
         return this.patch(id, now());
       case "media_player.select_source":
         return this.patch(id, undefined, { source: d.source, app_name: d.source });
+      case "lock.lock":
+      case "lock.unlock": {
+        const lock = service === "lock";
+        this.later(() => this.patch(id, lock ? "locked" : "unlocked"), 1200);
+        return this.patch(id, lock ? "locking" : "unlocking");
+      }
+      case "cover.open_cover":
+      case "cover.close_cover": {
+        const open = service === "open_cover";
+        this.later(() => this.patch(id, open ? "open" : "closed", { current_position: open ? 100 : 0 }), 2500);
+        return this.patch(id, open ? "opening" : "closing");
+      }
       case "climate.set_hvac_mode":
         return this.patch(id, d.hvac_mode);
       case "input_select.select_option":

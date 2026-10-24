@@ -80,6 +80,46 @@ export const STORIES: Story[] = [
     ],
   },
   {
+    model: MODELS.slide,
+    blurb: "Slide all the way across to commit; let go early and it springs back. Locks, garage doors and valves pass through locking/opening (LED blinks); the safe end lights white, the open end orange.",
+    variants: [
+      { name: "Front door lock", config: { type: t("te-slide"), entity: "lock.front_door", label: "FRONT DOOR" } },
+      { name: "Garage door", config: { type: t("te-slide"), entity: "cover.garage_door", label: "GARAGE" } },
+      { name: "Switch (black)", config: { type: t("te-slide"), entity: "switch.fx_2", label: "PUMP", body: "black", tile: true } },
+    ],
+  },
+  {
+    model: MODELS.leds,
+    blurb: "Status LEDs. Lit means open / unlocked / detected / home, per domain. Leaks and alarms blink. `color: neutral` for plain status. Tap for more-info.",
+    variants: [
+      {
+        name: "Doors, windows, motion",
+        width: 340,
+        config: {
+          type: t("te-leds"),
+          label: "OPENINGS",
+          summary: "OPEN",
+          entities: ["binary_sensor.front_door", "binary_sensor.back_door", "binary_sensor.kitchen_window", "lock.front_door", "cover.garage_door", { entity: "binary_sensor.hall_motion", label: "Motion" }],
+        },
+      },
+      {
+        name: "Presence (neutral) + leak",
+        width: 240,
+        config: { type: t("te-leds"), label: "HOME", entities: [{ entity: "person.alex", color: "neutral" }, { entity: "person.sam", color: "neutral" }, { entity: "binary_sensor.washer_leak" }] },
+      },
+    ],
+  },
+  {
+    model: MODELS.meter,
+    blurb: "Read-only level meter. Bar: LED segments in a screen window (follows `screen`), accent above `warn`, peak hold. Needle: analog VU with an accent arc above `warn`.",
+    variants: [
+      { name: "Power bar, warn 1.2kW", width: 300, config: { type: t("te-meter"), entity: "sensor.power", label: "POWER", max: 2000, warn: 1200, segments: 16 } },
+      { name: "CO2 needle", width: 220, config: { type: t("te-meter"), entity: "sensor.co2", label: "CO2", style: "needle", min: 400, max: 1600, warn: 1000, unit: "ppm", segments: 12 } },
+      { name: "Battery, vertical LCD", config: { type: t("te-meter"), entity: "sensor.phone_battery", label: "PHONE", orientation: "vertical", screen: "lcd", segments: 10 } },
+      { name: "Volume needle", width: 220, config: { type: t("te-meter"), entity: "media_player.living_room", label: "VOL", style: "needle", warn: 0.8 } },
+    ],
+  },
+  {
     model: MODELS.pads,
     blurb: "K.O. II pads for scenes, scripts and switches. Scenes run scene.turn_on and the last one activated stays lit; switches toggle and light while on.",
     variants: [
