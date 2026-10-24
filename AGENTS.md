@@ -30,9 +30,9 @@ src/
     actions.ts          HA-standard action runner (+ cycle-source, mute, "{{ value }}" substitution)
     hold.ts             HoldGesture (hold-to-fire / hold-to-confirm)
     history.ts          recorder history via hass.callWS (history/history_during_period) + time bucketing
-    modal.ts            TeModal: base for light dialogs (backdrop, Escape, header, horizontal faders via trackDrag)
+    modal.ts            TeModal: base for dialogs (backdrop, Escape closes topmost only, header, faders via trackDrag)
     throttle.ts         trailing-edge throttle
-    child-cards.ts      hui-card children for panel/group
+    child-cards.ts      hui-card children + shared row layout (buildRows/renderRows/rowStyles) for panel/popup
     form.ts             getConfigForm() schema helpers (HA visual editor)
     entity.ts           pickEntity (stub configs), isToggleable
   theme/tokens.ts       ALL design tokens incl. lighting/elevation; black body via :host([data-body=black])

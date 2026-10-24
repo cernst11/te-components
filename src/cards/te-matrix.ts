@@ -44,7 +44,7 @@ interface MatrixConfig extends BaseConfig {
 }
 
 /** States that mean "not running" for appliances, unless `active_state` says otherwise. */
-const INACTIVE = ["off", "idle", "standby", "unavailable", "unknown", "paused", "finished", "complete", "completed", "done", "ready", "stop", "stopped", "end"];
+const INACTIVE = ["off", "idle", "standby", "unavailable", "unknown", "paused", "finished", "complete", "completed", "done", "ready", "stop", "stopped", "end", "disconnected", "not_charging", "no_power", "parked"];
 const HISTORY_REFRESH_MS = 5 * 60_000;
 
 /** Seconds left from a sensor that reports minutes/hours/seconds, "h:mm[:ss]", or a finish timestamp. */
@@ -322,14 +322,16 @@ export class TeMatrix extends TeBaseCard<MatrixConfig> {
     const st = this.stateObj();
     const pct = toNumber(st?.attributes.percentage);
     const intensity = pct !== undefined ? pct / 100 : /spin/i.test(status) ? 1 : 0.5;
-    ANIMATIONS[c.animation](b, { x0: 1, y0: 10, x1: W - 2, y1: animBottom }, { t: this.t, active, intensity });
+    ANIMATIONS[c.animation](b, { x0: 1, y0: 10, x1: W - 2, y1: animBottom }, { t: this.t, active, intensity, status, level: progress === undefined ? undefined : progress / 100 });
 
     if (progress !== undefined) {
       const segs = Math.floor((W - 1) / 4);
       const lit = Math.round((Math.max(0, Math.min(100, progress)) / 100) * segs);
       for (let i = 0; i < segs; i++) b.fillRect(1 + i * 4, barY, 3 + i * 4, barY + 1, i < lit ? LIT : DIM);
     }
-    const right = progress !== undefined ? `${Math.round(progress)}%` : "";
+    // the % readout yields to the status when both don't fit (the bar still shows progress)
+    let right = progress !== undefined ? `${Math.round(progress)}%` : "";
+    if (right && DotBuffer.textWidth(status) + DotBuffer.textWidth(right) + 3 > W - 2) right = "";
     if (right) b.text(right, W - 1 - DotBuffer.textWidth(right), footer, LIT);
     b.text(b.fitText(status, W - 2 - (right ? DotBuffer.textWidth(right) + 3 : 0)), 1, footer, active ? LIT : DIM);
   }

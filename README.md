@@ -8,6 +8,7 @@ them in.
 |---|---|---|
 | **CH-1** シャーシ | `custom:te-panel` | Device chassis: screws, model name, katakana subtitle, rows of cards |
 | **GR-2** グループ | `custom:te-group` | Several modules on one shared tile |
+| **PP-3** ポップアップ | `custom:te-popup` | A key that opens a dialog holding any cards |
 | **KN-3** ノブ | `custom:te-knob` | Rotary knob |
 | **FD-6** フェーダー | `custom:te-fader` | Fader with LED ladder |
 | **DL-7** ダイヤル | `custom:te-dial` | Platter dial with hub screen |
@@ -232,7 +233,7 @@ unit: "°"
 ```yaml
 type: custom:te-matrix
 mode: appliance
-animation: washer  # washer | dryer | dishwasher | fan
+animation: washer  # washer | dryer | dishwasher | fan | car
 entity: sensor.washer_status
 label: WASHER
 remaining_entity: sensor.washer_remaining   # minutes, "h:mm:ss", or a finish timestamp
@@ -251,6 +252,20 @@ progress_entity: sensor.washer_progress     # percent
 | `tap_action` | `more-info` | |
 
 `fan` spins at the fan's `percentage`; the washer spins fast when the status contains `spin`.
+
+`car` is an EV side profile. While charging (any active state), a cable runs from the wall charger to the
+charge port with pulses flowing in; if the status contains `driving`, the wheels turn and the road scrolls.
+`progress_entity` (battery %) fills the battery pack along the floor.
+
+```yaml
+type: custom:te-matrix
+mode: appliance
+animation: car
+entity: sensor.model_3_charging            # charging / complete / disconnected …
+label: MODEL 3
+progress_entity: sensor.model_3_battery
+remaining_entity: sensor.model_3_time_to_full
+```
 
 </details>
 
@@ -273,6 +288,37 @@ The value line shows the current white, e.g. `2700K`.
 | `min` / `max` | from the light | Override the kelvin range |
 
 Knobs and faders can also drive color temperature: `attribute: color_temp_kelvin` on a light entity.
+
+</details>
+
+<details><summary><b>PP-3 popup</b> — <code>custom:te-popup</code></summary>
+
+A key on the dashboard; tapping it opens a dialog with any cards inside, laid out in rows like CH-1.
+Close with the ×, Escape or the backdrop. Dialogs opened from inside it (like CL-16) stack on top.
+
+```yaml
+type: custom:te-popup
+label: Car
+icon: mdi:car-electric
+title: Model 3
+cards:
+  - type: custom:te-matrix
+    mode: appliance
+    animation: car
+    entity: sensor.model_3_charging
+  - - type: custom:te-mini-display
+      entity: sensor.model_3_battery
+    - type: custom:te-mini-display
+      entity: sensor.model_3_time_to_full
+```
+
+| Option | Default | |
+|---|---|---|
+| `label`, `icon`, `glyph`, `entity` | `More` | Style the default trigger (a grey K.O. key; `entity` lights its LED) |
+| `trigger` | K.O. key | Any card config to use as the trigger instead; its own tap action is disabled |
+| `title` | `label` | Dialog heading |
+| `width` / `gap` | `420` / `8` | Dialog width and card spacing in px |
+| `body` | inherited | `silver` or `black`; passed to the cards inside |
 
 </details>
 

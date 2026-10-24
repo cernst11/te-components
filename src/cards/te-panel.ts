@@ -2,7 +2,7 @@ import { css, html, type PropertyValues } from "lit";
 import { classMap } from "lit/directives/class-map.js";
 import { styleMap } from "lit/directives/style-map.js";
 import { TeBaseCard, type BaseConfig } from "../core/base-card";
-import { createChildCard, forwardHass } from "../core/child-cards";
+import { buildRows, forwardHass, renderRows, rowStyles, type Rows } from "../core/child-cards";
 import { MODELS, registerCard } from "../registry";
 import { sharedStyles } from "../theme/shared";
 
@@ -26,10 +26,11 @@ interface PanelConfig extends BaseConfig {
 
 /** CH-1 — device chassis: screws, model name, orange katakana subtitle, rows of child cards. */
 export class TePanel extends TeBaseCard<PanelConfig> {
-  private rows: HTMLElement[][] = [];
+  private rows: Rows = [];
 
   static styles = [
     sharedStyles,
+    rowStyles,
     css`
       .chassis {
         position: relative;
@@ -98,19 +99,6 @@ export class TePanel extends TeBaseCard<PanelConfig> {
       .caption:empty {
         display: none;
       }
-      .body {
-        display: grid;
-        gap: var(--gap);
-      }
-      .row {
-        display: grid;
-        grid-auto-flow: column;
-        grid-auto-columns: 1fr;
-        gap: var(--gap);
-      }
-      .item {
-        min-width: 0;
-      }
     `,
   ];
 
@@ -121,7 +109,7 @@ export class TePanel extends TeBaseCard<PanelConfig> {
   protected normalizeConfig(c: Record<string, any>): PanelConfig {
     const tabs: Tab[] = (c.tabs ?? []).map((t: any) => (typeof t === "string" ? { label: t, color: "light" } : { color: "light", ...t }));
     const cfg: PanelConfig = { ...c, type: c.type, title: c.title ?? "", caption: c.caption ?? "", subtitle: c.subtitle ?? "", tabs, faceplate: c.faceplate === true, gap: c.gap ?? 8, cards: c.cards ?? [] };
-    this.rows = cfg.cards.map((entry) => (Array.isArray(entry) ? entry : [entry]).map((child) => createChildCard(child, this.hass)));
+    this.rows = buildRows(cfg.cards, this.hass);
     return cfg;
   }
 
@@ -156,11 +144,7 @@ export class TePanel extends TeBaseCard<PanelConfig> {
           <div class="title"><span>${c.title}</span><span class="caption">${c.caption}</span></div>
           <div class="subtitle">${c.subtitle}</div>
         </header>
-        <div class="body">
-          ${this.rows.map((row) =>
-            row.length === 1 ? html`<div class="item">${row[0]}</div>` : html`<div class="row">${row.map((el) => html`<div class="item">${el}</div>`)}</div>`,
-          )}
-        </div>
+        ${renderRows(this.rows)}
       </div>
     `;
   }

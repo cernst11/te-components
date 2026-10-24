@@ -29,15 +29,25 @@ export abstract class TeModal extends LitElement {
     this.dispatchEvent(new Event("closed"));
   }
 
-  private onKey = (e: KeyboardEvent) => e.key === "Escape" && this.close();
+  /** Open dialogs, topmost last: Escape closes only the top one (a CL-16 dialog opened inside a PP-3 popup). */
+  private static stack: TeModal[] = [];
+
+  private onKey = (e: KeyboardEvent) => {
+    if (e.key === "Escape" && TeModal.stack[TeModal.stack.length - 1] === this) {
+      e.stopImmediatePropagation();
+      this.close();
+    }
+  };
 
   connectedCallback() {
     super.connectedCallback();
+    TeModal.stack.push(this);
     window.addEventListener("keydown", this.onKey);
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
+    TeModal.stack = TeModal.stack.filter((m) => m !== this);
     window.removeEventListener("keydown", this.onKey);
   }
 
@@ -126,7 +136,7 @@ export abstract class TeModal extends LitElement {
         }
       }
       .dialog {
-        width: min(94vw, 420px);
+        width: min(94vw, var(--dialog-w, 420px));
         max-height: 92vh;
         overflow-y: auto;
         display: flex;

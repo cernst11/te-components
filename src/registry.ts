@@ -22,6 +22,7 @@ export const MODELS = {
   colorPicker: { type: "te-color-picker", model: "CL-16", subtitle: "カラー", name: "Color Picker" },
   colorTemp: { type: "te-color-temp", model: "CT-27", subtitle: "色温度", name: "Color Temp" },
   matrix: { type: "te-matrix", model: "DS-64", subtitle: "マトリクス", name: "Matrix" },
+  popup: { type: "te-popup", model: "PP-3", subtitle: "ポップアップ", name: "Popup" },
 } as const;
 
 declare global {

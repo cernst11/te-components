@@ -121,6 +121,16 @@ export const STORIES: Story[] = [
       },
       { name: "Dishwasher (VFD blue)", width: 300, config: { type: t("te-matrix"), mode: "appliance", animation: "dishwasher", entity: "sensor.dishwasher_status", label: "DISHES", remaining_entity: "sensor.dishwasher_end_time", screen: "vfd-blue" } },
       { name: "Fan (speed from %)", width: 300, config: { type: t("te-matrix"), mode: "appliance", animation: "fan", entity: "fan.bedroom", label: "BEDROOM", screen: "oled" } },
+      {
+        name: "EV charging",
+        width: 300,
+        config: { type: "custom:te-matrix", mode: "appliance", animation: "car", entity: "sensor.model_3_charging", label: "MODEL 3", remaining_entity: "sensor.model_3_time_to_full", progress_entity: "sensor.model_3_battery" },
+      },
+      {
+        name: "EV driving (OLED)",
+        width: 300,
+        config: { type: "custom:te-matrix", mode: "appliance", animation: "car", entity: "sensor.model_3_shift_state", label: "MODEL 3", progress_entity: "sensor.model_3_battery", screen: "oled" },
+      },
       { name: "Dryer, idle", width: 300, config: { type: t("te-matrix"), mode: "appliance", animation: "dryer", entity: "sensor.dryer_status", label: "DRYER" } },
     ],
   },
@@ -168,6 +178,49 @@ export const STORIES: Story[] = [
             { type: t("te-knob"), entity: "media_player.living_room", cap: "orange", size: "m", label: "VOL" },
             { type: t("te-knob"), entity: "light.kitchen", cap: "white", size: "m", label: "LIGHT" },
             { type: t("te-knob"), entity: "fan.bedroom", cap: "black", size: "m", label: "FAN" },
+          ],
+        },
+      },
+    ],
+  },
+  {
+    model: MODELS.popup,
+    blurb: "A key on the dashboard that opens a dialog of any cards, in rows like CH-1. Escape, the × or the backdrop close it.",
+    variants: [
+      {
+        name: "Remote in a popup",
+        config: {
+          type: t("te-popup"),
+          label: "Remote",
+          icon: "mdi:remote-tv",
+          title: "TV remote",
+          body: "black",
+          width: 360,
+          cards: [
+            { type: t("te-dpad"), entity: "remote.tv" },
+            [
+              { type: t("te-button"), glyph: "play", label: "PLAY", entity: "media_player.living_room", tap_action: { action: "perform-action", perform_action: "media_player.media_play_pause" }, active_state: "playing" },
+              { type: t("te-knob"), entity: "media_player.living_room", cap: "orange", size: "m", label: "VOL" },
+            ],
+          ],
+        },
+      },
+      {
+        name: "Lights, custom trigger",
+        width: 220,
+        config: {
+          type: t("te-popup"),
+          title: "Living lights",
+          trigger: { type: t("te-mini-display"), entity: "light.living_room", icon: "lamp", compact: true },
+          cards: [
+            [
+              { type: t("te-fader"), entity: "light.living_room", sublabel: "LIVING" },
+              { type: t("te-fader"), entity: "light.kitchen", sublabel: "KITCHEN" },
+            ],
+            [
+              { type: t("te-color-picker"), entity: "light.living_room", label: "COLOR" },
+              { type: t("te-color-temp"), entity: "light.ceiling", label: "WHITE" },
+            ],
           ],
         },
       },

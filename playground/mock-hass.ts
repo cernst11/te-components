@@ -59,6 +59,10 @@ function initialStates(): Record<string, HassEntity> {
     ent("sensor.dryer_status", "off", { friendly_name: "Dryer" }),
     ent("sensor.dishwasher_status", "main_wash", { friendly_name: "Dishwasher" }),
     ent("sensor.dishwasher_end_time", new Date(Date.now() + 74 * 60_000).toISOString(), { friendly_name: "Dishwasher End", device_class: "timestamp" }),
+    ent("sensor.model_3_charging", "charging", { friendly_name: "Model 3 Charging" }),
+    ent("sensor.model_3_battery", "64", { friendly_name: "Model 3 Battery", unit_of_measurement: "%", device_class: "battery" }),
+    ent("sensor.model_3_time_to_full", "1.6", { friendly_name: "Model 3 Time to Full", unit_of_measurement: "h" }),
+    ent("sensor.model_3_shift_state", "driving", { friendly_name: "Model 3 Shift State" }),
     ent("sensor.power", "412", { friendly_name: "Power", unit_of_measurement: "W" }),
     ent("switch.coffee_machine", "off", { friendly_name: "Coffee Machine" }),
     ...Object.keys(SCENES).map((id) => ent(id, "2026-10-24T18:00:00", { friendly_name: id.split(".")[1] })),
@@ -126,6 +130,12 @@ export class MockHass {
         this.patch("sensor.washer_progress", String(progress));
         this.patch("sensor.washer_status", rem === 0 ? "off" : progress < 55 ? "wash" : progress < 82 ? "rinse" : "spin");
       }
+    }
+    if (this.states["sensor.model_3_charging"]?.state === "charging") {
+      const level = Math.min(100, num("sensor.model_3_battery") + 1);
+      this.patch("sensor.model_3_battery", String(level));
+      this.patch("sensor.model_3_time_to_full", ((100 - level) * 0.045).toFixed(2));
+      if (level >= 100) this.patch("sensor.model_3_charging", "complete");
     }
     const drift = (id: string, step: number, decimals: number) => {
       if (this.states[id]) this.patch(id, (num(id) + (Math.random() - 0.5) * step).toFixed(decimals));

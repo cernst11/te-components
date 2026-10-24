@@ -127,6 +127,7 @@ editor header, playground and as the default panel title. Element names stay `te
 |---|---|---|---|
 | `te-panel` | **CH-1** | シャーシ (chassis) | the chassis everything mounts in |
 | `te-group` | **GR-2** | グループ | groups ≥2 modules |
+| `te-popup` | **PP-3** | ポップアップ | pops up; 3 ways to close it |
 | `te-knob` | **KN-3** | ノブ | — |
 | `te-fader` | **FD-6** | フェーダー | nod to TX-6's six faders |
 | `te-dial` | **DL-7** | ダイヤル | nod to TP-7's platter |

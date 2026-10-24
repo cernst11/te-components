@@ -144,6 +144,31 @@ const utility = {
       },
     ],
     { type: "custom:te-matrix", entity: "sensor.power", label: "POWER", style: "bars", screen: "lcd", hours: 12, aspect: 0.6, dots: 72 },
+    [
+      {
+        type: "custom:te-popup",
+        label: "Car",
+        icon: "mdi:car-electric",
+        title: "Model 3",
+        width: 380,
+        cards: [
+          {
+            type: "custom:te-matrix",
+            mode: "appliance",
+            animation: "car",
+            entity: "sensor.model_3_charging",
+            label: "MODEL 3",
+            remaining_entity: "sensor.model_3_time_to_full",
+            progress_entity: "sensor.model_3_battery",
+          },
+          [
+            { type: "custom:te-mini-display", entity: "sensor.model_3_battery", icon: "battery", label: "Battery", compact: true, screen: "oled" },
+            { type: "custom:te-mini-display", entity: "sensor.model_3_time_to_full", icon: "plug", label: "To full", compact: true, screen: "oled" },
+          ],
+        ],
+      },
+      { type: "custom:te-toggle", entity: "switch.coffee_machine", label: "COFFEE", glyph: "I" },
+    ],
   ],
 };
 

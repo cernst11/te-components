@@ -118,6 +118,30 @@ export class DotBuffer {
     }
   }
 
+  /** Closed outline through `pts`. */
+  poly(pts: [number, number][], v: Level) {
+    pts.forEach(([x, y], i) => {
+      const [nx, ny] = pts[(i + 1) % pts.length];
+      this.line(x, y, nx, ny, v);
+    });
+  }
+
+  /** Filled polygon (even-odd, sampled at dot centers); `pattern` picks which dots to light. */
+  fillPoly(pts: [number, number][], v: Level, pattern: (x: number, y: number) => boolean = () => true) {
+    const ys = pts.map((p) => p[1]);
+    for (let y = Math.floor(Math.min(...ys)); y <= Math.ceil(Math.max(...ys)); y++) {
+      const xs: number[] = [];
+      pts.forEach(([x0, y0], i) => {
+        const [x1, y1] = pts[(i + 1) % pts.length];
+        if (y0 <= y !== y1 <= y) xs.push(x0 + ((y - y0) / (y1 - y0)) * (x1 - x0));
+      });
+      xs.sort((a, b) => a - b);
+      for (let k = 0; k + 1 < xs.length; k += 2) {
+        for (let x = Math.ceil(xs[k]); x <= Math.floor(xs[k + 1]); x++) if (pattern(x, y)) this.add(x, y, v);
+      }
+    }
+  }
+
   /** Width in dots of `text` at `scale`. */
   static textWidth(text: string, scale = 1) {
     let w = 0;

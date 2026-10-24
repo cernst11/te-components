@@ -1,5 +1,6 @@
 import "./cards/te-panel";
 import "./cards/te-group";
+import "./cards/te-popup";
 import "./cards/te-knob";
 import "./cards/te-fader";
 import "./cards/te-dial";

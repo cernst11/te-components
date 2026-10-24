@@ -13,6 +13,10 @@ export interface AnimState {
   active: boolean;
   /** 0..1 — e.g. fan percentage, or 1 for a washer's spin cycle. */
   intensity: number;
+  /** Footer status text, upper case (e.g. "CHARGING", "DRIVING"). */
+  status: string;
+  /** 0..1 from `progress_entity` (battery level for the car), if configured. */
+  level?: number;
 }
 
 type Anim = (buf: DotBuffer, a: Area, s: AnimState) => void;
@@ -147,5 +151,123 @@ const fan: Anim = (buf, a, s) => {
   buf.disc(cx, cy, 2.2, s.active ? ACCENT : LIT);
 };
 
-export const ANIMATIONS: Record<string, Anim> = { washer, dryer, dishwasher, fan };
+/**
+ * Fastback EV side profile (Model 3-ish), front to the left. x: 0..1 of car length; y: 0 = roof, 0.33 = ground.
+ * Short hood, steep windshield, roof peak behind the driver, long sloping fastback, short tail.
+ */
+const CAR_BODY: [number, number][] = [
+  [0.02, 0.27],
+  [0.0, 0.215],
+  [0.025, 0.17],
+  [0.12, 0.15],
+  [0.33, 0.13],
+  [0.47, 0.035],
+  [0.58, 0.0],
+  [0.7, 0.015],
+  [0.82, 0.065],
+  [0.93, 0.12],
+  [0.99, 0.135],
+  [1.0, 0.2],
+  [0.985, 0.27],
+];
+const CAR_GLASS: [number, number][] = [
+  [0.37, 0.125],
+  [0.48, 0.045],
+  [0.58, 0.022],
+  [0.69, 0.033],
+  [0.8, 0.075],
+  [0.88, 0.122],
+];
+const CAR_WHEELS = [0.195, 0.8];
+const CAR_GROUND = 0.33;
+const BOLT: [number, number][] = [[2, 0], [3, 0], [1, 1], [2, 1], [0, 2], [1, 2], [2, 2], [3, 2], [1, 3], [2, 3], [0, 4], [1, 4]];
+
+const car: Anim = (buf, a, s) => {
+  const driving = s.active && /DRIV/.test(s.status);
+  const charging = s.active && !driving;
+  const w = a.x1 - a.x0;
+  const gy = a.y1 - 1;
+  // leave room for the wall charger on the right unless we're on the road
+  const L = Math.min(driving ? w * 0.92 : w * 0.76, ((gy - a.y0 - 6) / CAR_GROUND) * 0.98);
+  const cx0 = driving ? a.x0 + (w - L) / 2 : a.x0 + 1;
+  const P = ([x, y]: [number, number]): [number, number] => [cx0 + x * L, gy - CAR_GROUND * L + y * L];
+
+  // ground: scrolling road dashes when driving, a dotted floor when parked
+  if (driving) {
+    const shift = Math.floor(s.t * 24);
+    for (let x = a.x0; x <= a.x1; x++) if ((x + shift) % 6 < 3) buf.set(x, gy + 1, DIM);
+  } else buf.hline(a.x0, a.x1, gy + 1, DIM, 2);
+
+  const body = CAR_BODY.map(P);
+  buf.fillPoly(body, DIM, (x, y) => (x + y) % 2 === 0);
+  buf.fillPoly(CAR_GLASS.map(P), DIM);
+  buf.poly(body, LIT);
+  // B-pillar, door seams, door handles
+  const [bx, by] = P([0.6, 0.03]);
+  buf.vline(bx, by, P([0.6, 0.125])[1], LIT);
+  for (const dx of [0.47, 0.66]) {
+    const [x, y0] = P([dx, 0.14]);
+    buf.vline(x, y0, P([dx, 0.25])[1], DIM);
+  }
+  buf.set(...P([0.53, 0.155]), LIT);
+  buf.set(...P([0.71, 0.155]), LIT);
+  // headlight sliver, tail light (the charge port lives behind the left tail light)
+  buf.hline(P([0.02, 0.17])[0], P([0.07, 0.17])[0], P([0.02, 0.17])[1], LIT);
+  buf.hline(P([0.95, 0.15])[0], P([0.995, 0.15])[0], P([0.95, 0.15])[1], ACCENT);
+
+  // battery pack along the floor: lit to the battery level
+  if (s.level !== undefined) {
+    const [x0, y] = P([0.3, 0.245]);
+    const x1 = P([0.7, 0.245])[0];
+    buf.hline(x0, x1, y, DIM);
+    buf.hline(x0, x0 + (x1 - x0) * Math.max(0, Math.min(1, s.level)), y, charging ? ACCENT : LIT);
+  }
+
+  // wheels: cut the arches, then tire, rim spokes (turning when driving) and hub
+  const r = 0.075 * L;
+  for (const wx of CAR_WHEELS) {
+    const [x, y] = P([wx, CAR_GROUND - 0.075]);
+    buf.disc(x, y, r + 1.4, 0);
+    buf.circle(x, y, r, LIT, 1.4);
+    const rot = driving ? s.t * 9 : 0.3;
+    for (let k = 0; k < 5; k++) {
+      const ang = rot + (k * Math.PI * 2) / 5;
+      buf.line(x, y, x + Math.cos(ang) * (r - 1.5), y + Math.sin(ang) * (r - 1.5), DIM);
+    }
+    buf.set(x, y, LIT);
+  }
+
+  if (driving) return;
+
+  // wall charger
+  const postX0 = Math.round(a.x1 - 6);
+  const postTop = Math.round(gy - 0.27 * L);
+  buf.rect(postX0, postTop, a.x1 - 1, gy, LIT);
+  buf.fillRect(postX0 + 2, postTop + 2, a.x1 - 3, postTop + 4, DIM);
+  buf.set(postX0 + 3, postTop + 7, charging ? ACCENT : DIM);
+  if (!charging) return;
+
+  // cable from the charger, sagging to the floor, into the port; pulses run toward the car
+  const [px, py] = P([0.985, 0.155]);
+  const qx = postX0;
+  const qy = postTop + Math.round(0.14 * L);
+  const ctrlX = (px + qx) / 2;
+  const ctrlY = gy + 3;
+  const at = (t: number): [number, number] => [
+    (1 - t) ** 2 * px + 2 * (1 - t) * t * ctrlX + t ** 2 * qx,
+    Math.min(gy, (1 - t) ** 2 * py + 2 * (1 - t) * t * ctrlY + t ** 2 * qy),
+  ];
+  for (let i = 0; i <= 40; i++) buf.add(...at(i / 40), LIT);
+  for (let k = 0; k < 3; k++) {
+    const t = 1 - ((s.t * 0.7 + k / 3) % 1);
+    buf.set(...at(t), ACCENT);
+  }
+  // blinking bolt over the roof
+  if (Math.floor(s.t * 2) % 2 === 0) {
+    const [rx, ry] = P([0.58, 0]);
+    for (const [dx, dy] of BOLT) buf.set(rx - 2 + dx, ry - 7 + dy, ACCENT);
+  }
+};
+
+export const ANIMATIONS: Record<string, Anim> = { washer, dryer, dishwasher, fan, car };
 export const ANIMATION_NAMES = Object.keys(ANIMATIONS);
