@@ -49,6 +49,7 @@ extruding the body color with a white + dark shadow pair; real objects are lit d
 
 Rules:
 - **No white outer shadows.** Highlights only ever live *on* the object (inset/bevel), never cast onto the body.
+  The one exception is a crisp 1px chamfer line on the rim of a cutout (screens, grooves), since that is an edge.
 - Shadow length scales with physical height: LED/print = 0, key = low, knob cap = high.
 - Pressed = cast shadow collapses to contact shadow only + face darkens ~3%; key travels 1px down.
 - All of this lives in **elevation tokens** (`--te-elev-0..3`, `--te-sunk-1..2`) so themes (black body)
@@ -177,4 +178,5 @@ New components pick the next unused code; numbers should carry a small joke or r
 6. **Config:** breaking changes allowed — move to HA-standard `tap_action` / `hold_action` and
    `action: perform-action` objects; drop ad-hoc `domain/service/value_key` where HA has a standard.
 
-Still open: font family (system / bundled / HA theme), panel tab strip as decoration vs functional.
+Still open: panel tab strip is decoration-only for now (could become functional tabs later).
+Font: system stack by default, overridable via the `te-font-family` theme variable.

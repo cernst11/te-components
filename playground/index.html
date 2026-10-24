@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TE Components Playground</title>
+    <link rel="stylesheet" href="./playground.css" />
+  </head>
+  <body>
+    <aside class="side">
+      <div class="brand">
+        <div class="brand-title">TE—COMPONENTS</div>
+        <div class="brand-sub">プレイグラウンド</div>
+      </div>
+      <nav id="nav"></nav>
+      <div class="controls">
+        <label>BODY
+          <select id="body"><option value="">per card</option><option>silver</option><option>black</option></select>
+        </label>
+        <label>SCREEN
+          <select id="screen"><option value="">per card</option><option>vfd-amber</option><option>vfd-blue</option><option>oled</option><option>lcd</option></select>
+        </label>
+        <label>BACKDROP
+          <select id="backdrop"><option value="light">light</option><option value="dark">dark</option><option value="ha">ha default</option></select>
+        </label>
+        <button id="reset">RESET STATE</button>
+      </div>
+    </aside>
+    <main id="main"></main>
+    <section class="log">
+      <div class="log-head">SERVICE CALLS <button id="clear">CLEAR</button></div>
+      <ol id="log"></ol>
+    </section>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

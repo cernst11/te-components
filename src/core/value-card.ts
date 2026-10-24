@@ -1,0 +1,128 @@
+import { TeBaseCard, type BaseConfig } from "./base-card";
+import { Throttle } from "./throttle";
+import { formatValue, fracOf, resolveValue, valueAt, writeValue, type ResolvedValue, type ValueConfig } from "./value";
+import { clamp01 } from "../utils/math";
+
+export interface ValueCardConfig extends BaseConfig, ValueConfig {
+  entity: string;
+}
+
+export interface DragStart {
+  x: number;
+  y: number;
+  frac: number;
+  rect: DOMRect;
+}
+
+/** How long a locally-set value is shown before deferring back to HA state. */
+const LOCAL_HOLD_MS = 1500;
+
+/**
+ * Base for controls bound to one numeric value. Handles pointer drag, keyboard, wheel,
+ * throttled writes and ARIA. Subclasses implement `dragFrac` (pointer → 0..1).
+ */
+export abstract class TeValueCard<C extends ValueCardConfig> extends TeBaseCard<C> {
+  static properties = {
+    _local: { state: true },
+  };
+
+  /** Fraction shown while dragging / until HA reports the new value. */
+  declare _local: number | null;
+  protected dragging = false;
+  /** Absolute controls (fader, dial) jump to the pointer; relative ones (knob) don't. */
+  protected absoluteDrag = false;
+
+  private _drag?: DragStart & { id: number; moved: boolean };
+  private _release?: ReturnType<typeof setTimeout>;
+  private _throttle = new Throttle<number>(120, (v) => {
+    if (this.hass && this._config) writeValue(this, this.hass, this._config, v);
+  });
+
+  constructor() {
+    super();
+    this._local = null;
+  }
+
+  protected abstract dragFrac(ev: PointerEvent, start: DragStart): number;
+
+  protected get resolved(): ResolvedValue {
+    return resolveValue(this.hass, this._config!);
+  }
+
+  protected currentFrac(r = this.resolved): number {
+    if (this._local !== null) return this._local;
+    return r.value === null ? 0 : fracOf(r, r.value);
+  }
+
+  protected displayValue(r = this.resolved): string {
+    return formatValue(r, this._local !== null ? valueAt(r, this._local) : r.value);
+  }
+
+  private setLocal(frac: number, final: boolean) {
+    const r = this.resolved;
+    this._local = clamp01(frac);
+    const v = valueAt(r, this._local);
+    if (final) this._throttle.flush(v);
+    else this._throttle.push(v);
+    clearTimeout(this._release);
+    if (!this.dragging) this._release = setTimeout(() => (this._local = null), LOCAL_HOLD_MS);
+  }
+
+  protected onPointerDown = (ev: PointerEvent) => {
+    if (ev.button !== 0 || !this.hass) return;
+    const el = ev.currentTarget as HTMLElement;
+    el.setPointerCapture(ev.pointerId);
+    this.dragging = true;
+    this._drag = { id: ev.pointerId, x: ev.clientX, y: ev.clientY, frac: this.currentFrac(), rect: el.getBoundingClientRect(), moved: false };
+    if (this.absoluteDrag) this.setLocal(this.dragFrac(ev, this._drag), false);
+  };
+
+  protected onPointerMove = (ev: PointerEvent) => {
+    const d = this._drag;
+    if (!d || d.id !== ev.pointerId) return;
+    if (!d.moved && Math.hypot(ev.clientX - d.x, ev.clientY - d.y) < 3) return;
+    d.moved = true;
+    this.setLocal(this.dragFrac(ev, d), false);
+  };
+
+  protected onPointerUp = (ev: PointerEvent) => {
+    const d = this._drag;
+    if (!d || d.id !== ev.pointerId) return;
+    this._drag = undefined;
+    this.dragging = false;
+    if (d.moved || this.absoluteDrag) this.setLocal(this.dragFrac(ev, d), true);
+    else this.requestUpdate();
+  };
+
+  private nudge(to: (cur: number, r: ResolvedValue) => number) {
+    const r = this.resolved;
+    const cur = this._local !== null ? valueAt(r, this._local) : (r.value ?? r.min);
+    this.setLocal(fracOf(r, to(cur, r)), false);
+  }
+
+  protected onKeyDown = (ev: KeyboardEvent) => {
+    const big = (r: ResolvedValue) => Math.max(r.step, (r.max - r.min) / 10);
+    const moves: Record<string, (cur: number, r: ResolvedValue) => number> = {
+      ArrowUp: (c, r) => c + r.step,
+      ArrowRight: (c, r) => c + r.step,
+      ArrowDown: (c, r) => c - r.step,
+      ArrowLeft: (c, r) => c - r.step,
+      PageUp: (c, r) => c + big(r),
+      PageDown: (c, r) => c - big(r),
+      Home: (_, r) => r.min,
+      End: (_, r) => r.max,
+    };
+    const move = moves[ev.key];
+    if (!move) return;
+    ev.preventDefault();
+    this.nudge(move);
+  };
+
+  /** Wheel only adjusts a focused control, so dashboards still scroll normally. */
+  protected onWheel = (ev: WheelEvent) => {
+    if (!this.shadowRoot?.activeElement || ev.deltaY === 0) return;
+    ev.preventDefault();
+    const dir = ev.deltaY < 0 ? 1 : -1;
+    this.nudge((c, r) => c + dir * r.step);
+  };
+}
