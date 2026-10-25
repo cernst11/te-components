@@ -4,6 +4,8 @@ Teenage Engineering-inspired custom cards for Home Assistant: knobs, faders, a T
 TX-6 toggles, K.O.-style keys, a D-pad, and VFD / OLED / LCD pixel screens, plus a chassis card to mount
 them in.
 
+![Example dashboard: a black CH-1 TV remote and a LIGHTS panel with mini displays, faders and keys](https://raw.githubusercontent.com/cernst11/te-components/master/docs/images/dashboard.png)
+
 | Model | Card | What it is |
 |---|---|---|
 | **CH-1** シャーシ | `custom:te-panel` | Device chassis: screws, model name, katakana subtitle, rows of cards |
