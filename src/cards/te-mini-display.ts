@@ -128,7 +128,7 @@ export class TeMiniDisplay extends TeBaseCard<MiniDisplayConfig> {
     let m = full;
     let strip = this.strips.get(text, m, theme.fg, theme);
     // without a marquee, step the font down until the text fits (narrow screens), keeping it centred on its line
-    for (let sz = size * 0.8; !pixel && !this._config!.scroll && strip.width > availW && sz >= 0.7; sz *= 0.8) {
+    for (let sz = size * 0.8; !pixel && !this._config!.scroll && strip.width > availW && sz >= 0.55; sz *= 0.8) {
       m = metrics(sz);
       strip = this.strips.get(text, m, theme.fg, theme);
     }
