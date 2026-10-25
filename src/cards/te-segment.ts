@@ -21,6 +21,8 @@ interface SegmentConfig extends BaseConfig {
   clock: boolean;
   seconds: boolean;
   hour12: boolean;
+  /** Blink the colon each second (clock, running timer); false keeps it lit. */
+  blink: boolean;
   attribute?: string;
   unit?: string;
   decimals?: number;
@@ -79,7 +81,7 @@ export class TeSegment extends TeBaseCard<SegmentConfig> {
       schema: [
         { ...F.entity(), required: false },
         F.text("label"),
-        F.grid(F.bool("clock"), F.bool("seconds"), F.bool("hour12")),
+        F.grid(F.bool("clock"), F.bool("seconds"), F.bool("hour12"), F.bool("blink")),
         F.grid(F.screen(), F.num("height", 1), F.num("digits", 1)),
         F.attribute(),
         F.grid(F.text("unit"), F.num("decimals", 1)),
@@ -97,6 +99,7 @@ export class TeSegment extends TeBaseCard<SegmentConfig> {
       clock: c.clock === true,
       seconds: c.seconds === true,
       hour12: c.hour12 === true,
+      blink: c.blink !== false,
       screen: screenName(c.screen),
       height: c.height ?? 96,
       tap_action: c.tap_action ?? (c.entity ? { action: "more-info" } : { action: "none" }),
@@ -115,7 +118,7 @@ export class TeSegment extends TeBaseCard<SegmentConfig> {
   /** Text for the digits, the small unit beside them, and whether the colon is lit this frame. */
   private content(): { text: string; unit: string; colon: boolean } {
     const c = this._config!;
-    const blink = Math.floor(Date.now() / 500) % 2 === 0;
+    const blink = !c.blink || Math.floor(Date.now() / 500) % 2 === 0;
     if (c.clock) {
       const d = new Date();
       let h = d.getHours();

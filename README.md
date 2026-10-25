@@ -377,6 +377,7 @@ screen: lcd
 | Option | Default | |
 |---|---|---|
 | `clock` | `false` | Show the time instead of an entity (`seconds`, `hour12`) |
+| `blink` | `true` | Blink the colon (clock, running timer); `false` keeps it lit |
 | `digits` | content length | Fixed cell count; unused cells show unlit 8s |
 | `attribute`, `unit`, `decimals` | from the entity | |
 | `screen` | `vfd-amber` | `vfd-amber`, `vfd-blue`, `oled`, `lcd` |
