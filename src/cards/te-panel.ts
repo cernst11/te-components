@@ -140,7 +140,7 @@ export class TePanel extends TeBaseCard<PanelConfig> {
 
   render() {
     const c = this._config!;
-    const ink = (t: Tab) => (t.color === "light" ? "var(--te-ink)" : "#f4f3ef");
+    const ink = (t: Tab) => (t.color === "light" ? "var(--te-ink)" : "var(--te-ink-on-dark)");
     const bg = (t: Tab) => (t.color === "accent" ? "var(--te-accent)" : `var(--te-key-${t.color})`);
     // top screws drop below the tab strip when there is one
     const top = c.tabs.length ? 36 : 10;

@@ -160,6 +160,7 @@ editor header, playground and as the default panel title. Element names stay `te
 | `te-leds` | **LD-8** | インジケーター | a row of 8 LEDs |
 | `te-meter` | **VU-10** | メーター | a 10-segment VU ladder |
 | `te-grille` | **SP-1** | スピーカー | one speaker |
+| `te-spacer` | **BL-0** | ブランク | a blank: nothing in it |
 | `te-dpad` | **DP-5** | 十字キー | 4 directions + OK = 5 |
 | `te-display` | **DS-8** | ディスプレイ | 8-segment-ish screen |
 | `te-mini-display` | **DS-2** | ミニ | small sibling of DS-8 |

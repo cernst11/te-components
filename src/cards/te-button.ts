@@ -183,7 +183,7 @@ export class TeButton extends TeBaseCard<ButtonConfig> {
           aria-pressed=${ifDefined(active === undefined ? undefined : String(active))}
           style=${styleMap({
             "--face": `var(--te-${c.color === "accent" ? "accent" : `key-${c.color}`})`,
-            "--ink": dark ? "#f4f3ef" : "var(--te-ink)",
+            "--ink": dark ? "var(--te-ink-on-dark)" : "var(--te-ink)",
             "--hold": `${c.hold_time}ms`,
             "--te-glyph-record": c.color === "accent" ? "currentColor" : undefined,
           })}

@@ -137,6 +137,20 @@ export const STORIES: Story[] = [
     ],
   },
   {
+    model: MODELS.spacer,
+    blurb: "An empty cell: holds a column open so a row lines up with the rows around it.",
+    variants: [
+      {
+        name: "Keys pushed right",
+        width: 360,
+        config: {
+          type: t("te-group"),
+          cards: [{ type: t("te-spacer") }, { type: t("te-spacer") }, { type: t("te-button"), shape: "key", color: "grey", label: "On" }, { type: t("te-button"), shape: "key", color: "accent", label: "Off" }],
+        },
+      },
+    ],
+  },
+  {
     model: MODELS.pads,
     blurb: "K.O. II pads for scenes, scripts and switches. Scenes run scene.turn_on and the last one activated stays lit; switches toggle and light while on.",
     variants: [

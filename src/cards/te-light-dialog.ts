@@ -348,7 +348,7 @@ export class TeLightDialog extends TeModal {
         <canvas></canvas>
         <div class="puck" style=${styleMap({ left: `${50 + Math.sin(rad) * (s / 2)}%`, top: `${50 - Math.cos(rad) * (s / 2)}%`, background: color })}></div>
       </div>
-      ${this.fader("BRIGHTNESS", this._bright, `linear-gradient(90deg, #0e0e0e, ${color})`, this.brightDrag)}
+      ${this.fader("BRIGHTNESS", this._bright, `linear-gradient(90deg, var(--te-black), ${color})`, this.brightDrag)}
       ${this.slots.length
         ? html`<div>
             <div class="sublabel center">HOLD TO SAVE</div>
@@ -380,7 +380,7 @@ export class TeLightDialog extends TeModal {
     const white = kelvinCss(this._k);
     return html`
       ${this.fader("TEMPERATURE", (this._k - this.min) / range, kelvinGradient(this.min, this.max), this.kDrag, `${this._k}K`)}
-      ${this.fader("BRIGHTNESS", this._bright, `linear-gradient(90deg, #0e0e0e, ${white})`, this.brightDrag)}
+      ${this.fader("BRIGHTNESS", this._bright, `linear-gradient(90deg, var(--te-black), ${white})`, this.brightDrag)}
       ${this.presets.length
         ? html`<div class="presets">
             ${this.presets.map(
@@ -400,7 +400,7 @@ export class TeLightDialog extends TeModal {
         ? this.renderColor()
         : this._mode === "white"
           ? this.renderWhite()
-          : this.fader("BRIGHTNESS", this._bright, "linear-gradient(90deg, #0e0e0e, #f4f3ef)", this.brightDrag);
+          : this.fader("BRIGHTNESS", this._bright, "linear-gradient(90deg, var(--te-black), var(--te-ink-on-dark))", this.brightDrag);
     return this.shell(html`${this.renderModes()}${page}`);
   }
 }

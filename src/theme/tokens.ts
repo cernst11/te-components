@@ -34,6 +34,10 @@ export const tokens = css`
     --te-key-grey: #9d9c97;
     --te-groove: #151515;
     --te-screen-bg: #0d0f0c;
+    /* print on dark and accent keys; the black end of brightness ramps (same in both bodies) */
+    --te-ink-on-dark: #f4f3ef;
+    --te-ink-on-light: #1c1c1a;
+    --te-black: #0e0e0e;
 
     /* lighting primitives */
     --te-hi: rgba(255, 255, 255, 0.75);

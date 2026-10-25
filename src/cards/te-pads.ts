@@ -6,6 +6,7 @@ import { TeBaseCard, type BaseConfig } from "../core/base-card";
 import { F } from "../core/form";
 import { HoldGesture } from "../core/hold";
 import { renderGlyph, renderIcon } from "../icons";
+import { onStateOf } from "../core/entity";
 import { MODELS, registerCard } from "../registry";
 import { sharedStyles } from "../theme/shared";
 import type { HomeAssistant } from "../types";
@@ -169,7 +170,7 @@ export class TePads extends TeBaseCard<PadsConfig> {
           latestAt = at;
           latest = i;
         }
-      } else if (st.state === "on") on.add(i);
+      } else if (st.state === onStateOf(p.entity)) on.add(i);
     });
     if (latest >= 0) on.add(latest);
     return on;
@@ -212,7 +213,7 @@ export class TePads extends TeBaseCard<PadsConfig> {
                 aria-pressed=${active.has(i) ? "true" : "false"}
                 style=${styleMap({
                   "--face": p.color === "accent" ? "var(--te-accent)" : `var(--te-key-${p.color})`,
-                  "--ink": dark ? "#f4f3ef" : "var(--te-ink)",
+                  "--ink": dark ? "var(--te-ink-on-dark)" : "var(--te-ink)",
                   "--hold": `${c.hold_time}ms`,
                 })}
                 @pointerdown=${g.down}

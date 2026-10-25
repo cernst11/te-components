@@ -2,8 +2,9 @@ import { css, html } from "lit";
 import { classMap } from "lit/directives/class-map.js";
 import type { ActionConfig } from "../core/actions";
 import { TeBaseCard, type BaseConfig } from "../core/base-card";
-import { pickEntity } from "../core/entity";
+import { onStateOf, pickEntity } from "../core/entity";
 import { F } from "../core/form";
+import { HoldGesture } from "../core/hold";
 import { renderGlyph } from "../icons";
 import { MODELS, registerCard } from "../registry";
 import { sharedStyles } from "../theme/shared";
@@ -16,10 +17,19 @@ interface ToggleConfig extends BaseConfig {
   on_state: string;
   /** Printed in the LED window, e.g. "I" / "II" like the TX-6 FX buttons. */
   glyph?: string;
+  /** Locks only: unlocking needs a press-and-hold (default true); locking is always a tap. */
+  confirm_unlock: boolean;
+  hold_time: number;
 }
 
 /** TG-1 — round button with a pill LED window (TX-6 FX). */
 export class TeToggle extends TeBaseCard<ToggleConfig> {
+  private hold = new HoldGesture(this, {
+    time: () => this._config!.hold_time,
+    enabled: () => this.needsHold,
+    onHold: () => this.run(this._config!.tap_action),
+  });
+
   static styles = [
     sharedStyles,
     css`
@@ -50,7 +60,7 @@ export class TeToggle extends TeBaseCard<ToggleConfig> {
         font-size: 10px;
         font-weight: 500;
         line-height: 1;
-        color: rgba(244, 243, 239, 0.85);
+        color: color-mix(in srgb, var(--te-ink-on-dark) 85%, transparent);
         background: var(--te-key-dark);
         box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
         transition: background 0.18s ease-out, box-shadow 0.18s ease-out;
@@ -59,8 +69,13 @@ export class TeToggle extends TeBaseCard<ToggleConfig> {
         width: 12px;
         height: 12px;
       }
+      /* hold-to-unlock: the pill fades out over the hold time */
+      .holding .pill {
+        opacity: 0.35;
+        transition: opacity var(--hold) linear;
+      }
       .on .pill {
-        color: #1c1c1a;
+        color: var(--te-ink-on-light);
         background: var(--te-accent);
         box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.25), 0 0 8px var(--te-accent-glow);
         transition: none;
@@ -69,33 +84,65 @@ export class TeToggle extends TeBaseCard<ToggleConfig> {
   ];
 
   static getStubConfig(hass?: HomeAssistant) {
-    return { entity: pickEntity(hass, ["switch", "light", "input_boolean", "fan"]), label: "FX", glyph: "I" };
+    return { entity: pickEntity(hass, ["switch", "light", "input_boolean", "fan", "lock"]), label: "FX", glyph: "I" };
   }
 
   static getConfigForm() {
-    return { schema: [F.entity(), F.labels(), F.grid(F.text("glyph"), F.text("on_state")), F.action("tap_action"), F.look(F.feedback())] };
+    return { schema: [F.entity(), F.labels(), F.grid(F.text("glyph"), F.text("on_state")), F.grid(F.bool("confirm_unlock"), F.num("hold_time", 50)), F.action("tap_action"), F.look(F.feedback())] };
   }
 
   protected normalizeConfig(c: Record<string, any>): ToggleConfig {
     if (!c.entity) throw new Error("entity is required");
-    return { ...c, type: c.type, entity: c.entity, tap_action: c.tap_action ?? { action: "toggle" }, on_state: c.on_state ?? "on", tile: c.tile === true };
+    return {
+      ...c,
+      type: c.type,
+      entity: c.entity,
+      tap_action: c.tap_action ?? { action: "toggle" },
+      on_state: c.on_state ?? onStateOf(c.entity),
+      confirm_unlock: c.confirm_unlock !== false,
+      hold_time: c.hold_time ?? 700,
+      tile: c.tile === true,
+    };
   }
 
   getGridOptions() {
     return { columns: 3, rows: 2, min_rows: 2 };
   }
 
+  /** A locked lock with confirm_unlock opens only on a hold. */
+  private get needsHold() {
+    const c = this._config!;
+    return c.confirm_unlock && c.entity.startsWith("lock.") && this.stateObj()?.state === "locked";
+  }
+
+  private onClick = (ev: MouseEvent) => {
+    if (this.hold.consumeClick()) return;
+    // keyboard activation (detail 0) bypasses the hold for accessibility, as on BT-4
+    if (this.needsHold && ev.detail !== 0) return;
+    this.run(this._config!.tap_action);
+  };
+
   render() {
     const c = this._config!;
     const st = this.stateObj();
     const on = st?.state === c.on_state;
     return html`
-      <div class="card control ${classMap({ tile: !!c.tile, on })}">
+      <div class="card control ${classMap({ tile: !!c.tile, on, holding: this.hold.holding })}" style=${`--hold:${c.hold_time}ms`}>
         <div class="label">${c.label ?? ""}</div>
-        <button class="btn" role="switch" aria-checked=${on ? "true" : "false"} aria-label=${c.label || st?.attributes.friendly_name || c.entity} @click=${() => this.run(c.tap_action)}>
+        <button
+          class="btn"
+          role="switch"
+          aria-checked=${on ? "true" : "false"}
+          aria-label=${c.label || st?.attributes.friendly_name || c.entity}
+          @pointerdown=${this.hold.down}
+          @pointerup=${this.hold.cancel}
+          @pointerleave=${this.hold.cancel}
+          @pointercancel=${this.hold.cancel}
+          @click=${this.onClick}
+        >
           <span class="pill">${renderGlyph(c.glyph, 12)}</span>
         </button>
-        <div class="sublabel">${c.sublabel ?? ""}</div>
+        <div class="sublabel">${c.sublabel ?? (this.needsHold ? "HOLD" : "")}</div>
       </div>
     `;
   }

@@ -12,6 +12,7 @@ import "./cards/te-slide";
 import "./cards/te-leds";
 import "./cards/te-meter";
 import "./cards/te-grille";
+import "./cards/te-spacer";
 import "./cards/te-keypad";
 import "./cards/te-dpad";
 import "./cards/te-display";

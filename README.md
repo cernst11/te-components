@@ -22,6 +22,7 @@ them in.
 | **LD-8** インジケーター | `custom:te-leds` | Row of labelled status LEDs |
 | **VU-10** メーター | `custom:te-meter` | Level meter: LED bar or analog needle |
 | **SP-1** スピーカー | `custom:te-grille` | Decorative speaker grille, optional LED |
+| **BL-0** ブランク | `custom:te-spacer` | Empty cell to keep rows lined up |
 | **PD-16** パッド | `custom:te-pads` | K.O. II pad grid for scenes, scripts, switches |
 | **DP-5** 十字キー | `custom:te-dpad` | Directional pad |
 | **DS-8** ディスプレイ | `custom:te-display` | Main pixel screen: marquee, chips, progress |
@@ -176,11 +177,21 @@ thermostat show the same line.
 
 <details><summary><b>TG-1 toggle</b> — <code>custom:te-toggle</code></summary>
 
+Works with locks too: lit while locked, a tap locks, and unlocking takes a hold (the sublabel reads HOLD).
+
+```yaml
+type: custom:te-toggle
+entity: lock.front_door
+label: DOOR
+```
+
 | Option | Default | |
 |---|---|---|
 | `glyph` | — | Text in the LED window (`I`, `II`) |
-| `on_state` | `on` | State that lights the LED |
-| `tap_action` | `toggle` | |
+| `on_state` | `on` (`locked` for locks) | State that lights the LED |
+| `tap_action` | `toggle` | Locks lock/unlock |
+| `confirm_unlock` | `true` | Locks only: unlocking needs a press-and-hold, locking is a tap |
+| `hold_time` | `700` | ms, for `confirm_unlock` |
 
 </details>
 
@@ -319,6 +330,21 @@ entity: media_player.kitchen
 | `height` | `72` | px |
 | `pitch` | `7` | Hole spacing in px |
 | `entity` | — | Optional; lights the LED while on/playing |
+
+</details>
+
+<details><summary><b>BL-0 spacer</b> — <code>custom:te-spacer</code></summary>
+
+An empty cell. Rows in CH-1/GR-2 split their width evenly, so a spacer holds a column open — e.g. to push
+ON/OFF keys under the last faders of a room.
+
+```yaml
+- [ { type: custom:te-spacer }, { type: custom:te-button, label: "On" }, { type: custom:te-button, label: "Off" } ]
+```
+
+| Option | Default | |
+|---|---|---|
+| `height` | — | Minimum height in px; otherwise it takes its row's height |
 
 </details>
 

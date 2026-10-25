@@ -31,6 +31,7 @@ export const MODELS = {
   meter: { type: "te-meter", model: "VU-10", subtitle: "メーター", name: "Meter" },
   keypad: { type: "te-keypad", model: "KP-12", subtitle: "テンキー", name: "Alarm Keypad" },
   grille: { type: "te-grille", model: "SP-1", subtitle: "スピーカー", name: "Grille" },
+  spacer: { type: "te-spacer", model: "BL-0", subtitle: "ブランク", name: "Spacer" },
 } as const;
 
 declare global {

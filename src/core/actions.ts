@@ -54,7 +54,10 @@ export function runAction(
     case "none":
       return;
     case "toggle":
-      if (entityId) hass.callService("homeassistant", "toggle", { entity_id: entityId });
+      if (!entityId) return;
+      // homeassistant.toggle skips locks, so pick the service from the current state
+      if (entityId.startsWith("lock.")) hass.callService("lock", hass.states[entityId]?.state === "locked" ? "unlock" : "lock", { entity_id: entityId });
+      else hass.callService("homeassistant", "toggle", { entity_id: entityId });
       return;
     case "more-info":
       fireEvent(host, "hass-more-info", { entityId: action.entity ?? entityId });

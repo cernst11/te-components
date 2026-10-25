@@ -2,7 +2,7 @@ import { html } from "lit";
 import { classMap } from "lit/directives/class-map.js";
 import type { ActionConfig } from "../core/actions";
 import { TeBaseCard, type BaseConfig } from "../core/base-card";
-import { isToggleable, pickEntity } from "../core/entity";
+import { isToggleable, onStateOf, pickEntity } from "../core/entity";
 import { F } from "../core/form";
 import { HoldGesture } from "../core/hold";
 import { displayAttribute } from "../core/value";
@@ -114,7 +114,7 @@ export class TeMiniDisplay extends TeBaseCard<MiniDisplayConfig> {
     return {
       name: (c.label || st.attributes.friendly_name || c.entity).toUpperCase(),
       value: this.stateText(st).toUpperCase(),
-      lit: isToggleable(c.entity) ? st.state === "on" : true,
+      lit: isToggleable(c.entity) ? st.state === onStateOf(c.entity) : true,
     };
   }
 

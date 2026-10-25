@@ -19,5 +19,8 @@ export function pickEntities(hass: HomeAssistant | undefined, domains: string[],
   return ids.slice(0, n);
 }
 
-const TOGGLEABLE = new Set(["light", "switch", "fan", "input_boolean", "media_player", "cover", "automation", "siren", "humidifier"]);
+const TOGGLEABLE = new Set(["light", "switch", "fan", "input_boolean", "media_player", "cover", "automation", "siren", "humidifier", "lock"]);
 export const isToggleable = (entityId?: string) => !!entityId && TOGGLEABLE.has(entityId.split(".")[0]);
+
+/** The state that counts as "on" for an entity: `locked` for locks, else `on`. */
+export const onStateOf = (entityId?: string) => (entityId?.startsWith("lock.") ? "locked" : "on");
