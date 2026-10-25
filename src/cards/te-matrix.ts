@@ -226,8 +226,11 @@ export class TeMatrix extends TeBaseCard<MatrixConfig> {
 
   private statusText(): string {
     const c = this._config!;
-    const st = this.hass?.states[c.status_entity ?? c.entity];
-    return (st?.state ?? "--").replace(/_/g, " ").toUpperCase();
+    // a status sensor with nothing to say (SmartThings job state "none" while idle) yields to the main entity
+    const blank = (v?: string) => !v || ["none", "unknown", "unavailable", ""].includes(v);
+    const status = c.status_entity ? this.hass?.states[c.status_entity]?.state : undefined;
+    const state = blank(status) ? this.hass?.states[c.entity]?.state : status;
+    return (state ?? "--").replace(/_/g, " ").toUpperCase();
   }
 
   private drawGraph() {
@@ -317,7 +320,8 @@ export class TeMatrix extends TeBaseCard<MatrixConfig> {
     const status = this.statusText();
     const footer = H - 8;
     const barY = footer - 3;
-    const animBottom = progress !== undefined ? barY - 2 : footer - 2;
+    // keep a clear row between the art and the progress bar / status line
+    const animBottom = progress !== undefined ? barY - 3 : footer - 3;
 
     const st = this.stateObj();
     const pct = toNumber(st?.attributes.percentage);

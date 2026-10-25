@@ -186,10 +186,11 @@ const car: Anim = (buf, a, s) => {
   const driving = s.active && /DRIV/.test(s.status);
   const charging = s.active && !driving;
   const w = a.x1 - a.x0;
-  const gy = a.y1 - 1;
-  // leave room for the wall charger on the right unless we're on the road
-  const L = Math.min(driving ? w * 0.92 : w * 0.76, ((gy - a.y0 - 6) / CAR_GROUND) * 0.98);
-  const cx0 = driving ? a.x0 + (w - L) / 2 : a.x0 + 1;
+  // leave room for the wall charger on the right unless we're on the road; 7 rows above the roof for the bolt
+  const L = Math.min(driving ? w * 0.9 : w * 0.74, ((a.y1 - a.y0 - 9) / CAR_GROUND) * 0.98);
+  // the car is wider than tall, so on a square screen it sits in the middle, not on the bottom edge
+  const gy = Math.min(a.y1 - 1, Math.round((a.y0 + a.y1) / 2 + (CAR_GROUND * L) / 2 + 3));
+  const cx0 = driving ? a.x0 + (w - L) / 2 : a.x0 + 2;
   const P = ([x, y]: [number, number]): [number, number] => [cx0 + x * L, gy - CAR_GROUND * L + y * L];
 
   // ground: scrolling road dashes when driving, a dotted floor when parked

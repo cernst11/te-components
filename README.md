@@ -435,7 +435,7 @@ progress_entity: sensor.washer_progress     # percent
 | `hours`, `style`, `min`, `max` | `24`, `area`, auto | Graph window, style and y range |
 | `unit`, `decimals` | from the entity | Value formatting |
 | `active_state` | any state except off/idle/standby/done/… | State(s) that count as running |
-| `status_entity` | `entity` | Shown in the footer (e.g. `RINSE`) |
+| `status_entity` | `entity` | Shown in the footer (e.g. `RINSE`); while it reads `none`/`unknown`, the footer shows `entity` |
 | `tap_action` | `more-info` | |
 
 `fan` spins at the fan's `percentage`; the washer spins fast when the status contains `spin`.
