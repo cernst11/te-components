@@ -390,8 +390,9 @@ screen: lcd
 
 | Option | Default | |
 |---|---|---|
-| `icon` | `bulb` | `bulb`, `lamp`, `downlight`, `thermometer`, `droplet`, `molecule`, `plug`, `battery`, `blinds` |
+| `icon` | `bulb` | `bulb`, `lamp`, `downlight`, `thermometer`, `droplet`, `molecule`, `plug`, `battery`, `blinds`, or `none` (text uses the whole screen) |
 | `compact` | `false` | Two lines: name above, value below |
+| `show_name` | `true` | `false` shows the value only (e.g. above a fader that carries the name) |
 | `scroll` | `false` | Marquee long text |
 | `screen` | `vfd-amber` | |
 | `tap_action` | toggle / more-info | |
