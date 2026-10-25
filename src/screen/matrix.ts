@@ -126,7 +126,7 @@ export class DotBuffer {
     });
   }
 
-  /** Filled polygon (even-odd, sampled at dot centers); `pattern` picks which dots to light. */
+  /** Filled polygon (even-odd, sampled at dot centers); `pattern` picks which dots to light. Level 0 erases. */
   fillPoly(pts: [number, number][], v: Level, pattern: (x: number, y: number) => boolean = () => true) {
     const ys = pts.map((p) => p[1]);
     for (let y = Math.floor(Math.min(...ys)); y <= Math.ceil(Math.max(...ys)); y++) {
@@ -137,7 +137,7 @@ export class DotBuffer {
       });
       xs.sort((a, b) => a - b);
       for (let k = 0; k + 1 < xs.length; k += 2) {
-        for (let x = Math.ceil(xs[k]); x <= Math.floor(xs[k + 1]); x++) if (pattern(x, y)) this.add(x, y, v);
+        for (let x = Math.ceil(xs[k]); x <= Math.floor(xs[k + 1]); x++) if (pattern(x, y)) v === 0 ? this.set(x, y, 0) : this.add(x, y, v);
       }
     }
   }

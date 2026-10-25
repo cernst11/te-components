@@ -440,9 +440,9 @@ progress_entity: sensor.washer_progress     # percent
 
 `fan` spins at the fan's `percentage`; the washer spins fast when the status contains `spin`.
 
-`car` is an EV side profile. While charging (any active state), a cable runs from the wall charger to the
-charge port with pulses flowing in; if the status contains `driving`, the wheels turn and the road scrolls.
-`progress_entity` (battery %) fills the battery pack along the floor.
+`car` is a Model 3 side profile. While charging (any active state), the wall charger appears and a cable runs
+from it to the charge port with pulses flowing in; if the status contains `driving`, the wheels turn and the road
+scrolls. `progress_entity` (battery %) drives the bar and the % readout.
 
 ```yaml
 type: custom:te-matrix

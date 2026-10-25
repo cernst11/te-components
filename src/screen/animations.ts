@@ -152,45 +152,58 @@ const fan: Anim = (buf, a, s) => {
 };
 
 /**
- * Fastback EV side profile (Model 3-ish), front to the left. x: 0..1 of car length; y: 0 = roof, 0.33 = ground.
- * Short hood, steep windshield, roof peak behind the driver, long sloping fastback, short tail.
+ * Model 3 side profile traced from a press photo, front to the left. x: 0..1 of car length; y: 0 = roof peak,
+ * CAR_GROUND = where the tires meet the road (both in car lengths). Long low nose, windshield raked back to a roof
+ * peak just behind the B-pillar, one unbroken fastback line into a short ducktail.
  */
 const CAR_BODY: [number, number][] = [
-  [0.02, 0.27],
-  [0.0, 0.215],
-  [0.025, 0.17],
-  [0.12, 0.15],
-  [0.33, 0.13],
-  [0.47, 0.035],
-  [0.58, 0.0],
-  [0.7, 0.015],
-  [0.82, 0.065],
-  [0.93, 0.12],
-  [0.99, 0.135],
-  [1.0, 0.2],
-  [0.985, 0.27],
+  [0.014, 0.264], // front bumper, bottom
+  [0.002, 0.232],
+  [0.0, 0.2], // nose
+  [0.014, 0.162],
+  [0.06, 0.136],
+  [0.12, 0.118], // hood
+  [0.267, 0.1], // base of the windshield
+  [0.399, 0.027],
+  [0.555, 0.0], // roof peak
+  [0.709, 0.012],
+  [0.845, 0.047], // rear glass
+  [0.94, 0.072],
+  [0.988, 0.084], // ducktail
+  [0.996, 0.14],
+  [0.992, 0.194],
+  [0.973, 0.267], // rear bumper, bottom
 ];
-const CAR_GLASS: [number, number][] = [
-  [0.37, 0.125],
-  [0.48, 0.045],
-  [0.58, 0.022],
-  [0.69, 0.033],
-  [0.8, 0.075],
-  [0.88, 0.122],
+/** Side windows, front and rear of the B-pillar. */
+const CAR_GLASS: [number, number][][] = [
+  [
+    [0.32, 0.104],
+    [0.44, 0.03],
+    [0.56, 0.02],
+    [0.56, 0.093],
+  ],
+  [
+    [0.6, 0.02],
+    [0.73, 0.03],
+    [0.84, 0.06],
+    [0.79, 0.08],
+    [0.6, 0.09],
+  ],
 ];
-const CAR_WHEELS = [0.195, 0.8];
-const CAR_GROUND = 0.33;
+const CAR_WHEELS = [0.171, 0.814];
+const CAR_WHEEL_R = 0.071;
+const CAR_GROUND = 0.304;
 const BOLT: [number, number][] = [[2, 0], [3, 0], [1, 1], [2, 1], [0, 2], [1, 2], [2, 2], [3, 2], [1, 3], [2, 3], [0, 4], [1, 4]];
 
 const car: Anim = (buf, a, s) => {
   const driving = s.active && /DRIV/.test(s.status);
   const charging = s.active && !driving;
   const w = a.x1 - a.x0;
-  // leave room for the wall charger on the right unless we're on the road; 7 rows above the roof for the bolt
-  const L = Math.min(driving ? w * 0.9 : w * 0.74, ((a.y1 - a.y0 - 9) / CAR_GROUND) * 0.98);
+  // the wall charger only shows while charging; otherwise the car gets the width. 7 rows above the roof for the bolt
+  const L = Math.min(charging ? w * 0.76 : w * 0.94, ((a.y1 - a.y0 - 9) / CAR_GROUND) * 0.98);
   // the car is wider than tall, so on a square screen it sits in the middle, not on the bottom edge
   const gy = Math.min(a.y1 - 1, Math.round((a.y0 + a.y1) / 2 + (CAR_GROUND * L) / 2 + 3));
-  const cx0 = driving ? a.x0 + (w - L) / 2 : a.x0 + 2;
+  const cx0 = charging ? a.x0 + 1 : a.x0 + (w - L) / 2;
   const P = ([x, y]: [number, number]): [number, number] => [cx0 + x * L, gy - CAR_GROUND * L + y * L];
 
   // ground: scrolling road dashes when driving, a dotted floor when parked
@@ -199,57 +212,41 @@ const car: Anim = (buf, a, s) => {
     for (let x = a.x0; x <= a.x1; x++) if ((x + shift) % 6 < 3) buf.set(x, gy + 1, DIM);
   } else buf.hline(a.x0, a.x1, gy + 1, DIM, 2);
 
+  // at ~50×15 dots a clean silhouette reads better than detail: softly lit paint, dark windows either side of
+  // the B-pillar, a bright outline, headlight and tail light. No dither, seams or handles.
   const body = CAR_BODY.map(P);
-  buf.fillPoly(body, DIM, (x, y) => (x + y) % 2 === 0);
-  buf.fillPoly(CAR_GLASS.map(P), DIM);
+  buf.fillPoly(body, DIM);
+  for (const glass of CAR_GLASS) buf.fillPoly(glass.map(P), 0);
   buf.poly(body, LIT);
-  // B-pillar, door seams, door handles
-  const [bx, by] = P([0.6, 0.03]);
-  buf.vline(bx, by, P([0.6, 0.125])[1], LIT);
-  for (const dx of [0.47, 0.66]) {
-    const [x, y0] = P([dx, 0.14]);
-    buf.vline(x, y0, P([dx, 0.25])[1], DIM);
-  }
-  buf.set(...P([0.53, 0.155]), LIT);
-  buf.set(...P([0.71, 0.155]), LIT);
-  // headlight sliver, tail light (the charge port lives behind the left tail light)
-  buf.hline(P([0.02, 0.17])[0], P([0.07, 0.17])[0], P([0.02, 0.17])[1], LIT);
-  buf.hline(P([0.95, 0.15])[0], P([0.995, 0.15])[0], P([0.95, 0.15])[1], ACCENT);
+  buf.hline(P([0.02, 0.185])[0], P([0.075, 0.185])[0], P([0.02, 0.185])[1], LIT);
+  buf.hline(P([0.915, 0.115])[0], P([0.985, 0.115])[0], P([0.915, 0.115])[1], ACCENT);
 
-  // battery pack along the floor: lit to the battery level
-  if (s.level !== undefined) {
-    const [x0, y] = P([0.3, 0.245]);
-    const x1 = P([0.7, 0.245])[0];
-    buf.hline(x0, x1, y, DIM);
-    buf.hline(x0, x0 + (x1 - x0) * Math.max(0, Math.min(1, s.level)), y, charging ? ACCENT : LIT);
-  }
-
-  // wheels: cut the arches, then tire, rim spokes (turning when driving) and hub
-  const r = 0.075 * L;
+  // wheels: cut the arches, then tire and hub; spokes only while driving, to show them turning
+  const r = CAR_WHEEL_R * L;
   for (const wx of CAR_WHEELS) {
-    const [x, y] = P([wx, CAR_GROUND - 0.075]);
-    buf.disc(x, y, r + 1.4, 0);
+    const [x, y] = P([wx, CAR_GROUND - CAR_WHEEL_R]);
+    buf.disc(x, y, r + 1.2, 0);
     buf.circle(x, y, r, LIT, 1.4);
-    const rot = driving ? s.t * 9 : 0.3;
-    for (let k = 0; k < 5; k++) {
-      const ang = rot + (k * Math.PI * 2) / 5;
-      buf.line(x, y, x + Math.cos(ang) * (r - 1.5), y + Math.sin(ang) * (r - 1.5), DIM);
+    if (driving) {
+      for (let k = 0; k < 3; k++) {
+        const ang = s.t * 9 + (k * Math.PI * 2) / 3;
+        buf.line(x, y, x + Math.cos(ang) * (r - 1.5), y + Math.sin(ang) * (r - 1.5), DIM);
+      }
     }
-    buf.set(x, y, LIT);
+    buf.disc(x, y, 1, DIM);
   }
 
-  if (driving) return;
+  if (!charging) return;
 
   // wall charger
   const postX0 = Math.round(a.x1 - 6);
-  const postTop = Math.round(gy - 0.27 * L);
+  const postTop = Math.round(gy - 0.25 * L);
   buf.rect(postX0, postTop, a.x1 - 1, gy, LIT);
   buf.fillRect(postX0 + 2, postTop + 2, a.x1 - 3, postTop + 4, DIM);
-  buf.set(postX0 + 3, postTop + 7, charging ? ACCENT : DIM);
-  if (!charging) return;
+  buf.set(postX0 + 3, postTop + 7, ACCENT);
 
   // cable from the charger, sagging to the floor, into the port; pulses run toward the car
-  const [px, py] = P([0.985, 0.155]);
+  const [px, py] = P([0.99, 0.13]);
   const qx = postX0;
   const qy = postTop + Math.round(0.14 * L);
   const ctrlX = (px + qx) / 2;
