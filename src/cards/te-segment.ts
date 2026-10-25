@@ -5,6 +5,7 @@ import type { ActionConfig } from "../core/actions";
 import { TeBaseCard, type BaseConfig } from "../core/base-card";
 import { pickEntity } from "../core/entity";
 import { F } from "../core/form";
+import { displayAttribute } from "../core/value";
 import { MODELS, registerCard } from "../registry";
 import { ScreenController, type Frame } from "../screen/controller";
 import { applyMesh, clear, pixelMetrics, StripCache } from "../screen/render";
@@ -131,10 +132,11 @@ export class TeSegment extends TeBaseCard<SegmentConfig> {
       // a running timer's colon blinks; paused/idle stays solid
       return { text: sec === undefined ? "--:--" : fmtDuration(sec), unit: st.state === "active" ? "" : st.state.toUpperCase(), colon: st.state !== "active" || blink };
     }
-    const raw = c.attribute ? st.attributes[c.attribute] : st.state;
+    const attr = c.attribute ? displayAttribute(st, c.attribute) : undefined;
+    const raw = attr ? attr.raw : st.state;
     const n = toNumber(raw);
     const text = n === undefined ? String(raw ?? "--") : c.decimals !== undefined ? n.toFixed(c.decimals) : String(n);
-    return { text, unit: (c.unit ?? (c.attribute ? "" : st.attributes.unit_of_measurement) ?? "").toUpperCase(), colon: true };
+    return { text, unit: (c.unit ?? (attr ? attr.unit : st.attributes.unit_of_measurement) ?? "").toUpperCase(), colon: true };
   }
 
   private draw(f: Frame) {

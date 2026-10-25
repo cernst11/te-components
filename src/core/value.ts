@@ -63,6 +63,19 @@ export const ATTRIBUTE_SPECS: Record<string, DomainSpec> = {
 
 export const VALUE_DOMAINS = Object.keys(DOMAIN_SPECS);
 
+/**
+ * An attribute as display cards show it: a light's 0–255 `brightness` reads as a percentage (0 when off,
+ * where HA drops the attribute). `unit` is the default unit; the card's own `unit:` still wins.
+ */
+export function displayAttribute(st: HassEntity, attribute: string): { raw: unknown; unit: string } {
+  const raw = st.attributes[attribute];
+  if (attribute === "brightness" && domainOf(st.entity_id) === "light") {
+    const n = toNumber(raw);
+    return { raw: n === undefined ? (st.state === "off" ? 0 : raw) : Math.round((n / 255) * 100), unit: "%" };
+  }
+  return { raw, unit: "" };
+}
+
 const specFor = (cfg: Pick<ValueConfig, "entity" | "attribute">) => {
   const domain = domainOf(cfg.entity);
   return ATTRIBUTE_SPECS[`${domain}.${cfg.attribute}`] ?? DOMAIN_SPECS[domain];

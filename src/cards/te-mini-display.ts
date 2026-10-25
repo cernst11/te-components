@@ -4,6 +4,7 @@ import type { ActionConfig } from "../core/actions";
 import { TeBaseCard, type BaseConfig } from "../core/base-card";
 import { isToggleable, pickEntity } from "../core/entity";
 import { F } from "../core/form";
+import { displayAttribute } from "../core/value";
 import { MODELS, registerCard } from "../registry";
 import { ScreenController, type Frame } from "../screen/controller";
 import { MINI_ICONS, drawMiniIcon, type MiniIcon } from "../screen/mini-icons";
@@ -85,9 +86,10 @@ export class TeMiniDisplay extends TeBaseCard<MiniDisplayConfig> {
     if (!c.attribute && st.state === "on" && typeof st.attributes.brightness === "number") {
       return `${Math.round((st.attributes.brightness / 255) * 100)}%`;
     }
-    const raw = c.attribute ? st.attributes[c.attribute] : st.state;
+    const attr = c.attribute ? displayAttribute(st, c.attribute) : undefined;
+    const raw = attr ? attr.raw : st.state;
     const num = toNumber(raw);
-    const unit = c.unit || (c.attribute ? "" : (st.attributes.unit_of_measurement ?? ""));
+    const unit = c.unit || (attr ? attr.unit : (st.attributes.unit_of_measurement ?? ""));
     return `${num !== undefined && c.decimals !== undefined ? num.toFixed(c.decimals) : raw}${unit}`;
   }
 

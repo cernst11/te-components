@@ -4,6 +4,7 @@ import { styleMap } from "lit/directives/style-map.js";
 import { TeBaseCard, type BaseConfig } from "../core/base-card";
 import { pickEntity } from "../core/entity";
 import { F } from "../core/form";
+import { displayAttribute } from "../core/value";
 import { MODELS, registerCard } from "../registry";
 import { ScreenController, type Frame } from "../screen/controller";
 import { applyMesh, clear, dotMetrics, drawLine, glyphHeight, newMarquee, pixelMetrics, StripCache, type Marquee } from "../screen/render";
@@ -136,7 +137,8 @@ export class TeDisplay extends TeBaseCard<DisplayConfig> {
     if (c.demo) return this.demoState().track.text.toUpperCase();
     const st = this.stateObj();
     if (!st) return "----";
-    let raw: unknown = c.attribute ? st.attributes[c.attribute] : undefined;
+    const attr = c.attribute ? displayAttribute(st, c.attribute) : undefined;
+    let raw: unknown = attr?.raw;
     if (raw === undefined || raw === null || raw === "") {
       if (domainOf(c.entity) === "media_player") {
         const a = st.attributes;
@@ -145,7 +147,7 @@ export class TeDisplay extends TeBaseCard<DisplayConfig> {
     }
     const num = toNumber(raw);
     const text = num !== undefined && c.decimals !== undefined ? num.toFixed(c.decimals) : String(raw);
-    return `${text}${c.unit}`.toUpperCase();
+    return `${text}${c.unit || attr?.unit || ""}`.toUpperCase();
   }
 
   private progress(): Progress | null {
