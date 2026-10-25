@@ -1,7 +1,7 @@
 import { TeBaseCard, type BaseConfig } from "./base-card";
 import { detentOf } from "./feedback";
 import { Throttle } from "./throttle";
-import { formatValue, fracOf, resolveValue, valueAt, writeValue, type ResolvedValue, type ValueConfig } from "./value";
+import { formatValue, fracOf, hvacStatus, resolveValue, valueAt, writeValue, type ResolvedValue, type ValueConfig } from "./value";
 import { clamp01 } from "../utils/math";
 
 export interface ValueCardConfig extends BaseConfig, ValueConfig {
@@ -65,7 +65,7 @@ export abstract class TeValueCard<C extends ValueCardConfig> extends TeBaseCard<
   /** Sublabel text: live value while adjusting, otherwise the configured sublabel. */
   protected readoutText(r = this.resolved): string {
     const adjusting = this.dragging || this._local !== null;
-    return this._config!.show_value !== false && adjusting ? this.displayValue(r) : (this._config!.sublabel ?? "");
+    return this._config!.show_value !== false && adjusting ? this.displayValue(r) : (this._config!.sublabel ?? hvacStatus(r.stateObj)?.text ?? "");
   }
 
   protected get readoutClass(): string {

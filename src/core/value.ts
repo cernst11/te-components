@@ -63,6 +63,21 @@ export const ATTRIBUTE_SPECS: Record<string, DomainSpec> = {
 
 export const VALUE_DOMAINS = Object.keys(DOMAIN_SPECS);
 
+/** HVAC actions that mean the device is working right now (lit in the accent color). */
+const RUNNING = new Set(["heating", "cooling", "drying", "fan", "preheating", "defrosting"]);
+
+/**
+ * What a thermostat is doing, for the line under a dial or knob: HEATING / COOLING while it runs, else ON / OFF.
+ * Undefined for entities that aren't climate or water_heater.
+ */
+export function hvacStatus(st: HassEntity | undefined): { text: string; running: boolean } | undefined {
+  if (!st || !["climate", "water_heater"].includes(domainOf(st.entity_id))) return undefined;
+  if (st.state === "unavailable" || st.state === "unknown") return { text: "--", running: false };
+  const action = String(st.attributes.hvac_action ?? "");
+  if (RUNNING.has(action)) return { text: action === "fan" ? "FAN" : action.toUpperCase(), running: true };
+  return { text: st.state === "off" || action === "off" ? "OFF" : "ON", running: false };
+}
+
 /**
  * An attribute as display cards show it: a light's 0–255 `brightness` reads as a percentage (0 when off,
  * where HA drops the attribute). `unit` is the default unit; the card's own `unit:` still wins.

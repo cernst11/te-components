@@ -33,6 +33,8 @@ src/
     options.ts          option sources per domain (OPTION_SPECS) + select service, for SW-5
     history.ts          recorder history via hass.callWS (history/history_during_period) + time bucketing
     modal.ts            TeModal: base for dialogs (backdrop, Escape closes topmost only, header, faders via trackDrag)
+                        (the light dialog itself is cards/te-light-dialog.ts; open it with run({action: "light-dialog"})
+                        or openLightDialog() from any TeBaseCard, which owns it and keeps its hass current)
     throttle.ts         trailing-edge throttle
     child-cards.ts      hui-card children + shared row layout (buildRows/renderRows/rowStyles, `{ bracket, cards }` bracket rows) for panel/popup
     form.ts             getConfigForm() schema helpers (HA visual editor)

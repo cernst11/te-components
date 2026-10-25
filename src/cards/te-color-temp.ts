@@ -1,4 +1,4 @@
-import { css, html, type PropertyValues } from "lit";
+import { css, html } from "lit";
 import { classMap } from "lit/directives/class-map.js";
 import { styleMap } from "lit/directives/style-map.js";
 import { TeBaseCard, type BaseConfig } from "../core/base-card";
@@ -7,10 +7,10 @@ import { F } from "../core/form";
 import { resolveValue } from "../core/value";
 import { MODELS, registerCard } from "../registry";
 import { sharedStyles } from "../theme/shared";
-import type { BodyTheme, HomeAssistant } from "../types";
+import type { HomeAssistant } from "../types";
 import { kelvinCss } from "../utils/color";
-import { clamp, toNumber } from "../utils/math";
-import { TeColorTempDialog, type KelvinPreset } from "./te-color-temp-dialog";
+import { toNumber } from "../utils/math";
+import { DEFAULT_PRESETS, type KelvinPreset } from "./te-light-dialog";
 
 interface ColorTempConfig extends BaseConfig {
   entity: string;
@@ -18,12 +18,6 @@ interface ColorTempConfig extends BaseConfig {
   min?: number;
   max?: number;
 }
-
-const DEFAULT_PRESETS: KelvinPreset[] = [
-  { label: "WARM", kelvin: 2700 },
-  { label: "NEUTRAL", kelvin: 4000 },
-  { label: "DAY", kelvin: 6500 },
-];
 
 const toPreset = (p: unknown): KelvinPreset | undefined => {
   if (typeof p === "number") return { label: `${p}K`, kelvin: p };
@@ -36,7 +30,6 @@ const toPreset = (p: unknown): KelvinPreset | undefined => {
 
 /** CT-27 — color temperature swatch for tunable-white lights; opens the warm→cool dialog. */
 export class TeColorTemp extends TeBaseCard<ColorTempConfig> {
-  private dialog?: TeColorTempDialog;
 
   static styles = [
     sharedStyles,
@@ -77,16 +70,6 @@ export class TeColorTemp extends TeBaseCard<ColorTempConfig> {
     return { columns: 3, rows: 2, min_rows: 2 };
   }
 
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.dialog?.close();
-  }
-
-  protected updated(changed: PropertyValues) {
-    super.updated(changed);
-    if (this.dialog && changed.has("hass")) this.dialog.hass = this.hass;
-  }
-
   /** Entity range (or config override) and the current white, if the light is on in color-temp mode. */
   private reading() {
     const c = this._config!;
@@ -102,21 +85,8 @@ export class TeColorTemp extends TeBaseCard<ColorTempConfig> {
   }
 
   private open() {
-    if (!this.hass || this.dialog) return;
     const c = this._config!;
-    const { min, max, step, kelvin } = this.reading();
-    this.dialog = TeColorTempDialog.open({
-      hass: this.hass,
-      entity: c.entity,
-      heading: c.label || this.stateObj()?.attributes.friendly_name || "WHITE",
-      body: (this.dataset.body as BodyTheme) ?? "silver",
-      min,
-      max,
-      kelvin,
-      presets: c.presets.map((p) => ({ ...p, kelvin: clamp(p.kelvin, min, max) })),
-    });
-    this.dialog.step = step;
-    this.dialog.addEventListener("closed", () => (this.dialog = undefined), { once: true });
+    this.openLightDialog({ entity: c.entity, mode: "white", presets: c.presets, min: c.min, max: c.max });
   }
 
   render() {

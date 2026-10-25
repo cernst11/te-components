@@ -45,7 +45,12 @@ export const rowCards = (rows: Rows) => rows.flatMap((r) => r.cards);
 
 const renderBrackets = (brackets: Bracket[], count: number) => html`
   <div class="brackets" style=${`--cols:${count}`}>
-    ${brackets.map((b) => html`<div class="bracket" style=${`grid-column:span ${Math.min(b.span, count)}`}><span>${b.label}</span></div>`)}
+    ${brackets.map((b) =>
+      // an empty label leaves its cards without a bracket
+      b.label
+        ? html`<div class="bracket" style=${`grid-column:span ${Math.min(b.span, count)}`}><span>${b.label}</span></div>`
+        : html`<div style=${`grid-column:span ${Math.min(b.span, count)}`}></div>`,
+    )}
   </div>
 `;
 

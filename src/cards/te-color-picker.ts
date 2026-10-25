@@ -1,4 +1,4 @@
-import { css, html, type PropertyValues } from "lit";
+import { css, html } from "lit";
 import { classMap } from "lit/directives/class-map.js";
 import { styleMap } from "lit/directives/style-map.js";
 import { TeBaseCard, type BaseConfig } from "../core/base-card";
@@ -6,9 +6,8 @@ import { pickEntity } from "../core/entity";
 import { F } from "../core/form";
 import { MODELS, registerCard } from "../registry";
 import { sharedStyles } from "../theme/shared";
-import type { BodyTheme, HomeAssistant } from "../types";
+import type { HomeAssistant } from "../types";
 import { hsvToRgb, rgbToHsv } from "../utils/color";
-import { TeColorDialog } from "./te-color-dialog";
 
 interface ColorPickerConfig extends BaseConfig {
   entity: string;
@@ -18,7 +17,6 @@ interface ColorPickerConfig extends BaseConfig {
 
 /** CL-16 — color swatch button; opens the HS wheel dialog. */
 export class TeColorPicker extends TeBaseCard<ColorPickerConfig> {
-  private dialog?: TeColorDialog;
 
   static styles = [
     sharedStyles,
@@ -62,16 +60,6 @@ export class TeColorPicker extends TeBaseCard<ColorPickerConfig> {
     return { columns: 3, rows: 2, min_rows: 2 };
   }
 
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.dialog?.close();
-  }
-
-  protected updated(changed: PropertyValues) {
-    super.updated(changed);
-    if (this.dialog && changed.has("hass")) this.dialog.hass = this.hass;
-  }
-
   private swatch(): string | undefined {
     const st = this.stateObj();
     if (!st || st.state !== "on") return undefined;
@@ -82,16 +70,8 @@ export class TeColorPicker extends TeBaseCard<ColorPickerConfig> {
   }
 
   private open() {
-    if (!this.hass || this.dialog) return;
     const c = this._config!;
-    this.dialog = TeColorDialog.open({
-      hass: this.hass,
-      entity: c.entity,
-      slots: c.slots,
-      heading: c.label || this.stateObj()?.attributes.friendly_name || "COLOR",
-      body: (this.dataset.body as BodyTheme) ?? "silver",
-    });
-    this.dialog.addEventListener("closed", () => (this.dialog = undefined), { once: true });
+    this.openLightDialog({ entity: c.entity, mode: "color", slots: c.slots });
   }
 
   render() {

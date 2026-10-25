@@ -2,7 +2,7 @@ import type { HomeAssistant } from "../types";
 
 /**
  * HA-standard action objects (same shape as tap_action/hold_action in core cards),
- * plus two TE extras: `cycle-source` and `mute` for media players.
+ * plus TE extras: `cycle-source` and `mute` for media players, `light-dialog` for the color/white dialog.
  */
 export type ActionConfig =
   | { action: "none" }
@@ -19,7 +19,8 @@ export type ActionConfig =
       target?: Record<string, unknown>;
     }
   | { action: "cycle-source" }
-  | { action: "mute" };
+  | { action: "mute" }
+  | { action: "light-dialog"; entity?: string; mode?: "color" | "white" };
 
 export function fireEvent(node: EventTarget, type: string, detail?: unknown) {
   node.dispatchEvent(new CustomEvent(type, { detail, bubbles: true, composed: true }));
@@ -61,6 +62,10 @@ export function runAction(
     case "navigate":
       history.pushState(null, "", action.navigation_path);
       fireEvent(window, "location-changed", { replace: false });
+      return;
+    case "light-dialog":
+      // opened by TeBaseCard.run(), which owns the dialog; anywhere else, fall back to HA's dialog
+      fireEvent(host, "hass-more-info", { entityId: action.entity ?? entityId });
       return;
     case "url":
       window.open(action.url_path, "_blank", "noopener");

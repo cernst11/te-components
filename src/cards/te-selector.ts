@@ -36,21 +36,69 @@ export class TeSelector extends TeBaseCard<SelectorConfig> {
   static properties = {
     _pending: { state: true },
     _dragIndex: { state: true },
+    _scale: { state: true },
   };
 
   declare _pending?: { value: string; until: number };
   declare _dragIndex?: number;
+  /** The rotary is laid out at BOX_W and scaled down to fit narrow cells, labels included. */
+  declare _scale: number;
+  private ro?: ResizeObserver;
   private drag?: { x: number; y: number; cx: number; cy: number; index: number; lastDeg: number; turned: number; moved: boolean };
+
+  constructor() {
+    super();
+    this._scale = 1;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.ro = new ResizeObserver(([e]) => {
+      const scale = Math.min(1, e.contentRect.width / BOX_W) || 1;
+      if (Math.abs(scale - this._scale) > 0.01) this._scale = scale;
+    });
+    this.observeFit();
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.ro?.disconnect();
+    this.ro = undefined;
+    this.fitEl = undefined;
+  }
+
+  protected updated(changed: PropertyValues) {
+    super.updated(changed);
+    this.observeFit();
+  }
+
+  /** The `.fit` box comes and goes with the style and the option list, so re-observe after each render. */
+  private fitEl?: Element;
+  private observeFit() {
+    const fit = this.renderRoot?.querySelector(".fit") ?? undefined;
+    if (fit === this.fitEl || !this.ro) return;
+    if (this.fitEl) this.ro.unobserve(this.fitEl);
+    this.fitEl = fit;
+    if (fit) this.ro.observe(fit);
+  }
 
   static styles = [
     sharedStyles,
     css`
       /* rotary */
-      .rotary {
+      .fit {
         position: relative;
+        width: 100%;
+        max-width: ${unsafeCSS(BOX_W)}px;
+      }
+      .rotary {
+        position: absolute;
+        left: 0;
+        top: 0;
         width: ${unsafeCSS(BOX_W)}px;
         height: ${unsafeCSS(BOX_H)}px;
-        max-width: 100%;
+        transform: scale(var(--scale, 1));
+        transform-origin: 0 0;
       }
       /* labels anchor away from the knob: left side right-aligned, right side left-aligned, top centered */
       .opt {
@@ -291,7 +339,8 @@ export class TeSelector extends TeBaseCard<SelectorConfig> {
     const rot = shown >= 0 ? this.angleOf(shown, items.length) + 90 : -135;
     const dark = c.cap === "black" || c.cap === "navy";
     return html`
-      <div class="rotary">
+      <div class="fit" style=${styleMap({ height: `${BOX_H * this._scale}px` })}>
+      <div class="rotary" style=${styleMap({ "--scale": String(this._scale) })}>
         ${items.map((o, i) => {
           const a = rad(this.angleOf(i, items.length));
           const side = Math.cos(a) < -0.3 ? "left" : Math.cos(a) > 0.3 ? "right" : "top";
@@ -324,6 +373,7 @@ export class TeSelector extends TeBaseCard<SelectorConfig> {
         >
           <div class="rotor"><div class="notch"></div></div>
         </div>
+      </div>
       </div>
     `;
   }

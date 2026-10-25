@@ -4,6 +4,7 @@ import type { ActionConfig } from "../core/actions";
 import { TeBaseCard, type BaseConfig } from "../core/base-card";
 import { isToggleable, pickEntity } from "../core/entity";
 import { F } from "../core/form";
+import { HoldGesture } from "../core/hold";
 import { displayAttribute } from "../core/value";
 import { MODELS, registerCard } from "../registry";
 import { ScreenController, type Frame } from "../screen/controller";
@@ -26,6 +27,8 @@ interface MiniDisplayConfig extends BaseConfig {
   compact: boolean;
   screen: string;
   tap_action: ActionConfig;
+  /** Lights default to the color/white dialog. */
+  hold_action: ActionConfig;
 }
 
 const ICON_ZONE = 46;
@@ -35,6 +38,11 @@ export class TeMiniDisplay extends TeBaseCard<MiniDisplayConfig> {
   private screen = new ScreenController(this, (f) => this.draw(f));
   private strips = new StripCache();
   private marquees: Record<"line" | "name" | "value", Marquee> = { line: newMarquee(), name: newMarquee(), value: newMarquee() };
+  private hold = new HoldGesture(this, {
+    time: () => 500,
+    enabled: () => this._config!.hold_action.action !== "none",
+    onHold: () => this.run(this._config!.hold_action),
+  });
 
   static styles = [sharedStyles, screenStyles];
 
@@ -50,6 +58,7 @@ export class TeMiniDisplay extends TeBaseCard<MiniDisplayConfig> {
         F.grid(F.select("icon", MINI_ICONS), F.screen()),
         F.grid(F.bool("compact"), F.bool("scroll")),
         F.action("tap_action"),
+        F.action("hold_action"),
         F.attribute(),
         F.grid(F.text("unit"), F.num("decimals", 1)),
         F.look(),
@@ -69,6 +78,7 @@ export class TeMiniDisplay extends TeBaseCard<MiniDisplayConfig> {
       compact: c.compact === true,
       screen: screenName(c.screen ?? c.theme),
       tap_action: c.tap_action ?? { action: isToggleable(c.entity) ? "toggle" : "more-info" },
+      hold_action: c.hold_action ?? (c.entity.startsWith("light.") ? { action: "light-dialog" } : { action: "more-info" }),
       tile: c.tile === true,
     };
   }
@@ -150,11 +160,16 @@ export class TeMiniDisplay extends TeBaseCard<MiniDisplayConfig> {
       <div class="card ${classMap({ tile: !!c.tile })}" style="align-items:stretch">
         <div
           class="screen"
-          style="height:64px;cursor:${interactive ? "pointer" : "default"}"
+          style="height:64px;cursor:${interactive ? "pointer" : "default"};-webkit-touch-callout:none;user-select:none"
           role=${interactive ? "button" : "img"}
           tabindex=${interactive ? "0" : "-1"}
           aria-label=${`${name} ${value}`}
-          @click=${() => this.run(c.tap_action)}
+          @pointerdown=${this.hold.down}
+          @pointerup=${this.hold.cancel}
+          @pointerleave=${this.hold.cancel}
+          @pointercancel=${this.hold.cancel}
+          @contextmenu=${(e: Event) => e.preventDefault()}
+          @click=${() => !this.hold.consumeClick() && this.run(c.tap_action)}
           @keydown=${(e: KeyboardEvent) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), this.run(c.tap_action))}
         >
           <canvas></canvas>

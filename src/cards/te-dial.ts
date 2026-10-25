@@ -3,7 +3,7 @@ import { classMap } from "lit/directives/class-map.js";
 import { styleMap } from "lit/directives/style-map.js";
 import { pickEntity } from "../core/entity";
 import { F } from "../core/form";
-import { assertValueConfig, VALUE_DOMAINS } from "../core/value";
+import { assertValueConfig, hvacStatus, VALUE_DOMAINS } from "../core/value";
 import { TeValueCard, type DragStart, type ValueCardConfig } from "../core/value-card";
 import { MODELS, registerCard } from "../registry";
 import { screenName } from "../screen/themes";
@@ -140,6 +140,7 @@ export class TeDial extends TeValueCard<DialConfig> {
     const r = this.resolved;
     const frac = this.currentFrac(r);
     const text = this.displayValue(r);
+    const status = hvacStatus(r.stateObj);
 
     return html`
       <div class="card ${classMap({ tile: !!c.tile, dragging: this.dragging })}">
@@ -166,7 +167,7 @@ export class TeDial extends TeValueCard<DialConfig> {
             <te-pixel-text .text=${text} .screen=${c.screen} .size=${2} .fit=${c.size * 0.42 * 0.78}></te-pixel-text>
           </div>
         </div>
-        <div class="sublabel">${c.sublabel ?? ""}</div>
+        <div class="sublabel ${classMap({ running: !c.sublabel && !!status?.running })}">${c.sublabel ?? status?.text ?? ""}</div>
       </div>
     `;
   }

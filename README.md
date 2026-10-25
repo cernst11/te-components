@@ -132,6 +132,10 @@ Buttons, toggles and screens use Home Assistant's standard action objects (`tap_
 `toggle`, `more-info`, `navigate`, `url`, `perform-action`, `none`. Two extras for media players:
 `cycle-source` and `mute`. A `perform-action` with no `target` is sent to the card's `entity`.
 
+`light-dialog` opens the light dialog (the one behind CL-16 and CT-27) for the card's light, or for `entity:`.
+It shows brightness, plus a COLOR page and/or a WHITE page depending on what the light supports; lights that do
+both get a COLOR | WHITE switch. `mode: color` or `mode: white` picks the first page.
+
 ## Cards
 
 <details><summary><b>KN-3 knob</b> — <code>custom:te-knob</code></summary>
@@ -163,6 +167,10 @@ Buttons, toggles and screens use Home Assistant's standard action objects (`tap_
 |---|---|---|
 | `size` | `180` | Diameter in px |
 | `screen` | `vfd-amber` | Hub screen style |
+
+On a thermostat (`climate`, `water_heater`) the line under the dial shows what it is doing: `HEATING` /
+`COOLING` in orange while it runs, otherwise `ON` or `OFF`. A `sublabel` replaces it. Knobs and faders on a
+thermostat show the same line.
 
 </details>
 
@@ -205,7 +213,7 @@ Pick one of several options. `entity` is usually enough; the options and service
 
 | Option | Default | |
 |---|---|---|
-| `style` | `rotary` | `rotary` (detented switch: turn it around its center, one click per detent; tap to step, tap a label) or `keys` (latching keys with LEDs) |
+| `style` | `rotary` | `rotary` (detented switch: turn it around its center, one click per detent; tap to step, tap a label; laid out 200px wide and scaled down in narrower cells, so give it half a panel or more) or `keys` (latching keys with LEDs) |
 | `cap` | `grey` | Rotary knob cap color |
 | `columns` | up to 4 | Keys per row |
 | `options` | from the entity | Relabel or limit: `[{value: Spotify, label: SPOT}, …]` |
@@ -386,6 +394,7 @@ screen: lcd
 | `scroll` | `false` | Marquee long text |
 | `screen` | `vfd-amber` | |
 | `tap_action` | toggle / more-info | |
+| `hold_action` | `light-dialog` for lights, else more-info | Long-press (500ms) |
 
 </details>
 
@@ -449,7 +458,7 @@ remaining_entity: sensor.model_3_time_to_full
 <details><summary><b>CL-16 color picker</b> — <code>custom:te-color-picker</code></summary>
 
 `entity` is a light. `slots` takes up to 3 `input_text` entities: hold a slot to save the current color,
-tap it to recall the color.
+tap it to recall the color. If the light also does tunable white, the dialog has a COLOR | WHITE switch.
 
 </details>
 
@@ -507,7 +516,8 @@ Panel: `title`, `caption`, `subtitle`, `faceplate`, `tabs` (strings or `{label, 
 `cards` (rows).
 
 **Bracket labels** (K.O. II `BPM — METRONOME`): write a row as `{ bracket, cards }`. A string spans the
-whole row; a list splits it, each item spanning `span` cards (default 1). Works in PP-3 popups too.
+whole row; a list splits it, each item spanning `span` cards (default 1); an empty label leaves those cards
+without a bracket. Works in PP-3 popups too.
 
 ```yaml
 cards:

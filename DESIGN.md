@@ -128,8 +128,8 @@ like the TX-6 middle row). LEDs/indicators showing "on" are exempt — that's wh
 | Display | TX-6 / TP-7 / K.O. | Sunk black glass; pixel text; status chips as outlined boxes (`L R`, `04`). |
 | Mini display | TX-6 channel strip | Small screen row: pixel icon + name/value; compact = two lines. Pairs with a fader in a GR-2 tile. |
 | Matrix | OP-1 / Playdate screen | Square 64×64 dot matrix; everything is pixel art in 3 levels (dim / lit / accent). Header label, 2× value, tiny 3×5 figures. Graphs step, never smooth; appliance animations run only while the device is active. |
-| Color picker | OP-1 color knob caps | Round cap tinted with the light's color; opens the CL-16 dialog (HS wheel, brightness fader, hold-to-save slots). |
-| Color temp | — | Round cap tinted with the current white (amber→blue); opens a dialog with a kelvin-gradient fader, brightness and preset chips with LEDs. Range comes from the light. |
+| Color picker | OP-1 color knob caps | Round cap tinted with the light's color; opens the light dialog on its COLOR page (HS wheel, brightness fader, hold-to-save slots). |
+| Color temp | — | Round cap tinted with the current white (amber→blue); opens the light dialog on its WHITE page: kelvin-gradient fader, brightness and preset chips with LEDs. Range comes from the light. One dialog serves both; lights that do color and white get a COLOR \| WHITE pair of latching keys at the top. Long-press on a light's DS-2 opens it too. |
 | Group | TX-6 channel strip | One shared body tile under several modules; no extra chrome. |
 | Panel | K.O. II / Sidekick | Body + faceplate with screws, model name, orange JP subtitle, optional tab strip on top edge (`OUTPUT  INPUT  USB`). |
 | Grille | K.O. II / MIC FX | Decorative; holes on the pitch grid, lip highlight carries the hole on black. Optional LED (lit while the speaker plays), tap = more-info. |

@@ -50,6 +50,10 @@ const base = css`
     line-height: 13px;
     color: var(--te-ink-dim);
   }
+  /* a thermostat that is heating/cooling right now */
+  .sublabel.running {
+    color: var(--te-accent);
+  }
   .label:empty,
   .sublabel:empty {
     display: none;

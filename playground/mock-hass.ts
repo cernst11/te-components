@@ -50,7 +50,15 @@ function initialStates(): Record<string, HassEntity> {
       min_color_temp_kelvin: 2200,
       max_color_temp_kelvin: 6500,
     }),
-    ent("light.sofa_lamp", "on", { friendly_name: "Sofa Lamp", brightness: 120, hs_color: [30, 75] }),
+    ent("light.sofa_lamp", "on", {
+      friendly_name: "Sofa Lamp",
+      brightness: 120,
+      hs_color: [30, 75],
+      supported_color_modes: ["color_temp", "hs"],
+      color_mode: "hs",
+      min_color_temp_kelvin: 2000,
+      max_color_temp_kelvin: 6500,
+    }),
     ent("light.hallway", "off", { friendly_name: "Hallway" }),
     ent("sensor.outdoor_temperature", "14.2", { friendly_name: "Outdoor", unit_of_measurement: "°C" }),
     ent("sensor.washer_status", "wash", { friendly_name: "Washer" }),
@@ -81,6 +89,7 @@ function initialStates(): Record<string, HassEntity> {
       max_temp: 28,
       target_temp_step: 0.5,
       hvac_modes: ["off", "heat", "cool", "heat_cool", "auto", "dry"],
+      hvac_action: "heating",
     }),
     ent("input_select.house_mode", "home", { friendly_name: "House Mode", options: ["home", "away", "night", "vacation"] }),
     ent("timer.pasta", "active", {
@@ -331,7 +340,7 @@ export class MockHass {
       case "alarm_control_panel.alarm_trigger":
         return this.patch(id, "triggered");
       case "climate.set_hvac_mode":
-        return this.patch(id, d.hvac_mode);
+        return this.patch(id, d.hvac_mode, { hvac_action: d.hvac_mode === "off" ? "off" : d.hvac_mode === "cool" ? "cooling" : "heating" });
       case "input_select.select_option":
         return this.patch(id, d.option);
       case "fan.set_preset_mode":
