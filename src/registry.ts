@@ -40,7 +40,10 @@ declare global {
 }
 
 export function registerCard(meta: CardMeta, ctor: CustomElementConstructor) {
-  if (!customElements.get(meta.type)) customElements.define(meta.type, ctor);
+  const existing = customElements.get(meta.type);
+  if (!existing) customElements.define(meta.type, ctor);
+  // usually the old single-file te-compoents.js still loaded as a resource: its classes win and have no editor
+  else if (existing !== ctor) console.warn(`te-components: <${meta.type}> is already defined by another script; remove the old resource`);
   window.customCards = window.customCards || [];
   if (window.customCards.some((c) => c.type === meta.type)) return;
   window.customCards.push({
