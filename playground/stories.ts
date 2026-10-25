@@ -71,9 +71,10 @@ export const STORIES: Story[] = [
   },
   {
     model: MODELS.selector,
-    blurb: "Pick one of several modes. Rotary: drag (one click per detent), tap to step, or tap a label. Keys: latching mode keys with LEDs. Reads options from the entity (input_select, select, HVAC modes, fan presets, media sources, light effects).",
+    blurb: "Pick one of several modes. Rotary: drag (one click per detent), tap to step, or tap a label. Keys: latching mode keys with LEDs. Reads options from the entity (input_select, select, HVAC modes, fan presets, media sources, light effects); `list` picks another, e.g. a thermostat's `preset_modes`.",
     variants: [
       { name: "HVAC mode, rotary", config: { type: t("te-selector"), entity: "climate.living_room", label: "MODE" } },
+      { name: "Thermostat preset, keys", width: 300, config: { type: t("te-selector"), entity: "climate.living_room", list: "preset_modes", label: "PRESET", style: "keys" } },
       { name: "Fan preset, orange cap", config: { type: t("te-selector"), entity: "fan.bedroom", label: "PRESET", cap: "orange" } },
       { name: "House mode, keys", width: 300, config: { type: t("te-selector"), entity: "input_select.house_mode", label: "HOUSE", style: "keys" } },
       { name: "Source, keys (relabelled)", width: 300, config: { type: t("te-selector"), entity: "media_player.living_room", style: "keys", options: [{ value: "Jellyfin", label: "JF" }, { value: "Spotify", label: "SPOT" }, { value: "Radio", label: "FM" }], label: "SOURCE" } },
@@ -343,8 +344,28 @@ export const STORIES: Story[] = [
   },
   {
     model: MODELS.panel,
-    blurb: "Device chassis. Rows of child cards; an array entry becomes a row, and `{ bracket, cards }` adds K.O. II bracket labels over it.",
+    blurb: "Device chassis. Rows of child cards; an array entry becomes a row, and `{ bracket, cards }` adds K.O. II bracket labels over it. Tabs with `cards` switch pages.",
     variants: [
+      {
+        name: "Pages (tabs with cards)",
+        width: 420,
+        config: {
+          type: t("te-panel"),
+          title: "HOME",
+          subtitle: "ページ",
+          faceplate: true,
+          cards: [{ type: t("te-segment"), clock: true, height: 48 }],
+          tabs: [
+            { label: "Lights", cards: [[{ type: t("te-fader"), entity: "light.kitchen", label: "KITCHEN" }, { type: t("te-fader"), entity: "light.hallway", label: "HALL" }]] },
+            {
+              label: "Climate",
+              color: "grey",
+              cards: [{ bracket: ["MODE", "PRESET"], cards: [{ type: t("te-selector"), entity: "climate.living_room", label: "MODE" }, { type: t("te-selector"), entity: "climate.living_room", list: "preset_modes", style: "keys", label: "PRESET" }] }],
+            },
+            { label: "", color: "accent" },
+          ],
+        },
+      },
       {
         name: "K.O. style mixer",
         width: 420,

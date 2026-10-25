@@ -221,12 +221,27 @@ Pick one of several options. `entity` is usually enough; the options and service
 | `media_player` | `source_list` | `media_player.select_source` |
 | `light` | `effect_list` | `light.turn_on` (`effect`) |
 | `water_heater` | `operation_list` | `water_heater.set_operation_mode` |
+| `humidifier` | `available_modes` | `humidifier.set_mode` |
+
+Set `list` to use another of the entity's lists — a thermostat's presets next to its HVAC mode:
+
+| Domain | `list` |
+|---|---|
+| `climate` | `hvac_modes` (default), `preset_modes`, `fan_modes`, `swing_modes` |
+| `fan` | `preset_modes` (default), `direction` |
+| `media_player` | `source_list` (default), `sound_mode_list` |
+
+```yaml
+- { type: custom:te-selector, entity: climate.living_room, label: MODE }
+- { type: custom:te-selector, entity: climate.living_room, list: preset_modes, label: PRESET, style: keys }
+```
 
 | Option | Default | |
 |---|---|---|
 | `style` | `rotary` | `rotary` (detented switch: turn it around its center, one click per detent; tap to step, tap a label; laid out 200px wide and scaled down in narrower cells, so give it half a panel or more) or `keys` (latching keys with LEDs) |
 | `cap` | `grey` | Rotary knob cap color |
 | `columns` | up to 4 | Keys per row |
+| `list` | domain default | Which of the entity's lists to use (table above) |
 | `options` | from the entity | Relabel or limit: `[{value: Spotify, label: SPOT}, …]` |
 | `set_action` | — | For other entities; `"{{ value }}"` is the chosen option |
 
@@ -540,8 +555,29 @@ cards:
 
 Group: `cards`, `direction` (`row`/`column`), `gap`, `tile` (default `true`).
 
-Panel: `title`, `caption`, `subtitle`, `faceplate`, `tabs` (strings or `{label, color}`), `gap` (default 8),
+Panel: `title`, `caption`, `subtitle`, `faceplate`, `tabs` (strings or `{label, color, cards}`), `gap` (default 8),
 `cards` (rows).
+
+**Pages:** give a tab its own `cards` and the strip switches pages — the selected tab sits pressed in with its
+LED lit (arrow keys move between tabs). The panel's own `cards` stay on screen above every page, and tabs
+without `cards` stay decoration. `default_tab` (index, default 0) is selected on load; `reset_after: 120` goes
+back to it after two minutes without a touch, for wall displays.
+
+```yaml
+type: custom:te-panel
+title: TE—HOME
+reset_after: 120
+cards:
+  - { type: custom:te-segment, clock: true }      # always shown
+tabs:
+  - label: Lights
+    cards:
+      - [ { type: custom:te-fader, entity: light.kitchen }, { type: custom:te-fader, entity: light.hallway } ]
+  - label: Climate
+    color: grey
+    cards:
+      - [ { type: custom:te-selector, entity: climate.living_room }, { type: custom:te-selector, entity: climate.living_room, list: preset_modes, style: keys } ]
+```
 
 **Bracket labels** (K.O. II `BPM — METRONOME`): write a row as `{ bracket, cards }`. A string spans the
 whole row; a list splits it, each item spanning `span` cards (default 1); an empty label leaves those cards

@@ -90,6 +90,10 @@ function initialStates(): Record<string, HassEntity> {
       target_temp_step: 0.5,
       hvac_modes: ["off", "heat", "cool", "heat_cool", "auto", "dry"],
       hvac_action: "heating",
+      preset_modes: ["home", "away", "sleep", "boost"],
+      preset_mode: "home",
+      fan_modes: ["auto", "low", "high"],
+      fan_mode: "auto",
     }),
     ent("input_select.house_mode", "home", { friendly_name: "House Mode", options: ["home", "away", "night", "vacation"] }),
     ent("timer.pasta", "active", {
@@ -343,6 +347,10 @@ export class MockHass {
         return this.patch(id, d.hvac_mode, { hvac_action: d.hvac_mode === "off" ? "off" : d.hvac_mode === "cool" ? "cooling" : "heating" });
       case "input_select.select_option":
         return this.patch(id, d.option);
+      case "climate.set_preset_mode":
+        return this.patch(id, undefined, { preset_mode: d.preset_mode });
+      case "climate.set_fan_mode":
+        return this.patch(id, undefined, { fan_mode: d.fan_mode });
       case "fan.set_preset_mode":
         return this.patch(id, undefined, { preset_mode: d.preset_mode });
       case "climate.set_temperature":

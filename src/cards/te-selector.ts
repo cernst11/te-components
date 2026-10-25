@@ -4,7 +4,7 @@ import { styleMap } from "lit/directives/style-map.js";
 import { TeBaseCard, type BaseConfig } from "../core/base-card";
 import { pickEntity } from "../core/entity";
 import { F } from "../core/form";
-import { assertOptionsConfig, OPTION_DOMAINS, resolveOptions, selectOption, type OptionItem, type OptionsConfig } from "../core/options";
+import { assertOptionsConfig, LISTS, OPTION_DOMAINS, resolveOptions, selectOption, type OptionItem, type OptionsConfig } from "../core/options";
 import { MODELS, registerCard } from "../registry";
 import { sharedStyles } from "../theme/shared";
 import type { HomeAssistant } from "../types";
@@ -224,7 +224,7 @@ export class TeSelector extends TeBaseCard<SelectorConfig> {
         F.entity(OPTION_DOMAINS),
         F.labels(),
         F.grid(F.select("style", STYLES), F.select("cap", CAPS), F.num("columns", 1)),
-        F.attribute(),
+        F.grid(F.select("list", LISTS), F.attribute()),
         F.look(F.feedback()),
       ],
     };
@@ -411,4 +411,4 @@ export class TeSelector extends TeBaseCard<SelectorConfig> {
   }
 }
 
-registerCard({ ...MODELS.selector, description: "Mode selector: detented rotary switch or latching mode keys. input_select, select, HVAC mode, fan preset, media source." }, TeSelector);
+registerCard({ ...MODELS.selector, description: "Mode selector: detented rotary switch or latching mode keys. input_select, select, HVAC/preset/fan mode, fan preset, media source or sound mode." }, TeSelector);

@@ -111,5 +111,7 @@ Don't use Teenage Engineering names/branding as product branding ("inspired by" 
 
 - 2026-10-24 — Design direction agreed (DESIGN.md v0.2): studio-render depth (no neumorphism), black body
   as theme, model names per component, screens = vfd-amber/vfd-blue/oled/lcd, accent budget, breaking config OK.
+- 2026-10-25 — CH-1 tabs became pages (tabs with `cards`); SW-5 `list:` picks another choice list
+  (thermostat presets, fan modes, sound modes); BL-0 spacer; locks toggle with hold-to-unlock on TG-1.
 - 2026-10-24 — Lit + TypeScript + Vite; HACS distribution; original `te-compoents.js` removed (kept in the
   baseline commit). Font: system stack with `te-font-family` override (no bundled font).

@@ -218,5 +218,6 @@ New components pick the next unused code; numbers should carry a small joke or r
 6. **Config:** breaking changes allowed — move to HA-standard `tap_action` / `hold_action` and
    `action: perform-action` objects; drop ad-hoc `domain/service/value_key` where HA has a standard.
 
-Still open: panel tab strip is decoration-only for now (could become functional tabs later).
+Panel tabs (2026-10-25): a tab with `cards` is a page; the selected one is pressed in with a lit LED,
+the panel's own rows stay above every page. Tabs without cards remain decoration.
 Font: system stack by default, overridable via the `te-font-family` theme variable.
