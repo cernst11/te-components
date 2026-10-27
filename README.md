@@ -754,7 +754,8 @@ npm run dev        # playground at http://localhost:5173 with a mock Home Assist
 npm run export:dashboard   # regenerate examples/dashboard.yaml from playground/dashboard.ts
 npm run build      # dist/te-components.js
 npm run typecheck
-npm test           # unit tests (Vitest); npm run test:watch while working
+npm test           # unit tests + card-picker check in headless Chromium
+                   # (first time: npx playwright install chromium)
 ```
 
 See [`DESIGN.md`](DESIGN.md) for the design guidelines, [`AGENTS.md`](AGENTS.md) for architecture notes and

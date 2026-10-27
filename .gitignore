@@ -7,3 +7,5 @@ insporation/
 # written by the UniFi MCP server when a session starts here
 audit.log
 logs/
+# Vitest browser failure screenshots
+.vitest/

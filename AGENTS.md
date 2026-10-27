@@ -79,10 +79,15 @@ HA's picker calls `getStubConfig(hass, entities, entitiesFallback)`, merges it i
 `setConfig` on a live preview (a throw = error card). The editor builds `ha-form` from `getConfigForm().schema`;
 unlabelled fields show the capitalised key name. Run `/check.html` on the dev server after touching any stub or
 form; it must report no errors. Stubs must produce a config the card accepts whenever matching entities exist.
+The check itself lives in `playground/picker-contract.ts`; `npm test` runs it for every card in headless Chromium
+(`test/browser/picker.test.ts`), fails on errors and prints warnings. It also fails if a model in `MODELS` isn't
+registered (forgot the import in `src/index.ts`).
 
-## Unit tests
+## Tests
 
-`npm test` (Vitest, Node environment, `vitest.config.ts`; CI runs it before the build). Tests live in `test/` and
+`npm test` (Vitest, `vitest.config.ts`; CI runs it before the build) runs two projects: `unit` (Node) and
+`browser` (headless Chromium via Playwright, `test/browser/`; first time locally: `npx playwright install chromium`).
+`npx vitest run --project unit` skips the browser. Unit tests live in `test/` and
 cover the pure logic: `core/value`, `actions`, `options`, `history`, `throttle`, `hold`, utils, and the screen code.
 `test/helpers.ts` has `fakeHass()` (records `callService` calls) and `fakeHost()` (records `hass-more-info`).
 Dot-matrix drawing (DotBuffer, fonts, DS-64 animations) is snapshotted as ASCII; after an intentional art change,
