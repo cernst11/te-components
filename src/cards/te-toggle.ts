@@ -3,7 +3,7 @@ import { classMap } from "lit/directives/class-map.js";
 import type { ActionConfig } from "../core/actions";
 import { TeBaseCard, type BaseConfig } from "../core/base-card";
 import { onStateOf, pickEntity } from "../core/entity";
-import { F } from "../core/form";
+import { configForm, F } from "../core/form";
 import { HoldGesture } from "../core/hold";
 import { renderGlyph } from "../icons";
 import { MODELS, registerCard } from "../registry";
@@ -21,6 +21,8 @@ interface ToggleConfig extends BaseConfig {
   confirm_unlock: boolean;
   hold_time: number;
 }
+
+const DEFAULTS = { confirm_unlock: true, hold_time: 700 } satisfies Partial<ToggleConfig>;
 
 /** TG-1 — round button with a pill LED window (TX-6 FX). */
 export class TeToggle extends TeBaseCard<ToggleConfig> {
@@ -88,7 +90,7 @@ export class TeToggle extends TeBaseCard<ToggleConfig> {
   }
 
   static getConfigForm() {
-    return { schema: [F.entity(), F.labels(), F.grid(F.text("glyph"), F.text("on_state")), F.grid(F.bool("confirm_unlock"), F.num("hold_time", 50)), F.action("tap_action"), F.look(F.feedback())] };
+    return configForm([F.entity(), F.labels(), F.grid(F.text("glyph"), F.text("on_state")), F.grid(F.bool("confirm_unlock"), F.num("hold_time", 50)), F.action("tap_action"), F.look(F.feedback())], DEFAULTS);
   }
 
   protected normalizeConfig(c: Record<string, any>): ToggleConfig {
@@ -99,8 +101,8 @@ export class TeToggle extends TeBaseCard<ToggleConfig> {
       entity: c.entity,
       tap_action: c.tap_action ?? { action: "toggle" },
       on_state: c.on_state ?? onStateOf(c.entity),
-      confirm_unlock: c.confirm_unlock !== false,
-      hold_time: c.hold_time ?? 700,
+      confirm_unlock: c.confirm_unlock ?? DEFAULTS.confirm_unlock,
+      hold_time: c.hold_time ?? DEFAULTS.hold_time,
       tile: c.tile === true,
     };
   }

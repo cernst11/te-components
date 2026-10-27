@@ -10,6 +10,9 @@ export interface ValueCardConfig extends BaseConfig, ValueConfig {
   show_value?: boolean;
 }
 
+/** Defaults shared by the value cards (knob, fader, dial). */
+export const VALUE_DEFAULTS = { show_value: true } satisfies Partial<ValueCardConfig>;
+
 export interface DragStart {
   x: number;
   y: number;
@@ -65,11 +68,11 @@ export abstract class TeValueCard<C extends ValueCardConfig> extends TeBaseCard<
   /** Sublabel text: live value while adjusting, otherwise the configured sublabel. */
   protected readoutText(r = this.resolved): string {
     const adjusting = this.dragging || this._local !== null;
-    return this._config!.show_value !== false && adjusting ? this.displayValue(r) : (this._config!.sublabel ?? hvacStatus(r.stateObj)?.text ?? "");
+    return (this._config!.show_value ?? VALUE_DEFAULTS.show_value) && adjusting ? this.displayValue(r) : (this._config!.sublabel ?? hvacStatus(r.stateObj)?.text ?? "");
   }
 
   protected get readoutClass(): string {
-    return this._config!.show_value !== false ? "sublabel readout" : "sublabel";
+    return (this._config!.show_value ?? VALUE_DEFAULTS.show_value) ? "sublabel readout" : "sublabel";
   }
 
   protected displayValue(r = this.resolved): string {

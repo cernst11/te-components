@@ -3,7 +3,7 @@ import { classMap } from "lit/directives/class-map.js";
 import { styleMap } from "lit/directives/style-map.js";
 import { TeBaseCard, type BaseConfig } from "../core/base-card";
 import { pickEntity } from "../core/entity";
-import { F } from "../core/form";
+import { configForm, F } from "../core/form";
 import { formatValue, fracOf, resolveValue, type ValueConfig } from "../core/value";
 import { MODELS, registerCard } from "../registry";
 import { screenName, screenTheme } from "../screen/themes";
@@ -24,6 +24,8 @@ interface MeterConfig extends BaseConfig, Omit<ValueConfig, "set_action"> {
   show_value: boolean;
   screen: string;
 }
+
+const DEFAULTS = { style: "bar", orientation: "horizontal", segments: 12, peak: true, show_value: true } satisfies Partial<MeterConfig>;
 
 const PEAK_HOLD_MS = 2500;
 /** Needle sweep: ±50° from vertical. */
@@ -119,8 +121,8 @@ export class TeMeter extends TeBaseCard<MeterConfig> {
   }
 
   static getConfigForm() {
-    return {
-      schema: [
+    return configForm(
+      [
         F.entity(),
         F.labels(),
         F.grid(F.select("style", STYLES), F.select("orientation", ["horizontal", "vertical"]), F.screen()),
@@ -129,7 +131,8 @@ export class TeMeter extends TeBaseCard<MeterConfig> {
         F.grid(F.text("unit"), F.num("decimals", 1)),
         F.look(),
       ],
-    };
+      DEFAULTS,
+    );
   }
 
   protected normalizeConfig(c: Record<string, any>): MeterConfig {
@@ -138,11 +141,11 @@ export class TeMeter extends TeBaseCard<MeterConfig> {
       ...c,
       type: c.type,
       entity: c.entity,
-      style: STYLES.includes(c.style) ? c.style : "bar",
-      orientation: c.orientation === "vertical" ? "vertical" : "horizontal",
-      segments: Math.max(3, Math.min(32, c.segments ?? 12)),
-      peak: c.peak !== false,
-      show_value: c.show_value !== false,
+      style: STYLES.includes(c.style) ? c.style : DEFAULTS.style,
+      orientation: c.orientation === "vertical" ? "vertical" : DEFAULTS.orientation,
+      segments: Math.max(3, Math.min(32, c.segments ?? DEFAULTS.segments)),
+      peak: c.peak ?? DEFAULTS.peak,
+      show_value: c.show_value ?? DEFAULTS.show_value,
       screen: screenName(c.screen),
       tile: c.tile === true,
     };

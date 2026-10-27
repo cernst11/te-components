@@ -1,4 +1,4 @@
-import { SCREEN_NAMES } from "../screen/themes";
+import { DEFAULT_SCREEN, SCREEN_NAMES } from "../screen/themes";
 import { FEEDBACK_MODES } from "./feedback";
 
 /** Building blocks for `getConfigForm()` (HA's built-in ha-form visual editor). */
@@ -18,7 +18,7 @@ export const F = {
   select,
   grid: (...schema: object[]) => ({ type: "grid", name: "", schema }),
   body: () => select("body", ["silver", "black"]),
-  screen: () => select("screen", SCREEN_NAMES),
+  screen: () => ({ ...select("screen", SCREEN_NAMES), default: DEFAULT_SCREEN }),
   labels: () => ({ type: "grid", name: "", schema: [{ name: "label", selector: { text: {} } }, { name: "sublabel", selector: { text: {} } }] }),
   range: () => ({
     type: "expandable",
@@ -34,3 +34,20 @@ export const F = {
   /** Haptics / click sounds, for interactive cards: `F.look(F.feedback())`. */
   feedback: () => select("feedback", FEEDBACK_MODES),
 };
+
+type FormItem = { name?: string; default?: unknown; selector?: Record<string, unknown>; schema?: FormItem[] };
+
+/**
+ * A getConfigForm() result whose fields show the card's defaults (the `DEFAULTS` its normalizeConfig uses): HA
+ * shows a field's `default` greyed in number and text fields and as the state of a switch; dropdowns can't show
+ * one, so they get "Default: x" as helper text.
+ */
+export function configForm(schema: object[], defaults: object = {}) {
+  const d = defaults as Record<string, unknown>;
+  const walk = (items: FormItem[]): FormItem[] =>
+    items.map((it) => (it.schema ? { ...it, schema: walk(it.schema) } : it.name && it.name in d && it.default === undefined ? { ...it, default: d[it.name] } : it));
+  return {
+    schema: walk(schema as FormItem[]),
+    computeHelper: (item: FormItem) => (item.selector?.select && item.default !== undefined ? `Default: ${item.default}` : undefined),
+  };
+}

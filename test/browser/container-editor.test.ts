@@ -51,6 +51,7 @@ describe("CH-1 panel editor", () => {
   it("shows the settings form and the rows as chips", async () => {
     const el = await mount("te-panel", { title: "HOME", cards: [a, [b, c]] });
     expect($(el, "ha-form").schema.length).toBeGreaterThan(0);
+    expect($(el, "ha-form").computeHelper).toBeTypeOf("function");
     expect(chips(el)).toEqual(["KN-3 · kitchen", "FD-6 · HALL", "BT-4 · C"]);
     expect($$(el, ".row").length).toBe(2);
   });

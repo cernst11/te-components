@@ -3,9 +3,9 @@ import { classMap } from "lit/directives/class-map.js";
 import { styleMap } from "lit/directives/style-map.js";
 import type { ActionConfig } from "../core/actions";
 import { pickEntity } from "../core/entity";
-import { F } from "../core/form";
+import { configForm, F } from "../core/form";
 import { assertValueConfig, VALUE_DOMAINS } from "../core/value";
-import { TeValueCard, type DragStart, type ValueCardConfig } from "../core/value-card";
+import { TeValueCard, VALUE_DEFAULTS, type DragStart, type ValueCardConfig } from "../core/value-card";
 import { MODELS, registerCard } from "../registry";
 import { sharedStyles } from "../theme/shared";
 import type { HomeAssistant } from "../types";
@@ -32,6 +32,8 @@ function defaultLabelTap(entity: string): ActionConfig {
   return { action: "none" };
 }
 
+
+const DEFAULTS = { ...VALUE_DEFAULTS, orientation: "vertical", cap: "flat", dots: 6, length: 150 } satisfies Partial<FaderConfig>;
 /** FD-6 — fader with LED dot ladder (TX-6). */
 export class TeFader extends TeValueCard<FaderConfig> {
   protected absoluteDrag = true;
@@ -174,8 +176,8 @@ export class TeFader extends TeValueCard<FaderConfig> {
   }
 
   static getConfigForm() {
-    return {
-      schema: [
+    return configForm(
+      [
         F.entity(VALUE_DOMAINS),
         F.labels(),
         F.grid(F.select("orientation", ["vertical", "horizontal"]), F.select("cap", ["flat", "round"]), F.num("dots", 1), F.num("length", 1)),
@@ -184,7 +186,8 @@ export class TeFader extends TeValueCard<FaderConfig> {
         F.range(),
         F.look(F.feedback()),
       ],
-    };
+      DEFAULTS,
+    );
   }
 
   protected normalizeConfig(c: Record<string, any>): FaderConfig {
@@ -193,10 +196,11 @@ export class TeFader extends TeValueCard<FaderConfig> {
       ...c,
       type: c.type,
       entity: c.entity,
-      orientation: c.orientation === "horizontal" ? "horizontal" : "vertical",
-      dots: Math.max(0, Math.min(24, c.dots ?? 6)),
-      cap: c.cap === "round" ? "round" : "flat",
-      length: c.length ?? 150,
+      orientation: c.orientation === "horizontal" ? "horizontal" : DEFAULTS.orientation,
+      dots: Math.max(0, Math.min(24, c.dots ?? DEFAULTS.dots)),
+      cap: c.cap === "round" ? "round" : DEFAULTS.cap,
+      length: c.length ?? DEFAULTS.length,
+      show_value: c.show_value ?? DEFAULTS.show_value,
       tile: c.tile === true,
       label_tap_action: c.label_tap_action ?? defaultLabelTap(c.entity),
     };

@@ -3,7 +3,7 @@ import { classMap } from "lit/directives/class-map.js";
 import { styleMap } from "lit/directives/style-map.js";
 import { TeBaseCard, type BaseConfig } from "../core/base-card";
 import { createChildCard, forwardHass } from "../core/child-cards";
-import { F } from "../core/form";
+import { configForm, F } from "../core/form";
 import { containerEditor } from "../editor/te-container-editor";
 import { MODELS, registerCard } from "../registry";
 import { sharedStyles } from "../theme/shared";
@@ -13,6 +13,8 @@ interface GroupConfig extends BaseConfig {
   direction: "row" | "column";
   gap: number;
 }
+
+const DEFAULTS = { direction: "row", gap: 12, tile: true } satisfies Partial<GroupConfig>;
 
 /** GR-2 — lays out several modules on one shared tile. */
 export class TeGroup extends TeBaseCard<GroupConfig> {
@@ -45,7 +47,7 @@ export class TeGroup extends TeBaseCard<GroupConfig> {
   }
 
   protected normalizeConfig(c: Record<string, any>): GroupConfig {
-    const cfg: GroupConfig = { ...c, type: c.type, cards: c.cards ?? [], direction: c.direction === "column" ? "column" : "row", gap: c.gap ?? 12, tile: c.tile !== false };
+    const cfg: GroupConfig = { ...c, type: c.type, cards: c.cards ?? [], direction: c.direction === "column" ? "column" : DEFAULTS.direction, gap: c.gap ?? DEFAULTS.gap, tile: c.tile ?? DEFAULTS.tile };
     this.children_ = cfg.cards.map((child) => createChildCard(child, this.hass));
     return cfg;
   }
@@ -65,11 +67,11 @@ export class TeGroup extends TeBaseCard<GroupConfig> {
 
   /** Settings plus the child cards, edited with HA's own card editor and picker. */
   static getConfigElement() {
-    return containerEditor("group", TeGroup.getConfigForm().schema);
+    return containerEditor("group", TeGroup.getConfigForm());
   }
 
   static getConfigForm() {
-    return { schema: [F.grid(F.select("direction", ["row", "column"]), F.num("gap", 1)), F.look()] };
+    return configForm([F.grid(F.select("direction", ["row", "column"]), F.num("gap", 1)), F.look()], DEFAULTS);
   }
 
   render() {

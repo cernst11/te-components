@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { isToggleable, onStateOf, pickEntities, pickEntity } from "../src/core/entity";
 import { detentOf, feedbackMode } from "../src/core/feedback";
+import { configForm } from "../src/core/form";
 import { hexToRgb, hsvToRgb, kelvinToRgb, rgbToHex, rgbToHsv } from "../src/utils/color";
 import { clamp, decimalsOf, domainOf, toNumber } from "../src/utils/math";
 import { entity, fakeHass } from "./helpers";
@@ -87,5 +88,28 @@ describe("feedback", () => {
     expect(detentOf(1, 4)).toBe(4);
     expect(detentOf(0.5, 255)).toBe(12);
     expect(detentOf(0.5, 0)).toBe(12);
+  });
+});
+
+describe("configForm", () => {
+  const schema = [
+    { name: "size", selector: { select: { options: [] } } },
+    { type: "grid", name: "", schema: [{ name: "gap", selector: { number: {} } }, { name: "screen", selector: { select: {} }, default: "oled" }] },
+    { name: "label", selector: { text: {} } },
+  ];
+
+  it("puts defaults on fields, also inside grids, without overriding a field's own", () => {
+    const form = configForm(schema, { size: "l", gap: 8, screen: "lcd" });
+    expect(form.schema[0]).toMatchObject({ name: "size", default: "l" });
+    expect(form.schema[1].schema![0]).toMatchObject({ name: "gap", default: 8 });
+    expect(form.schema[1].schema![1]).toMatchObject({ name: "screen", default: "oled" });
+    expect(form.schema[2]).not.toHaveProperty("default");
+  });
+
+  it("explains dropdown defaults in helper text only", () => {
+    const form = configForm(schema, { size: "l", gap: 8 });
+    expect(form.computeHelper(form.schema[0])).toBe("Default: l");
+    expect(form.computeHelper(form.schema[1].schema![0])).toBeUndefined();
+    expect(form.computeHelper(form.schema[2])).toBeUndefined();
   });
 });

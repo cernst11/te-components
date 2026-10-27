@@ -4,7 +4,7 @@ import { ifDefined } from "lit/directives/if-defined.js";
 import { styleMap } from "lit/directives/style-map.js";
 import type { ActionConfig } from "../core/actions";
 import { TeBaseCard, type BaseConfig } from "../core/base-card";
-import { F } from "../core/form";
+import { configForm, F } from "../core/form";
 import { HoldGesture } from "../core/hold";
 import { GLYPH_NAMES, renderGlyph, renderIcon } from "../icons";
 import { MODELS, registerCard } from "../registry";
@@ -28,6 +28,8 @@ interface ButtonConfig extends BaseConfig {
   active_attribute?: string;
   active_state?: string;
 }
+
+const DEFAULTS = { shape: "round", color: "light", hold_time: 600, hold_to_confirm: false } satisfies Partial<ButtonConfig>;
 
 /** BT-4 — momentary button: round, square, or K.O.-style key with printed label. */
 export class TeButton extends TeBaseCard<ButtonConfig> {
@@ -115,8 +117,8 @@ export class TeButton extends TeBaseCard<ButtonConfig> {
   }
 
   static getConfigForm() {
-    return {
-      schema: [
+    return configForm(
+      [
         F.entity(),
         F.labels(),
         F.grid(F.select("shape", SHAPES), F.select("color", COLORS), F.icon(), F.select("glyph", GLYPH_NAMES)),
@@ -126,18 +128,19 @@ export class TeButton extends TeBaseCard<ButtonConfig> {
         { type: "expandable", name: "", title: "Active LED", schema: [{ name: "active_entity", selector: { entity: {} } }, F.text("active_attribute"), F.text("active_state")] },
         F.look(F.feedback()),
       ].map((s: any) => (s.name === "entity" ? { ...s, required: false } : s)),
-    };
+      DEFAULTS,
+    );
   }
 
   protected normalizeConfig(c: Record<string, any>): ButtonConfig {
     return {
       ...c,
       type: c.type,
-      shape: SHAPES.includes(c.shape) ? c.shape : "round",
-      color: COLORS.includes(c.color) ? c.color : "light",
+      shape: SHAPES.includes(c.shape) ? c.shape : DEFAULTS.shape,
+      color: COLORS.includes(c.color) ? c.color : DEFAULTS.color,
       tap_action: c.tap_action ?? (c.entity ? { action: "toggle" } : { action: "none" }),
-      hold_time: c.hold_time ?? 600,
-      hold_to_confirm: c.hold_to_confirm === true,
+      hold_time: c.hold_time ?? DEFAULTS.hold_time,
+      hold_to_confirm: c.hold_to_confirm ?? DEFAULTS.hold_to_confirm,
       active_entity: c.active_entity ?? c.entity,
       tile: c.tile === true,
     };

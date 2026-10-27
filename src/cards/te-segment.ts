@@ -4,7 +4,7 @@ import { styleMap } from "lit/directives/style-map.js";
 import type { ActionConfig } from "../core/actions";
 import { TeBaseCard, type BaseConfig } from "../core/base-card";
 import { pickEntity } from "../core/entity";
-import { F } from "../core/form";
+import { configForm, F } from "../core/form";
 import { displayAttribute } from "../core/value";
 import { MODELS, registerCard } from "../registry";
 import { ScreenController, type Frame } from "../screen/controller";
@@ -32,6 +32,8 @@ interface SegmentConfig extends BaseConfig {
   height: number;
   tap_action: ActionConfig;
 }
+
+const DEFAULTS = { clock: false, seconds: false, hour12: false, blink: true, height: 96 } satisfies Partial<SegmentConfig>;
 
 /** "h:mm:ss" / "mm:ss" duration string → seconds. */
 const parseDuration = (s: unknown) => {
@@ -77,8 +79,8 @@ export class TeSegment extends TeBaseCard<SegmentConfig> {
   }
 
   static getConfigForm() {
-    return {
-      schema: [
+    return configForm(
+      [
         { ...F.entity(), required: false },
         F.text("label"),
         F.grid(F.bool("clock"), F.bool("seconds"), F.bool("hour12"), F.bool("blink")),
@@ -88,7 +90,8 @@ export class TeSegment extends TeBaseCard<SegmentConfig> {
         F.action("tap_action"),
         F.look(),
       ],
-    };
+      DEFAULTS,
+    );
   }
 
   protected normalizeConfig(c: Record<string, any>): SegmentConfig {
@@ -96,12 +99,12 @@ export class TeSegment extends TeBaseCard<SegmentConfig> {
     return {
       ...c,
       type: c.type,
-      clock: c.clock === true,
-      seconds: c.seconds === true,
-      hour12: c.hour12 === true,
-      blink: c.blink !== false,
+      clock: c.clock ?? DEFAULTS.clock,
+      seconds: c.seconds ?? DEFAULTS.seconds,
+      hour12: c.hour12 ?? DEFAULTS.hour12,
+      blink: c.blink ?? DEFAULTS.blink,
       screen: screenName(c.screen),
-      height: c.height ?? 96,
+      height: c.height ?? DEFAULTS.height,
       tap_action: c.tap_action ?? (c.entity ? { action: "more-info" } : { action: "none" }),
       tile: c.tile === true,
     };

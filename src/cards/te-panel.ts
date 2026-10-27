@@ -3,7 +3,7 @@ import { classMap } from "lit/directives/class-map.js";
 import { styleMap } from "lit/directives/style-map.js";
 import { TeBaseCard, type BaseConfig } from "../core/base-card";
 import { buildRows, forwardHass, renderRows, rowCards, rowStyles, type Rows } from "../core/child-cards";
-import { F } from "../core/form";
+import { configForm, F } from "../core/form";
 import { containerEditor } from "../editor/te-container-editor";
 import { MODELS, registerCard } from "../registry";
 import { sharedStyles } from "../theme/shared";
@@ -31,6 +31,8 @@ interface PanelConfig extends BaseConfig {
   gap: number;
   cards: (Record<string, unknown> | Record<string, unknown>[])[];
 }
+
+const DEFAULTS = { faceplate: false, gap: 8, default_tab: 0, reset_after: 0 } satisfies Partial<PanelConfig>;
 
 /** CH-1 — device chassis: screws, model name, orange katakana subtitle, rows of child cards. */
 export class TePanel extends TeBaseCard<PanelConfig> {
@@ -155,10 +157,10 @@ export class TePanel extends TeBaseCard<PanelConfig> {
       caption: c.caption ?? "",
       subtitle: c.subtitle ?? "",
       tabs,
-      default_tab: Math.min(Math.max(0, Math.floor(c.default_tab ?? 0)), Math.max(0, tabs.length - 1)),
-      reset_after: Math.max(0, Number(c.reset_after) || 0),
-      faceplate: c.faceplate === true,
-      gap: c.gap ?? 8,
+      default_tab: Math.min(Math.max(0, Math.floor(c.default_tab ?? DEFAULTS.default_tab)), Math.max(0, tabs.length - 1)),
+      reset_after: Math.max(0, Number(c.reset_after) || DEFAULTS.reset_after),
+      faceplate: c.faceplate ?? DEFAULTS.faceplate,
+      gap: c.gap ?? DEFAULTS.gap,
       cards: c.cards ?? [],
     };
     this.rows = buildRows(cfg.cards, this.hass);
@@ -220,17 +222,18 @@ export class TePanel extends TeBaseCard<PanelConfig> {
 
   /** Settings plus tab pages and child cards, edited with HA's own card editor and picker. */
   static getConfigElement() {
-    return containerEditor("panel", TePanel.getConfigForm().schema);
+    return containerEditor("panel", TePanel.getConfigForm());
   }
 
   static getConfigForm() {
-    return {
-      schema: [
+    return configForm(
+      [
         F.grid(F.text("title"), F.text("caption"), F.text("subtitle")),
         F.grid(F.bool("faceplate"), F.num("gap", 1), F.feedback()),
         F.grid(F.select("body", ["silver", "black"]), F.num("default_tab", 1), F.num("reset_after", 1)),
       ],
-    };
+      DEFAULTS,
+    );
   }
 
   getGridOptions() {

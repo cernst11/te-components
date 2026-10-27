@@ -2,9 +2,9 @@ import { css, html } from "lit";
 import { classMap } from "lit/directives/class-map.js";
 import { styleMap } from "lit/directives/style-map.js";
 import { pickEntity } from "../core/entity";
-import { F } from "../core/form";
+import { configForm, F } from "../core/form";
 import { assertValueConfig, hvacStatus, VALUE_DOMAINS } from "../core/value";
-import { TeValueCard, type DragStart, type ValueCardConfig } from "../core/value-card";
+import { TeValueCard, VALUE_DEFAULTS, type DragStart, type ValueCardConfig } from "../core/value-card";
 import { MODELS, registerCard } from "../registry";
 import { screenName } from "../screen/themes";
 import { sharedStyles } from "../theme/shared";
@@ -16,6 +16,8 @@ interface DialConfig extends ValueCardConfig {
   screen: string;
   size: number;
 }
+
+const DEFAULTS = { ...VALUE_DEFAULTS, size: 180 } satisfies Partial<DialConfig>;
 
 /** DL-7 — TP-7 style platter. Turn it (relative rotation) to change the value. */
 export class TeDial extends TeValueCard<DialConfig> {
@@ -96,12 +98,12 @@ export class TeDial extends TeValueCard<DialConfig> {
   }
 
   static getConfigForm() {
-    return { schema: [F.entity(VALUE_DOMAINS), F.labels(), F.grid(F.screen(), F.num("size", 1)), F.range(), F.look(F.feedback())] };
+    return configForm([F.entity(VALUE_DOMAINS), F.labels(), F.grid(F.screen(), F.num("size", 1)), F.range(), F.look(F.feedback())], DEFAULTS);
   }
 
   protected normalizeConfig(c: Record<string, any>): DialConfig {
     assertValueConfig(c);
-    return { ...c, type: c.type, entity: c.entity, screen: screenName(c.screen ?? c.theme), size: c.size ?? 180, tile: c.tile === true };
+    return { ...c, type: c.type, entity: c.entity, screen: screenName(c.screen ?? c.theme), size: c.size ?? DEFAULTS.size, show_value: c.show_value ?? DEFAULTS.show_value, tile: c.tile === true };
   }
 
   getCardSize() {

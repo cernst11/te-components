@@ -3,7 +3,7 @@ import { classMap } from "lit/directives/class-map.js";
 import { styleMap } from "lit/directives/style-map.js";
 import type { ActionConfig } from "../core/actions";
 import { TeBaseCard, type BaseConfig } from "../core/base-card";
-import { F } from "../core/form";
+import { configForm, F } from "../core/form";
 import { HoldGesture } from "../core/hold";
 import { renderGlyph, renderIcon } from "../icons";
 import { onStateOf } from "../core/entity";
@@ -29,6 +29,8 @@ interface PadsConfig extends BaseConfig {
   columns: number;
   hold_time: number;
 }
+
+const DEFAULTS = { hold_time: 600 } satisfies Partial<PadsConfig>;
 
 /** What tapping a pad does for its entity's domain. */
 function defaultAction(entity?: string): ActionConfig {
@@ -131,7 +133,7 @@ export class TePads extends TeBaseCard<PadsConfig> {
   }
 
   static getConfigForm() {
-    return { schema: [F.labels(), F.grid(F.num("columns", 1), F.num("hold_time", 50)), F.look(F.feedback())] };
+    return configForm([F.labels(), F.grid(F.num("columns", 1), F.num("hold_time", 50)), F.look(F.feedback())], DEFAULTS);
   }
 
   protected normalizeConfig(c: Record<string, any>): PadsConfig {
@@ -145,7 +147,7 @@ export class TePads extends TeBaseCard<PadsConfig> {
       } as PadConfig;
     });
     this.holds.clear();
-    return { ...c, type: c.type, pads, columns: c.columns ?? Math.min(4, pads.length), hold_time: c.hold_time ?? 600, tile: c.tile === true };
+    return { ...c, type: c.type, pads, columns: c.columns ?? Math.min(4, pads.length), hold_time: c.hold_time ?? DEFAULTS.hold_time, tile: c.tile === true };
   }
 
   protected watchedEntities() {

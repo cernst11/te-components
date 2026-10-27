@@ -3,7 +3,7 @@ import { classMap } from "lit/directives/class-map.js";
 import { styleMap } from "lit/directives/style-map.js";
 import { TeBaseCard, type BaseConfig } from "../core/base-card";
 import { pickEntity } from "../core/entity";
-import { F } from "../core/form";
+import { configForm, F } from "../core/form";
 import { assertOptionsConfig, LISTS, OPTION_DOMAINS, resolveOptions, selectOption, type OptionItem, type OptionsConfig } from "../core/options";
 import { MODELS, registerCard } from "../registry";
 import { sharedStyles } from "../theme/shared";
@@ -19,6 +19,8 @@ interface SelectorConfig extends BaseConfig, OptionsConfig {
   /** Keys per row (keys style). */
   columns?: number;
 }
+
+const DEFAULTS = { style: "rotary", cap: "grey" } satisfies Partial<SelectorConfig>;
 
 /** Pointer movement within this radius of the knob center is ignored (angles swing wildly there). */
 const DEAD_ZONE_PX = 8;
@@ -219,15 +221,16 @@ export class TeSelector extends TeBaseCard<SelectorConfig> {
   }
 
   static getConfigForm() {
-    return {
-      schema: [
+    return configForm(
+      [
         F.entity(OPTION_DOMAINS),
         F.labels(),
         F.grid(F.select("style", STYLES), F.select("cap", CAPS), F.num("columns", 1)),
         F.grid(F.select("list", LISTS), F.attribute()),
         F.look(F.feedback()),
       ],
-    };
+      DEFAULTS,
+    );
   }
 
   protected normalizeConfig(c: Record<string, any>): SelectorConfig {
@@ -236,8 +239,8 @@ export class TeSelector extends TeBaseCard<SelectorConfig> {
       ...c,
       type: c.type,
       entity: c.entity,
-      style: STYLES.includes(c.style) ? c.style : "rotary",
-      cap: CAPS.includes(c.cap) ? c.cap : "grey",
+      style: STYLES.includes(c.style) ? c.style : DEFAULTS.style,
+      cap: CAPS.includes(c.cap) ? c.cap : DEFAULTS.cap,
       tile: c.tile === true,
     };
   }

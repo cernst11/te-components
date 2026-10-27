@@ -61,6 +61,9 @@ scripts/export-dashboard.ts   dashboard.ts → examples/dashboard.yaml (`npm run
 2. `src/cards/te-<name>.ts`: extend `TeBaseCard` (or `TeValueCard` for numeric controls), implement
    `normalizeConfig`, `render`, `static getStubConfig(hass)`, `static getConfigForm()`, `getGridOptions()`.
    Use tokens only; reuse `sharedStyles`, `HoldGesture`, `ScreenController`.
+   Put option defaults in `const DEFAULTS = {…} satisfies Partial<XConfig>`; `normalizeConfig` reads them and
+   `getConfigForm` returns `configForm(schema, DEFAULTS)` so the editor shows them (the picker test checks they match).
+   Leave out defaults that depend on the entity or theme.
 3. Import it in `src/index.ts`, add a story in `playground/stories.ts`, document it in README.md.
 
 ### Gotchas

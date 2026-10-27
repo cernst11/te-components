@@ -3,7 +3,7 @@ import { classMap } from "lit/directives/class-map.js";
 import { styleMap } from "lit/directives/style-map.js";
 import { TeBaseCard, type BaseConfig } from "../core/base-card";
 import { pickEntity } from "../core/entity";
-import { F } from "../core/form";
+import { configForm, F } from "../core/form";
 import { HoldGesture } from "../core/hold";
 import { MODELS, registerCard } from "../registry";
 import { ScreenController, type Frame } from "../screen/controller";
@@ -30,6 +30,8 @@ interface KeypadConfig extends BaseConfig {
   hold_time: number;
   screen: string;
 }
+
+const DEFAULTS = { hold_time: 800 } satisfies Partial<KeypadConfig>;
 
 /** How long a screen message ("ENTER CODE", "WRONG CODE") stays up. */
 const MESSAGE_MS = 2000;
@@ -185,21 +187,22 @@ export class TeKeypad extends TeBaseCard<KeypadConfig> {
   }
 
   static getConfigForm() {
-    return {
-      schema: [
+    return configForm(
+      [
         F.entity(["alarm_control_panel"]),
         F.labels(),
         { name: "modes", selector: { select: { multiple: true, mode: "list", options: Object.keys(MODES).map((m) => ({ value: m, label: m.replace("_", " ") })) } } },
         F.grid(F.num("hold_time", 50), F.screen()),
         F.look(F.feedback()),
       ],
-    };
+      DEFAULTS,
+    );
   }
 
   protected normalizeConfig(c: Record<string, any>): KeypadConfig {
     if (!c.entity) throw new Error("entity is required");
     const modes = c.modes === undefined ? undefined : [c.modes].flat().filter((m: string): m is Mode => m in MODES);
-    return { ...c, type: c.type, entity: c.entity, modes, hold_time: c.hold_time ?? 800, screen: screenName(c.screen), tile: c.tile === true };
+    return { ...c, type: c.type, entity: c.entity, modes, hold_time: c.hold_time ?? DEFAULTS.hold_time, screen: screenName(c.screen), tile: c.tile === true };
   }
 
   getGridOptions() {

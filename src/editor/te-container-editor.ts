@@ -15,6 +15,7 @@ export type ContainerKind = "panel" | "popup" | "group";
 type Config = Record<string, any>;
 type Selection = { row: number; card: number } | { row: number; add: true };
 type ChildEditor = HTMLElement & { toggleMode?: () => void };
+type ConfigForm = { schema: unknown[]; computeHelper?: (item: any) => string | undefined };
 
 const TAB_COLORS = ["light", "grey", "dark", "accent"];
 const TAB_SCHEMA = [
@@ -83,8 +84,8 @@ export class TeContainerEditor extends LitElement {
   declare _haReady: boolean;
 
   kind: ContainerKind = "panel";
-  /** The card's own settings (its getConfigForm schema). */
-  schema: unknown[] = [];
+  /** The card's own settings: its getConfigForm(). */
+  form: ConfigForm = { schema: [] };
   /** Bumped on every structural change so the child editor is rebuilt for the card now selected. */
   private gen = 0;
 
@@ -358,7 +359,13 @@ export class TeContainerEditor extends LitElement {
     const rows = this.rows();
     const grouped = this.kind === "group";
     return html`
-      <ha-form .hass=${this.hass} .data=${this._config} .schema=${this.schema} @value-changed=${this.onSettings}></ha-form>
+      <ha-form
+        .hass=${this.hass}
+        .data=${this._config}
+        .schema=${this.form.schema}
+        .computeHelper=${this.form.computeHelper}
+        @value-changed=${this.onSettings}
+      ></ha-form>
       <div class="cards">
         <div class="heading">Cards</div>
         ${this.kind === "panel" ? this.renderPages() : nothing}
@@ -542,10 +549,10 @@ export class TeContainerEditor extends LitElement {
 if (!customElements.get("te-container-editor")) customElements.define("te-container-editor", TeContainerEditor);
 
 /** For a container card's `static getConfigElement()`. */
-export async function containerEditor(kind: ContainerKind, schema: unknown[]): Promise<TeContainerEditor> {
+export async function containerEditor(kind: ContainerKind, form: ConfigForm): Promise<TeContainerEditor> {
   await loadHaCardEditors();
   const el = document.createElement("te-container-editor") as TeContainerEditor;
   el.kind = kind;
-  el.schema = schema;
+  el.form = form;
   return el;
 }

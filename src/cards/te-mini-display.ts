@@ -3,7 +3,7 @@ import { classMap } from "lit/directives/class-map.js";
 import type { ActionConfig } from "../core/actions";
 import { TeBaseCard, type BaseConfig } from "../core/base-card";
 import { isToggleable, onStateOf, pickEntity } from "../core/entity";
-import { F } from "../core/form";
+import { configForm, F } from "../core/form";
 import { HoldGesture } from "../core/hold";
 import { displayAttribute } from "../core/value";
 import { MODELS, registerCard } from "../registry";
@@ -34,6 +34,8 @@ interface MiniDisplayConfig extends BaseConfig {
   hold_action: ActionConfig;
 }
 
+const DEFAULTS = { icon: "bulb", scroll: false, compact: false, show_name: true } satisfies Partial<MiniDisplayConfig>;
+
 const ICON_ZONE = 46;
 
 /** DS-2 — small screen row: pixel icon + name/state. Pairs with a fader/knob in GR-2. */
@@ -54,8 +56,8 @@ export class TeMiniDisplay extends TeBaseCard<MiniDisplayConfig> {
   }
 
   static getConfigForm() {
-    return {
-      schema: [
+    return configForm(
+      [
         F.entity(),
         F.text("label"),
         F.grid(F.select("icon", [...MINI_ICONS, "none"]), F.screen()),
@@ -66,7 +68,8 @@ export class TeMiniDisplay extends TeBaseCard<MiniDisplayConfig> {
         F.grid(F.text("unit"), F.num("decimals", 1)),
         F.look(),
       ],
-    };
+      DEFAULTS,
+    );
   }
 
   protected normalizeConfig(c: Record<string, any>): MiniDisplayConfig {
@@ -75,11 +78,11 @@ export class TeMiniDisplay extends TeBaseCard<MiniDisplayConfig> {
       ...c,
       type: c.type,
       entity: c.entity,
-      icon: MINI_ICONS.includes(c.icon) || c.icon === "none" ? c.icon : "bulb",
+      icon: MINI_ICONS.includes(c.icon) || c.icon === "none" ? c.icon : DEFAULTS.icon,
       unit: c.unit ?? "",
-      scroll: c.scroll === true,
-      compact: c.compact === true,
-      show_name: c.show_name !== false,
+      scroll: c.scroll ?? DEFAULTS.scroll,
+      compact: c.compact ?? DEFAULTS.compact,
+      show_name: c.show_name ?? DEFAULTS.show_name,
       screen: screenName(c.screen ?? c.theme),
       tap_action: c.tap_action ?? { action: isToggleable(c.entity) ? "toggle" : "more-info" },
       hold_action: c.hold_action ?? (c.entity.startsWith("light.") ? { action: "light-dialog" } : { action: "more-info" }),

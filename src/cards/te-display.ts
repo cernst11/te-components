@@ -3,7 +3,7 @@ import { classMap } from "lit/directives/class-map.js";
 import { styleMap } from "lit/directives/style-map.js";
 import { TeBaseCard, type BaseConfig } from "../core/base-card";
 import { pickEntity } from "../core/entity";
-import { F } from "../core/form";
+import { configForm, F } from "../core/form";
 import { displayAttribute } from "../core/value";
 import { MODELS, registerCard } from "../registry";
 import { ScreenController, type Frame } from "../screen/controller";
@@ -35,6 +35,8 @@ interface DisplayConfig extends BaseConfig {
   text_size: number;
   demo: boolean;
 }
+
+const DEFAULTS = { progress: false, height: 92, text_size: 2, demo: false } satisfies Partial<DisplayConfig>;
 
 interface Progress {
   position: number;
@@ -72,8 +74,8 @@ export class TeDisplay extends TeBaseCard<DisplayConfig> {
   }
 
   static getConfigForm() {
-    return {
-      schema: [
+    return configForm(
+      [
         { ...F.entity(), required: false },
         F.text("label"),
         F.grid(F.screen(), F.num("text_size", 0.5), F.num("height", 1)),
@@ -82,7 +84,8 @@ export class TeDisplay extends TeBaseCard<DisplayConfig> {
         F.grid(F.text("unit"), F.num("decimals", 1)),
         F.look(),
       ],
-    };
+      DEFAULTS,
+    );
   }
 
   protected normalizeConfig(c: Record<string, any>): DisplayConfig {
@@ -92,11 +95,11 @@ export class TeDisplay extends TeBaseCard<DisplayConfig> {
       type: c.type,
       unit: c.unit ?? "",
       screen: screenName(c.screen ?? c.theme),
-      progress: c.progress === true,
+      progress: c.progress ?? DEFAULTS.progress,
       chips: c.chips ?? c.icons ?? [],
-      height: c.height ?? 92,
-      text_size: c.text_size ?? 2,
-      demo: c.demo === true,
+      height: c.height ?? DEFAULTS.height,
+      text_size: c.text_size ?? DEFAULTS.text_size,
+      demo: c.demo ?? DEFAULTS.demo,
       tile: c.tile === true,
     };
   }

@@ -2,7 +2,7 @@ import { css, html, svg } from "lit";
 import { classMap } from "lit/directives/class-map.js";
 import { styleMap } from "lit/directives/style-map.js";
 import { TeBaseCard, type BaseConfig } from "../core/base-card";
-import { F } from "../core/form";
+import { configForm, F } from "../core/form";
 import { MODELS, registerCard } from "../registry";
 import { sharedStyles } from "../theme/shared";
 
@@ -15,6 +15,8 @@ interface GrilleConfig extends BaseConfig {
   /** Hole spacing, px. */
   pitch: number;
 }
+
+const DEFAULTS = { pattern: "grid", height: 72, pitch: 7 } satisfies Partial<GrilleConfig>;
 
 /** States that mean "making sound" for the optional LED. */
 const ACTIVE = new Set(["on", "playing", "open"]);
@@ -91,23 +93,24 @@ export class TeGrille extends TeBaseCard<GrilleConfig> {
   }
 
   static getConfigForm() {
-    return {
-      schema: [
+    return configForm(
+      [
         { ...F.entity(["media_player", "switch", "binary_sensor"]), required: false },
         F.labels(),
         F.grid(F.select("pattern", PATTERNS), F.num("height", 1), F.num("pitch", 1)),
         F.look(),
       ],
-    };
+      DEFAULTS,
+    );
   }
 
   protected normalizeConfig(c: Record<string, any>): GrilleConfig {
     return {
       ...c,
       type: c.type,
-      pattern: PATTERNS.includes(c.pattern) ? c.pattern : "grid",
-      height: Math.max(16, c.height ?? 72),
-      pitch: Math.max(4, c.pitch ?? 7),
+      pattern: PATTERNS.includes(c.pattern) ? c.pattern : DEFAULTS.pattern,
+      height: Math.max(16, c.height ?? DEFAULTS.height),
+      pitch: Math.max(4, c.pitch ?? DEFAULTS.pitch),
       tile: c.tile === true,
     };
   }

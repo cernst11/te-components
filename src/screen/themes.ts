@@ -23,11 +23,12 @@ export const SCREEN_THEMES: Record<string, ScreenTheme> = {
 };
 
 export const SCREEN_NAMES = Object.keys(SCREEN_THEMES);
+export const DEFAULT_SCREEN = "vfd-amber";
 const ALIASES: Record<string, string> = { amber: "vfd-amber", blue: "vfd-blue" };
 
 export function screenName(name?: string): string {
-  const n = name ? (ALIASES[name] ?? name) : "vfd-amber";
-  return SCREEN_THEMES[n] ? n : "vfd-amber";
+  const n = name ? (ALIASES[name] ?? name) : DEFAULT_SCREEN;
+  return SCREEN_THEMES[n] ? n : DEFAULT_SCREEN;
 }
 
 export const screenTheme = (name?: string) => SCREEN_THEMES[screenName(name)];

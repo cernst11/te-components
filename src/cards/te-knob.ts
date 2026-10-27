@@ -2,9 +2,9 @@ import { css, html } from "lit";
 import { classMap } from "lit/directives/class-map.js";
 import { styleMap } from "lit/directives/style-map.js";
 import { pickEntity } from "../core/entity";
-import { F } from "../core/form";
+import { configForm, F } from "../core/form";
 import { assertValueConfig, VALUE_DOMAINS } from "../core/value";
-import { TeValueCard, type DragStart, type ValueCardConfig } from "../core/value-card";
+import { TeValueCard, VALUE_DEFAULTS, type DragStart, type ValueCardConfig } from "../core/value-card";
 import { MODELS, registerCard } from "../registry";
 import { sharedStyles } from "../theme/shared";
 import type { HomeAssistant } from "../types";
@@ -20,6 +20,8 @@ interface KnobConfig extends ValueCardConfig {
   size: keyof typeof SIZES;
   socket: boolean;
 }
+
+const DEFAULTS = { ...VALUE_DEFAULTS, cap: "grey", size: "l", socket: false } satisfies Partial<KnobConfig>;
 
 /** Pixels of pointer travel for a full sweep. */
 const DRAG_RANGE = 160;
@@ -72,9 +74,10 @@ export class TeKnob extends TeValueCard<KnobConfig> {
   }
 
   static getConfigForm() {
-    return {
-      schema: [F.entity(VALUE_DOMAINS), F.labels(), F.grid(F.select("cap", CAPS), F.select("size", Object.keys(SIZES)), F.bool("socket"), F.bool("show_value")), F.range(), F.look(F.feedback())],
-    };
+    return configForm(
+      [F.entity(VALUE_DOMAINS), F.labels(), F.grid(F.select("cap", CAPS), F.select("size", Object.keys(SIZES)), F.bool("socket"), F.bool("show_value")), F.range(), F.look(F.feedback())],
+      DEFAULTS,
+    );
   }
 
   protected normalizeConfig(c: Record<string, any>): KnobConfig {
@@ -83,9 +86,10 @@ export class TeKnob extends TeValueCard<KnobConfig> {
       ...c,
       type: c.type,
       entity: c.entity,
-      cap: CAPS.includes(c.cap) ? c.cap : "grey",
-      size: c.size in SIZES ? c.size : "l",
-      socket: c.socket === true,
+      cap: CAPS.includes(c.cap) ? c.cap : DEFAULTS.cap,
+      size: c.size in SIZES ? c.size : DEFAULTS.size,
+      socket: c.socket ?? DEFAULTS.socket,
+      show_value: c.show_value ?? DEFAULTS.show_value,
       tile: c.tile === true,
     };
   }

@@ -1,7 +1,7 @@
 import { css, html, type PropertyValues } from "lit";
 import { TeBaseCard, type BaseConfig } from "../core/base-card";
 import { buildRows, createChildCard, forwardHass, renderRows, rowCards, rowStyles, type Rows } from "../core/child-cards";
-import { F } from "../core/form";
+import { configForm, F } from "../core/form";
 import { containerEditor } from "../editor/te-container-editor";
 import { TeModal } from "../core/modal";
 import { MODELS, registerCard } from "../registry";
@@ -21,6 +21,8 @@ interface PopupConfig extends BaseConfig {
   width: number;
   gap: number;
 }
+
+const DEFAULTS = { label: "More", width: 420, gap: 8 } satisfies Partial<PopupConfig>;
 
 /** The dialog PP-3 opens: any cards, laid out in rows. */
 export class TePopupDialog extends TeModal {
@@ -65,24 +67,25 @@ export class TePopup extends TeBaseCard<PopupConfig> {
 
   /** Settings plus the rows of cards in the dialog, edited with HA's own card editor and picker. */
   static getConfigElement() {
-    return containerEditor("popup", TePopup.getConfigForm().schema);
+    return containerEditor("popup", TePopup.getConfigForm());
   }
 
   static getConfigForm() {
-    return { schema: [F.grid(F.text("label"), F.text("title")), F.grid(F.icon(), F.text("glyph")), F.grid(F.num("width", 10), F.num("gap", 1)), F.look()] };
+    return configForm([F.grid(F.text("label"), F.text("title")), F.grid(F.icon(), F.text("glyph")), F.grid(F.num("width", 10), F.num("gap", 1)), F.look()], DEFAULTS);
   }
 
   protected normalizeConfig(c: Record<string, any>): PopupConfig {
     if (!Array.isArray(c.cards)) throw new Error("cards is required (a list of rows, like te-panel)");
     // label/icon/glyph style the default K.O. key; a custom trigger card brings its own
-    const base = c.trigger ?? { type: "custom:te-button", shape: "key", color: "grey", label: c.label ?? "More", icon: c.icon, glyph: c.glyph, entity: c.entity };
+    const label = c.label ?? DEFAULTS.label;
+    const base = c.trigger ?? { type: "custom:te-button", shape: "key", color: "grey", label, icon: c.icon, glyph: c.glyph, entity: c.entity };
     const trigger = {
       ...base,
       // the popup owns the tap; the trigger card must not also toggle something
       tap_action: { action: "none" },
       hold_action: { action: "none" },
     };
-    const cfg: PopupConfig = { ...c, type: c.type, trigger, cards: c.cards, width: c.width ?? 420, gap: c.gap ?? 8 };
+    const cfg: PopupConfig = { ...c, type: c.type, label, trigger, cards: c.cards, width: c.width ?? DEFAULTS.width, gap: c.gap ?? DEFAULTS.gap };
     this.trigger = createChildCard(trigger, this.hass);
     this.closeDialog();
     return cfg;

@@ -4,7 +4,7 @@ import { styleMap } from "lit/directives/style-map.js";
 import type { ActionConfig } from "../core/actions";
 import { TeBaseCard, type BaseConfig } from "../core/base-card";
 import { pickEntity } from "../core/entity";
-import { F } from "../core/form";
+import { configForm, F } from "../core/form";
 import { bucket, fetchHistory, type Sample } from "../core/history";
 import { MODELS, registerCard } from "../registry";
 import { ANIMATION_NAMES, ANIMATIONS } from "../screen/animations";
@@ -42,6 +42,8 @@ interface MatrixConfig extends BaseConfig {
   progress_entity?: string;
   tap_action: ActionConfig;
 }
+
+const DEFAULTS = { dots: 64, aspect: 1, hours: 24, style: "area", animation: "washer" } satisfies Partial<MatrixConfig>;
 
 /** States that mean "not running" for appliances, unless `active_state` says otherwise. */
 const INACTIVE = ["off", "idle", "standby", "unavailable", "unknown", "paused", "finished", "complete", "completed", "done", "ready", "stop", "stopped", "end", "disconnected", "not_charging", "no_power", "parked"];
@@ -95,8 +97,8 @@ export class TeMatrix extends TeBaseCard<MatrixConfig> {
   }
 
   static getConfigForm() {
-    return {
-      schema: [
+    return configForm(
+      [
         F.entity(),
         F.grid(F.text("label"), F.select("mode", MODES)),
         F.grid(F.screen(), F.num("dots", 1), F.num("aspect", 0.05)),
@@ -120,15 +122,16 @@ export class TeMatrix extends TeBaseCard<MatrixConfig> {
         F.action("tap_action"),
         F.look(),
       ],
-    };
+      DEFAULTS,
+    );
   }
 
   protected normalizeConfig(c: Record<string, any>): MatrixConfig {
     if (!c.entity) throw new Error("entity is required");
     const mode = MODES.includes(c.mode) ? c.mode : c.animation ? "appliance" : "graph";
     if (mode === "appliance" && c.animation && !ANIMATIONS[c.animation]) throw new Error(`animation must be one of: ${ANIMATION_NAMES.join(", ")}`);
-    const dots = Math.max(24, Math.min(96, Math.round(c.dots ?? 64)));
-    const aspect = Math.max(0.5, Math.min(1.5, c.aspect ?? 1));
+    const dots = Math.max(24, Math.min(96, Math.round(c.dots ?? DEFAULTS.dots)));
+    const aspect = Math.max(0.5, Math.min(1.5, c.aspect ?? DEFAULTS.aspect));
     return {
       ...c,
       type: c.type,
@@ -137,9 +140,9 @@ export class TeMatrix extends TeBaseCard<MatrixConfig> {
       screen: screenName(c.screen),
       dots,
       aspect,
-      hours: Math.max(1, c.hours ?? 24),
-      style: STYLES.includes(c.style) ? c.style : "area",
-      animation: c.animation ?? "washer",
+      hours: Math.max(1, c.hours ?? DEFAULTS.hours),
+      style: STYLES.includes(c.style) ? c.style : DEFAULTS.style,
+      animation: c.animation ?? DEFAULTS.animation,
       active_state: c.active_state === undefined ? undefined : [c.active_state].flat().map(String),
       tap_action: c.tap_action ?? { action: "more-info" },
       tile: c.tile === true,
