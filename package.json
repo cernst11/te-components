@@ -1,6 +1,6 @@
 {
   "name": "te-components",
-  "version": "0.3.0-beta.2",
+  "version": "0.3.0-beta.3",
   "description": "Teenage Engineering-inspired custom cards for Home Assistant",
   "type": "module",
   "license": "GPL-3.0-or-later",

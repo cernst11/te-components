@@ -213,14 +213,14 @@ tabs:
 | `faceplate` | `false` | Put the title on a lighter screwed-on faceplate (K.O. / MIC FX) |
 | `cards` | — | Rows; a list inside a row puts cards side by side |
 | `tabs` | — | Strings, or `{label, color, cards}` |
-| `default_tab` | `0` | Tab selected on load |
+| `default_tab` | `0` | Tab selected on load; `-1` starts with no page open |
 | `reset_after` | — | Seconds without a touch before going back to `default_tab` (wall displays) |
 | `gap` | `8` | Card spacing in px |
 | `body` | `silver` | Inherited by the cards inside |
 
 **Pages:** give a tab its own `cards` and the strip switches pages — the selected tab sits pressed in with its
-LED lit (arrow keys move between tabs). The panel's own `cards` stay on screen above every page, and tabs
-without `cards` are decoration.
+LED lit (arrow keys move between tabs); tap the lit tab again to close its page. The panel's own `cards` stay on
+screen above every page, and tabs without `cards` are decoration.
 
 **Bracket labels** (K.O. II `BPM — METRONOME`): write a row as `{ bracket, cards }`. A string spans the
 whole row; a list splits it, each item spanning `span` cards (default 1); an empty label leaves those cards

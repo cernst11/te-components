@@ -21,7 +21,7 @@ interface PanelConfig extends BaseConfig {
   subtitle: string;
   /** K.O.-style tab strip along the top edge; tabs with `cards` switch pages. */
   tabs: Tab[];
-  /** Tab selected on load (index). */
+  /** Tab selected on load (index); -1 starts with no page open. */
   default_tab: number;
   /** Go back to `default_tab` after this many seconds without a touch (wall displays); 0 = stay. */
   reset_after: number;
@@ -157,7 +157,7 @@ export class TePanel extends TeBaseCard<PanelConfig> {
       caption: c.caption ?? "",
       subtitle: c.subtitle ?? "",
       tabs,
-      default_tab: Math.min(Math.max(0, Math.floor(c.default_tab ?? DEFAULTS.default_tab)), Math.max(0, tabs.length - 1)),
+      default_tab: Math.min(Math.max(-1, Math.floor(c.default_tab ?? DEFAULTS.default_tab)), Math.max(0, tabs.length - 1)),
       reset_after: Math.max(0, Number(c.reset_after) || DEFAULTS.reset_after),
       faceplate: c.faceplate ?? DEFAULTS.faceplate,
       gap: c.gap ?? DEFAULTS.gap,
@@ -189,13 +189,19 @@ export class TePanel extends TeBaseCard<PanelConfig> {
     clearTimeout(this.resetTimer);
   }
 
+  /** Opens tab `i`'s page; -1 closes the open page. */
   private select(i: number) {
-    if (!this.tabRows[i]?.length) return;
+    if (i >= 0 && !this.tabRows[i]?.length) return;
     if (i !== this._tab) {
       this._tab = i;
       this.feedback("tick");
     }
     this.armReset();
+  }
+
+  /** Tapping the lit tab closes its page, leaving the panel's own cards. */
+  private toggle(i: number) {
+    this.select(i === this._tab ? -1 : i);
   }
 
   /** Any touch inside the panel restarts the return-to-default countdown. */
@@ -209,7 +215,10 @@ export class TePanel extends TeBaseCard<PanelConfig> {
   private onTabKey(ev: KeyboardEvent) {
     const pages = this.tabRows.map((r, i) => (r.length ? i : -1)).filter((i) => i >= 0);
     const at = pages.indexOf(this._tab);
-    const next = ev.key === "ArrowRight" ? pages[(at + 1) % pages.length] : ev.key === "ArrowLeft" ? pages[(at - 1 + pages.length) % pages.length] : undefined;
+    // with no page open, Right opens the first and Left the last
+    const right = at < 0 ? pages[0] : pages[(at + 1) % pages.length];
+    const left = at < 0 ? pages[pages.length - 1] : pages[(at - 1 + pages.length) % pages.length];
+    const next = ev.key === "ArrowRight" ? right : ev.key === "ArrowLeft" ? left : undefined;
     if (next === undefined) return;
     ev.preventDefault();
     this.select(next);
@@ -230,7 +239,7 @@ export class TePanel extends TeBaseCard<PanelConfig> {
       [
         F.grid(F.text("title"), F.text("caption"), F.text("subtitle")),
         F.grid(F.bool("faceplate"), F.num("gap", 1), F.feedback()),
-        F.grid(F.select("body", ["silver", "black"]), F.num("default_tab", 1), F.num("reset_after", 1)),
+        F.grid(F.select("body", ["silver", "black"]), { ...F.num("default_tab", 1), helper: "-1 starts with no page open" }, F.num("reset_after", 1)),
       ],
       DEFAULTS,
     );
@@ -248,6 +257,7 @@ export class TePanel extends TeBaseCard<PanelConfig> {
     const top = c.tabs.length ? 36 : 10;
     const screws = [`top:${top}px;left:10px`, `top:${top}px;right:10px`, "bottom:10px;left:10px", "bottom:10px;right:10px"];
     const paged = this.paged;
+    const firstPage = this.tabRows.findIndex((r) => r.length);
     const tab = (t: Tab, i: number) => {
       const style = styleMap({ "--bg": bg(t), "--ink": ink(t) });
       if (!paged || !this.tabRows[i].length) return html`<div class="tab" style=${style}>${t.label}</div>`;
@@ -257,8 +267,8 @@ export class TePanel extends TeBaseCard<PanelConfig> {
         style=${style}
         role="tab"
         aria-selected=${on ? "true" : "false"}
-        tabindex=${on ? "0" : "-1"}
-        @click=${() => this.select(i)}
+        tabindex=${on || (this._tab < 0 && i === firstPage) ? "0" : "-1"}
+        @click=${() => this.toggle(i)}
       >
         <span class="led ${classMap({ on })}"></span>${t.label}
       </button>`;
@@ -279,7 +289,7 @@ export class TePanel extends TeBaseCard<PanelConfig> {
           <div class="subtitle">${c.subtitle}</div>
         </header>
         ${this.rows.length ? renderRows(this.rows) : ""}
-        ${paged ? html`<div class="page" role="tabpanel">${renderRows(this.tabRows[this._tab] ?? [])}</div>` : ""}
+        ${paged && this._tab >= 0 ? html`<div class="page" role="tabpanel">${renderRows(this.tabRows[this._tab] ?? [])}</div>` : ""}
       </div>
     `;
   }
