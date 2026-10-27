@@ -11,11 +11,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
+      - name: Check the tag matches package.json
+        run: |
+          v=$(node -p "require('./package.json').version")
+          [ "${{ github.event.release.tag_name }}" = "v$v" ] || { echo "::error::tag ${{ github.event.release.tag_name }} but package.json is $v"; exit 1; }
       - run: npm ci
       - run: npm run build
       - name: Attach bundle to the release (HACS downloads this asset)

@@ -105,7 +105,8 @@ hook that appends `.ts` to relative imports.
 
 HACS plugin: `hacs.json` → `te-components.js`. Publishing a GitHub release runs
 `.github/workflows/release.yml`, which builds the bundle and attaches it to the release. `validate.yml`
-runs the build and the HACS validation on every push.
+runs the tests, the build and the HACS validation on every push. To release: `npm version X.Y.Z --no-git-tag-version`,
+commit, merge to master, then publish a GitHub release tagged `vX.Y.Z` (the release job fails if tag and package.json differ).
 
 ## License
 
