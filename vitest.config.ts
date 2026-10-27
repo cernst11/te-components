@@ -17,6 +17,8 @@ export default defineConfig({
         extends: true,
         test: {
           name: "browser",
+          // pre-bundle up front; discovering these mid-run makes Vite reload the test page
+          deps: { optimizer: { client: { include: ["lit", "lit/directives/*.js", "@mdi/js"] } } },
           include: ["test/browser/**/*.test.ts"],
           browser: { enabled: true, provider: playwright(), headless: true, instances: [{ browser: "chromium" }] },
         },

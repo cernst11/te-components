@@ -4,6 +4,7 @@ import { styleMap } from "lit/directives/style-map.js";
 import { TeBaseCard, type BaseConfig } from "../core/base-card";
 import { buildRows, forwardHass, renderRows, rowCards, rowStyles, type Rows } from "../core/child-cards";
 import { F } from "../core/form";
+import { containerEditor } from "../editor/te-container-editor";
 import { MODELS, registerCard } from "../registry";
 import { sharedStyles } from "../theme/shared";
 
@@ -217,7 +218,11 @@ export class TePanel extends TeBaseCard<PanelConfig> {
     return 3 + (this.rows.length + Math.max(0, ...this.tabRows.map((r) => r.length))) * 3;
   }
 
-  /** Header and look; `tabs` and the child `cards` are edited in YAML. */
+  /** Settings plus tab pages and child cards, edited with HA's own card editor and picker. */
+  static getConfigElement() {
+    return containerEditor("panel", TePanel.getConfigForm().schema);
+  }
+
   static getConfigForm() {
     return {
       schema: [

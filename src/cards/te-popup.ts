@@ -2,6 +2,7 @@ import { css, html, type PropertyValues } from "lit";
 import { TeBaseCard, type BaseConfig } from "../core/base-card";
 import { buildRows, createChildCard, forwardHass, renderRows, rowCards, rowStyles, type Rows } from "../core/child-cards";
 import { F } from "../core/form";
+import { containerEditor } from "../editor/te-container-editor";
 import { TeModal } from "../core/modal";
 import { MODELS, registerCard } from "../registry";
 import { sharedStyles } from "../theme/shared";
@@ -60,6 +61,11 @@ export class TePopup extends TeBaseCard<PopupConfig> {
 
   static getStubConfig() {
     return { label: "More", icon: "mdi:dots-horizontal", cards: [] };
+  }
+
+  /** Settings plus the rows of cards in the dialog, edited with HA's own card editor and picker. */
+  static getConfigElement() {
+    return containerEditor("popup", TePopup.getConfigForm().schema);
   }
 
   static getConfigForm() {

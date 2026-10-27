@@ -4,6 +4,7 @@ import { styleMap } from "lit/directives/style-map.js";
 import { TeBaseCard, type BaseConfig } from "../core/base-card";
 import { createChildCard, forwardHass } from "../core/child-cards";
 import { F } from "../core/form";
+import { containerEditor } from "../editor/te-container-editor";
 import { MODELS, registerCard } from "../registry";
 import { sharedStyles } from "../theme/shared";
 
@@ -62,7 +63,11 @@ export class TeGroup extends TeBaseCard<GroupConfig> {
     return { columns: 12, min_columns: 3 };
   }
 
-  /** Layout only; the child `cards` are edited in YAML. */
+  /** Settings plus the child cards, edited with HA's own card editor and picker. */
+  static getConfigElement() {
+    return containerEditor("group", TeGroup.getConfigForm().schema);
+  }
+
   static getConfigForm() {
     return { schema: [F.grid(F.select("direction", ["row", "column"]), F.num("gap", 1)), F.look()] };
   }

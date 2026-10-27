@@ -38,7 +38,10 @@ src/
     throttle.ts         trailing-edge throttle
     child-cards.ts      hui-card children + shared row layout (buildRows/renderRows/rowStyles, `{ bracket, cards }` bracket rows) for panel/popup
     form.ts             getConfigForm() schema helpers (HA visual editor)
+    rows-edit.ts        container rows as an editable list (toEditRows/fromEditRows, move/add/remove)
     entity.ts           pickEntity (stub configs), isToggleable
+  editor/te-container-editor.ts   getConfigElement() for CH-1/PP-3/GR-2: settings ha-form + rows of chips; the
+                        selected card uses HA's hui-card-element-editor, new cards hui-card-picker
   theme/tokens.ts       ALL design tokens incl. lighting/elevation; black body via :host([data-body=black])
   theme/shared.ts       base styles (.card, .label, .led, .screw, .socket, focus ring)
   screen/               canvas screen engine: 5x7 font, themes (vfd-amber/vfd-blue/oled/lcd),
@@ -66,6 +69,8 @@ scripts/export-dashboard.ts   dashboard.ts → examples/dashboard.yaml (`npm run
 - Static `properties` on subclasses only list new props; Lit merges the base ones.
 - `useDefineForClassFields: false` — reactive props are `declare`d and initialized in the constructor.
 - Vite 8 needs `rolldownOptions.output.minify` to minify ES lib builds.
+- The container editor uses HA internals (`hui-card-element-editor`, `hui-card-picker`), loaded the way HA's stack
+  card does (`loadHaCardEditors`); if they never appear it says to use YAML. Tests use `playground/editor-shims.ts`.
 - MockHass must copy-on-write `states`: cards skip re-render when `old.states[id] === new.states[id]`.
 - Feedback is resolved per card: `feedback:` config, else `--te-feedback` read in `connectedCallback` (HA theme,
   or CH-1/GR-2 set it for children). `run()` already gives a press cue; value cards tick per detent.

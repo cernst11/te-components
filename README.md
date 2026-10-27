@@ -178,6 +178,12 @@ to the card's `entity`. Extras:
 
 ## Containers
 
+All three have a visual editor for their child cards: each row shows its cards as chips. Pick a chip to edit that
+card with Home Assistant's own card editor (visual or code), move it left, right or to another row, duplicate or
+delete it. **+ Card** adds a card to a row from the card picker, **+ Row** starts a new row, and selecting a row
+lets you set its bracket label. On CH-1, the page bar switches between the cards that are always shown and each
+tab's page, and adds, renames or removes tabs.
+
 ### CH-1 Panel
 
 `custom:te-panel` — the device chassis: screws, a model name, a katakana subtitle, and rows of any cards
