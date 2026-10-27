@@ -71,7 +71,7 @@ export class TePopup extends TeBaseCard<PopupConfig> {
   }
 
   static getConfigForm() {
-    return configForm([F.grid(F.text("label"), F.text("title")), F.grid(F.icon(), F.text("glyph")), F.grid(F.num("width", 10), F.num("gap", 1)), F.look()], DEFAULTS);
+    return configForm([F.grid(F.text("label"), F.text("title")), F.grid(F.icon(), F.glyph()), F.grid(F.num("width", 10), F.num("gap", 1)), F.look()], DEFAULTS);
   }
 
   protected normalizeConfig(c: Record<string, any>): PopupConfig {

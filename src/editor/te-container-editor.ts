@@ -1,4 +1,4 @@
-import { mdiArrowDown, mdiArrowUp, mdiChevronDown, mdiChevronLeft, mdiChevronRight, mdiChevronUp, mdiCodeBraces, mdiContentCopy, mdiDelete, mdiListBoxOutline, mdiPlus } from "@mdi/js";
+import { mdiArrowDown, mdiArrowUp, mdiChevronDown, mdiChevronLeft, mdiChevronRight, mdiChevronUp, mdiClose, mdiCodeBraces, mdiContentCopy, mdiDelete, mdiLabelOutline, mdiListBoxOutline, mdiPlus } from "@mdi/js";
 import { css, html, LitElement, nothing, svg } from "lit";
 import { keyed } from "lit/directives/keyed.js";
 import { addCard, fromEditRows, moveCard, moveCardToRow, moveRow, removeCard, removeRow, setBracket, setCard, toEditRows, type CardConfig, type EditRow } from "../core/rows-edit";
@@ -29,6 +29,7 @@ const TAB_SCHEMA = [
   },
 ];
 const BRACKET_SCHEMA = [{ name: "bracket", selector: { text: {} } }];
+const bracketHelp = () => "Printed over this row's cards, like BPM — METRONOME on the K.O. II. Leave empty for none.";
 
 /** HA loads its card editor and picker lazily, with the stack card editor; load them the same way. */
 let haEditors: Promise<boolean> | undefined;
@@ -71,6 +72,7 @@ export class TeContainerEditor extends LitElement {
     _gui: { state: true },
     _guiAvailable: { state: true },
     _haReady: { state: true },
+    _bracketRow: { state: true },
   };
 
   declare hass?: HomeAssistant;
@@ -78,7 +80,10 @@ export class TeContainerEditor extends LitElement {
   declare _config?: Config;
   /** -1: the panel's own cards (always shown); otherwise a tab's page. */
   declare _page: number;
+  /** The open card editor or picker; none means everything is collapsed. */
   declare _sel?: Selection;
+  /** Row whose bracket field is open. */
+  declare _bracketRow?: number;
   declare _gui: boolean;
   declare _guiAvailable: boolean;
   declare _haReady: boolean;
@@ -107,10 +112,16 @@ export class TeContainerEditor extends LitElement {
     const tabs = this.tabs();
     if (this._page >= tabs.length) this._page = -1;
     const rows = this.rows();
-    if (!this._sel || this._sel.row > rows.length || ("card" in this._sel && !rows[this._sel.row]?.cards[this._sel.card])) {
-      this._sel = rows.length ? { row: 0, card: 0 } : { row: 0, add: true };
+    const sel = this._sel;
+    if (sel ? sel.row > rows.length || ("card" in sel && !rows[sel.row]?.cards[sel.card]) : !rows.length) {
+      this._sel = this.initialSel(rows);
       this.gen++;
     }
+  }
+
+  /** Collapsed, except an empty container opens the picker. */
+  private initialSel(rows: EditRow[]): Selection | undefined {
+    return rows.length ? undefined : { row: 0, add: true };
   }
 
   // --- config access ---
@@ -156,8 +167,8 @@ export class TeContainerEditor extends LitElement {
 
   private selectPage(page: number) {
     this._page = page;
-    const rows = this.rows();
-    this._sel = rows.length ? { row: 0, card: 0 } : { row: 0, add: true };
+    this._sel = this.initialSel(this.rows());
+    this._bracketRow = undefined;
     this.gen++;
   }
 
@@ -210,11 +221,29 @@ export class TeContainerEditor extends LitElement {
     this.commitRows(rows, { row: sel.row, card: rows[sel.row].cards.length - 1 });
   }
 
+  /** Opens a card editor or the picker; picking the open one again closes it. */
   private select(sel: Selection) {
+    const cur = this._sel;
+    const same = cur && cur.row === sel.row && ("card" in cur ? "card" in sel && cur.card === sel.card : "add" in sel);
+    if (same) return this.collapse();
     this._sel = sel;
     this._gui = true;
     this._guiAvailable = true;
     this.gen++;
+  }
+
+  private collapse() {
+    const rows = this.rows();
+    this._sel = rows.length ? undefined : this._sel;
+    this.gen++;
+  }
+
+  /** Escape closes the open editor/picker, not HA's whole dialog. */
+  private onEditorKey(ev: KeyboardEvent) {
+    if (ev.key !== "Escape" || !this.rows().length) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    this.collapse();
   }
 
   private act(op: "left" | "right" | "up" | "down" | "copy" | "delete") {
@@ -233,8 +262,8 @@ export class TeContainerEditor extends LitElement {
       this.commitRows(next, { row: sel.row, card: next[sel.row].cards.length - 1 });
     } else {
       const next = removeCard(rows, sel.row, sel.card);
-      const row = Math.min(sel.row, next.length - 1);
-      this.commitRows(next, row >= 0 ? { row, card: Math.min(sel.card, next[row].cards.length - 1) } : { row: 0, add: true });
+      this._sel = this.initialSel(next);
+      this.commitRows(next);
     }
   }
 
@@ -242,11 +271,14 @@ export class TeContainerEditor extends LitElement {
     const rows = this.rows();
     if (op === "delete") {
       const next = removeRow(rows, row);
-      this.commitRows(next, next.length ? { row: Math.min(row, next.length - 1), card: 0 } : { row: 0, add: true });
+      this._sel = this.initialSel(next);
+      this._bracketRow = undefined;
+      this.commitRows(next);
     } else {
       const by = op === "up" ? -1 : 1;
       const next = moveRow(rows, row, by);
       const sel = this._sel;
+      if (this._bracketRow === row) this._bracketRow = row + by;
       this.commitRows(next, sel && sel.row === row ? { ...sel, row: row + by } : sel);
     }
   }
@@ -282,12 +314,14 @@ export class TeContainerEditor extends LitElement {
     const sel = this._sel;
     const grouped = this.kind === "group";
     const selectedRow = sel?.row === r;
+    const rows = this.rows();
     return html`
       <div class="row ${selectedRow ? "active" : ""}">
         ${grouped
           ? nothing
           : html`<div class="row-head">
               <span class="row-name">Row ${r + 1}${typeof row.bracket === "string" ? html` <span class="muted">· ${row.bracket}</span>` : nothing}</span>
+              ${this.button("Bracket label", mdiLabelOutline, () => (this._bracketRow = this._bracketRow === r ? undefined : r))}
               ${this.button("Move row up", mdiArrowUp, () => this.rowAct(r, "up"), r === 0)}
               ${this.button("Move row down", mdiArrowDown, () => this.rowAct(r, "down"), r === count - 1)}
               ${this.button("Delete row", mdiDelete, () => this.rowAct(r, "delete"))}
@@ -303,11 +337,19 @@ export class TeContainerEditor extends LitElement {
             ${icon(mdiPlus)} Card
           </button>
         </div>
-        ${selectedRow && !grouped
+        ${this._bracketRow === r && !grouped
           ? row.bracket === undefined || typeof row.bracket === "string"
-            ? html`<ha-form class="bracket" .hass=${this.hass} .data=${{ bracket: row.bracket ?? "" }} .schema=${BRACKET_SCHEMA} @value-changed=${(e: CustomEvent) => this.onBracket(r, e)}></ha-form>`
-            : html`<div class="muted note">Split bracket labels: edit in YAML.</div>`
+            ? html`<ha-form
+                class="bracket"
+                .hass=${this.hass}
+                .data=${{ bracket: row.bracket ?? "" }}
+                .schema=${BRACKET_SCHEMA}
+                .computeHelper=${bracketHelp}
+                @value-changed=${(e: CustomEvent) => this.onBracket(r, e)}
+              ></ha-form>`
+            : html`<div class="muted note">This row has split bracket labels; edit them in YAML.</div>`
           : nothing}
+        ${selectedRow ? this.renderEditor(rows) : nothing}
       </div>
     `;
   }
@@ -317,8 +359,12 @@ export class TeContainerEditor extends LitElement {
     if (!sel) return nothing;
     if (!this._haReady) return html`<div class="editor muted note">Home Assistant's card editor isn't available here; edit the cards in YAML.</div>`;
     if ("add" in sel) {
-      return html`<div class="editor">
-        <div class="editor-title">${sel.row < rows.length ? `Add a card to row ${sel.row + 1}` : "Add a card"}</div>
+      return html`<div class="editor" @keydown=${this.onEditorKey}>
+        <div class="toolbar">
+          <span class="editor-title">${this.kind === "group" ? "Add a card" : sel.row < rows.length ? `Add a card to row ${sel.row + 1}` : "Add a card in a new row"}</span>
+          <span class="spacer"></span>
+          ${rows.length ? html`<button class="text" @click=${() => this.collapse()}>Cancel</button>` : nothing}
+        </div>
         ${keyed(this.gen, html`<hui-card-picker .hass=${this.hass} .lovelace=${this.lovelace} @config-changed=${this.onPicked}></hui-card-picker>`)}
       </div>`;
     }
@@ -326,7 +372,7 @@ export class TeContainerEditor extends LitElement {
     const card = row?.cards[sel.card];
     if (!card) return nothing;
     const multiRow = this.kind !== "group";
-    return html`<div class="editor">
+    return html`<div class="editor" @keydown=${this.onEditorKey}>
       <div class="toolbar">
         ${this.button(this._gui ? "Show code editor" : "Show visual editor", this._gui ? mdiCodeBraces : mdiListBoxOutline, () => this.childEditor()?.toggleMode?.(), !this._guiAvailable)}
         <span class="spacer"></span>
@@ -336,6 +382,7 @@ export class TeContainerEditor extends LitElement {
         ${multiRow ? this.button("Move to the row below", mdiChevronDown, () => this.act("down"), sel.row === rows.length - 1 && row.cards.length === 1) : nothing}
         ${this.button("Duplicate", mdiContentCopy, () => this.act("copy"))}
         ${this.button("Delete card", mdiDelete, () => this.act("delete"))}
+        ${this.button("Close editor", mdiClose, () => this.collapse())}
       </div>
       ${keyed(
         `${this._page}:${this.gen}`,
@@ -377,8 +424,8 @@ export class TeContainerEditor extends LitElement {
             : html`<button class="chip add new-row" aria-pressed=${!!this._sel && "add" in this._sel && this._sel.row === rows.length} @click=${() => this.select({ row: rows.length, add: true })}>
                 ${icon(mdiPlus)} Row
               </button>`}
+          ${!grouped && this._sel?.row === rows.length ? this.renderEditor(rows) : nothing}
         </div>
-        ${this.renderEditor(rows)}
       </div>
     `;
   }
@@ -525,14 +572,24 @@ export class TeContainerEditor extends LitElement {
       margin-top: 8px;
     }
     .editor {
-      margin-top: 12px;
+      margin-top: 8px;
       border: 1px solid var(--divider-color);
       border-radius: 8px;
       padding: 8px 12px 12px;
     }
     .editor-title {
       font-weight: 500;
-      margin: 4px 0 8px;
+    }
+    .text {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 16px;
+      background: none;
+      color: var(--primary-color);
+      font-weight: 500;
+    }
+    .text:hover {
+      background: var(--secondary-background-color);
     }
     .toolbar {
       display: flex;

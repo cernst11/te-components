@@ -58,7 +58,7 @@ describe("CH-1 panel editor", () => {
 
   it("edits the selected card in HA's card editor and writes back the same row shape", async () => {
     const el = await mount("te-panel", { cards: [a, [b, c]] });
-    expect($(el, "hui-card-element-editor").value).toEqual(a);
+    expect($(el, "hui-card-element-editor")).toBeNull(); // starts collapsed
     await click(el, $$(el, ".chip")[2]); // b
     const editor = $(el, "hui-card-element-editor");
     expect(editor.value).toEqual(b);
@@ -91,9 +91,12 @@ describe("CH-1 panel editor", () => {
 
   it("duplicates and deletes cards", async () => {
     const el = await mount("te-panel", { cards: [a, b] });
+    await click(el, $$(el, ".chip")[0]);
     await click(el, button(el, "Duplicate"));
     expect(last(el).cards).toEqual([[a, a], b]);
     await click(el, button(el, "Delete card"));
+    expect($(el, "hui-card-element-editor")).toBeNull(); // deleting closes the editor
+    await click(el, $$(el, ".chip:not(.add)")[0]);
     await click(el, button(el, "Delete card"));
     expect(last(el).cards).toEqual([b]);
   });
@@ -108,6 +111,8 @@ describe("CH-1 panel editor", () => {
 
   it("sets a bracket label on the selected row", async () => {
     const el = await mount("te-panel", { cards: [[a, b]] });
+    expect($(el, "ha-form.bracket")).toBeNull();
+    await click(el, button(el, "Bracket label"));
     await fire(el, $(el, "ha-form.bracket"), "value-changed", { value: { bracket: "TRANSPORT" } });
     expect(last(el).cards).toEqual([{ bracket: "TRANSPORT", cards: [a, b] }]);
     await fire(el, $(el, "ha-form.bracket"), "value-changed", { value: { bracket: "" } });
@@ -150,6 +155,7 @@ describe("PP-3 popup editor", () => {
 describe("GR-2 group editor", () => {
   it("edits a flat list of cards: no rows, brackets or row moves", async () => {
     const el = await mount("te-group", { cards: [a, b] });
+    await click(el, $$(el, ".chip")[0]);
     expect($(el, ".row-head")).toBeNull();
     expect($(el, ".new-row")).toBeNull();
     expect(button(el, "Move to the row above")).toBeUndefined();
@@ -174,5 +180,46 @@ describe("chip labels", () => {
       cards: [{ type: "custom:te-button", glyph: "play" }, { type: "custom:te-button", icon: "mdi:car" }, { type: "custom:te-segment", clock: true }, { type: "entities" }],
     });
     expect(chips(el)).toEqual(["BT-4 · play", "BT-4 · car", "SG-7 · clock", "entities"]);
+  });
+});
+
+describe("opening and closing", () => {
+  it("opens the editor under its own row", async () => {
+    const el = await mount("te-panel", { cards: [a, b] });
+    await click(el, $$(el, ".chip:not(.add)")[1]);
+    const rows = $$(el, ".row");
+    expect(rows[1].querySelector("hui-card-element-editor")).not.toBeNull();
+    expect(rows[0].querySelector("hui-card-element-editor")).toBeNull();
+  });
+
+  it("closes with the close button, by picking the chip again, or with Escape", async () => {
+    const el = await mount("te-panel", { cards: [a, b] });
+    await click(el, $$(el, ".chip:not(.add)")[0]);
+    await click(el, button(el, "Close editor"));
+    expect($(el, ".editor")).toBeNull();
+    await click(el, $$(el, ".chip:not(.add)")[0]);
+    await click(el, $$(el, ".chip:not(.add)")[0]);
+    expect($(el, ".editor")).toBeNull();
+    await click(el, $$(el, ".chip:not(.add)")[0]);
+    const esc = new KeyboardEvent("keydown", { key: "Escape", bubbles: true, composed: true, cancelable: true });
+    $(el, "hui-card-element-editor").dispatchEvent(esc);
+    await el.updateComplete;
+    expect($(el, ".editor")).toBeNull();
+    expect(esc.defaultPrevented).toBe(true); // HA's dialog stays open
+  });
+
+  it("cancels the picker", async () => {
+    const el = await mount("te-panel", { cards: [a] });
+    await click(el, $$(el, ".chip.add")[0]);
+    expect($(el, "hui-card-picker")).not.toBeNull();
+    await click(el, button(el, "Cancel"));
+    expect($(el, "hui-card-picker")).toBeNull();
+    expect(el.configs).toEqual([]);
+  });
+
+  it("puts a new row's picker under + Row", async () => {
+    const el = await mount("te-panel", { cards: [a] });
+    await click(el, $(el, ".new-row"));
+    expect($(el, ".new-row")!.nextElementSibling!.querySelector("hui-card-picker")).not.toBeNull();
   });
 });

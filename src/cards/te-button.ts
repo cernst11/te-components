@@ -6,7 +6,7 @@ import type { ActionConfig } from "../core/actions";
 import { TeBaseCard, type BaseConfig } from "../core/base-card";
 import { configForm, F } from "../core/form";
 import { HoldGesture } from "../core/hold";
-import { GLYPH_NAMES, renderGlyph, renderIcon } from "../icons";
+import { renderGlyph, renderIcon } from "../icons";
 import { MODELS, registerCard } from "../registry";
 import { sharedStyles } from "../theme/shared";
 
@@ -121,7 +121,7 @@ export class TeButton extends TeBaseCard<ButtonConfig> {
       [
         F.entity(),
         F.labels(),
-        F.grid(F.select("shape", SHAPES), F.select("color", COLORS), F.icon(), F.select("glyph", GLYPH_NAMES)),
+        F.grid(F.select("shape", SHAPES), F.select("color", COLORS), F.icon(), F.glyph()),
         F.action("tap_action"),
         F.action("hold_action"),
         F.grid(F.num("hold_time", 50), F.bool("hold_to_confirm")),

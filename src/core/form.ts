@@ -1,4 +1,5 @@
 import { DEFAULT_SCREEN, SCREEN_NAMES } from "../screen/themes";
+import { GLYPH_NAMES } from "../icons";
 import { FEEDBACK_MODES } from "./feedback";
 
 /** Building blocks for `getConfigForm()` (HA's built-in ha-form visual editor). */
@@ -13,6 +14,12 @@ export const F = {
   bool: (name: string) => ({ name, selector: { boolean: {} } }),
   num: (name: string, step: number | "any" = "any") => ({ name, selector: { number: { mode: "box", step } } }),
   icon: (name = "icon") => ({ name, selector: { icon: {} } }),
+  /** A drawn symbol (play, stop, …) or any short text you type; `extra` adds text presets like "I". */
+  glyph: (extra: string[] = []) => ({
+    name: "glyph",
+    helper: "Pick a symbol or type your own short text",
+    selector: { select: { mode: "dropdown", custom_value: true, options: [...GLYPH_NAMES, ...extra].map((o) => ({ value: o, label: o })) } },
+  }),
   action: (name: string) => ({ name, selector: { ui_action: {} } }),
   attribute: () => ({ name: "attribute", selector: { attribute: {} }, context: { filter_entity: "entity" } }),
   select,
@@ -35,12 +42,12 @@ export const F = {
   feedback: () => select("feedback", FEEDBACK_MODES),
 };
 
-type FormItem = { name?: string; default?: unknown; selector?: Record<string, unknown>; schema?: FormItem[] };
+type FormItem = { name?: string; default?: unknown; helper?: string; selector?: Record<string, unknown>; schema?: FormItem[] };
 
 /**
  * A getConfigForm() result whose fields show the card's defaults (the `DEFAULTS` its normalizeConfig uses): HA
  * shows a field's `default` greyed in number and text fields and as the state of a switch; dropdowns can't show
- * one, so they get "Default: x" as helper text.
+ * one, so they get "Default: x" as helper text. A field's own `helper` is shown under it.
  */
 export function configForm(schema: object[], defaults: object = {}) {
   const d = defaults as Record<string, unknown>;
@@ -48,6 +55,6 @@ export function configForm(schema: object[], defaults: object = {}) {
     items.map((it) => (it.schema ? { ...it, schema: walk(it.schema) } : it.name && it.name in d && it.default === undefined ? { ...it, default: d[it.name] } : it));
   return {
     schema: walk(schema as FormItem[]),
-    computeHelper: (item: FormItem) => (item.selector?.select && item.default !== undefined ? `Default: ${item.default}` : undefined),
+    computeHelper: (item: FormItem) => item.helper ?? (item.selector?.select && item.default !== undefined ? `Default: ${item.default}` : undefined),
   };
 }

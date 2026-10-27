@@ -90,7 +90,7 @@ export class TeToggle extends TeBaseCard<ToggleConfig> {
   }
 
   static getConfigForm() {
-    return configForm([F.entity(), F.labels(), F.grid(F.text("glyph"), F.text("on_state")), F.grid(F.bool("confirm_unlock"), F.num("hold_time", 50)), F.action("tap_action"), F.look(F.feedback())], DEFAULTS);
+    return configForm([F.entity(), F.labels(), F.grid(F.glyph(["I", "II", "III"]), F.text("on_state")), F.grid(F.bool("confirm_unlock"), F.num("hold_time", 50)), F.action("tap_action"), F.look(F.feedback())], DEFAULTS);
   }
 
   protected normalizeConfig(c: Record<string, any>): ToggleConfig {
