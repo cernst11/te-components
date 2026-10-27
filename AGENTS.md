@@ -80,6 +80,15 @@ HA's picker calls `getStubConfig(hass, entities, entitiesFallback)`, merges it i
 unlabelled fields show the capitalised key name. Run `/check.html` on the dev server after touching any stub or
 form; it must report no errors. Stubs must produce a config the card accepts whenever matching entities exist.
 
+## Unit tests
+
+`npm test` (Vitest, Node environment, `vitest.config.ts`; CI runs it before the build). Tests live in `test/` and
+cover the pure logic: `core/value`, `actions`, `options`, `history`, `throttle`, `hold`, utils, and the screen code.
+`test/helpers.ts` has `fakeHass()` (records `callService` calls) and `fakeHost()` (records `hass-more-info`).
+Dot-matrix drawing (DotBuffer, fonts, DS-64 animations) is snapshotted as ASCII; after an intentional art change,
+check the diff and run `npx vitest run -u`. When you add a domain to `DOMAIN_SPECS`/`OPTION_SPECS`, add its row
+to the table tests.
+
 ## Testing without the Chrome extension
 
 Headless Chrome can be driven over the DevTools protocol with Node's built-in `WebSocket`
