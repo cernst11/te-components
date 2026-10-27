@@ -78,3 +78,14 @@ it("reset_after returns to no page when that's the default", async () => {
   await el.updateComplete;
   expect(page(el)).toBeNull();
 });
+
+it("six tabs fit a phone-width panel", async () => {
+  const labels = ["Home", "Climate", "Bedroom", "Office", "Bath", "Utility"];
+  const el = await mount({ tabs: labels.map((label) => ({ label, cards: [knob] })) });
+  el.style.cssText = "display:block;width:374px";
+  await new Promise((r) => requestAnimationFrame(r));
+  const strip = el.shadowRoot!.querySelector(".tabs")!.getBoundingClientRect();
+  const last = tabs(el)[5].getBoundingClientRect();
+  expect(last.right).toBeLessThanOrEqual(strip.right + 0.5);
+  expect(tabs(el).map((t) => t.textContent!.trim())).toEqual(labels);
+});

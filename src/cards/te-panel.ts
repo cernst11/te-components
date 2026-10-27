@@ -56,6 +56,7 @@ export class TePanel extends TeBaseCard<PanelConfig> {
     rowStyles,
     css`
       .chassis {
+        container: panel / inline-size;
         position: relative;
         overflow: hidden;
         border-radius: var(--te-r-panel);
@@ -70,7 +71,9 @@ export class TePanel extends TeBaseCard<PanelConfig> {
         height: 26px;
       }
       .tab {
-        flex: 1;
+        /* fill the strip, sized by label; on narrow panels shrink, and only then do labels end in … */
+        flex: 1 1 auto;
+        min-width: 0;
         display: flex;
         align-items: center;
         padding: 0 10px;
@@ -101,6 +104,22 @@ export class TePanel extends TeBaseCard<PanelConfig> {
       }
       button.tab:focus-visible {
         outline-offset: -3px;
+      }
+      .tab-name {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      /* phones: six tabs still fit */
+      @container panel (max-width: 440px) {
+        .tab {
+          padding: 0 6px;
+          letter-spacing: 0.02em;
+        }
+        button.tab {
+          gap: 4px;
+        }
       }
       header {
         position: relative;
@@ -260,7 +279,7 @@ export class TePanel extends TeBaseCard<PanelConfig> {
     const firstPage = this.tabRows.findIndex((r) => r.length);
     const tab = (t: Tab, i: number) => {
       const style = styleMap({ "--bg": bg(t), "--ink": ink(t) });
-      if (!paged || !this.tabRows[i].length) return html`<div class="tab" style=${style}>${t.label}</div>`;
+      if (!paged || !this.tabRows[i].length) return html`<div class="tab" style=${style}><span class="tab-name">${t.label}</span></div>`;
       const on = i === this._tab;
       return html`<button
         class="tab ${classMap({ on })}"
@@ -270,7 +289,7 @@ export class TePanel extends TeBaseCard<PanelConfig> {
         tabindex=${on || (this._tab < 0 && i === firstPage) ? "0" : "-1"}
         @click=${() => this.toggle(i)}
       >
-        <span class="led ${classMap({ on })}"></span>${t.label}
+        <span class="led ${classMap({ on })}"></span><span class="tab-name">${t.label}</span>
       </button>`;
     };
     return html`
