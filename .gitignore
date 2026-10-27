@@ -3,3 +3,7 @@ dist/
 .DS_Store
 # third-party product photos, reference only — not redistributed
 insporation/
+
+# written by the UniFi MCP server when a session starts here
+audit.log
+logs/
