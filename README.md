@@ -1,47 +1,44 @@
 # TE Components
 
-Teenage Engineering-inspired custom cards for Home Assistant: knobs, faders, a TP-7 style dial,
-TX-6 toggles, K.O.-style keys, a D-pad, and VFD / OLED / LCD pixel screens, plus a chassis card to mount
-them in.
+Custom Lovelace cards for Home Assistant, inspired by Teenage Engineering hardware: knobs, faders, a TP-7 style
+dial, TX-6 toggles, K.O. II keys and pads, alarm keypads, LED strips, meters, and VFD / OLED / LCD pixel
+screens, plus a chassis card to mount them in.
 
 ![Example dashboard: a black CH-1 TV remote and a LIGHTS panel with mini displays, faders and keys](https://raw.githubusercontent.com/cernst11/te-components/master/docs/images/dashboard.png)
 
-| Model | Card | What it is |
-|---|---|---|
-| **CH-1** シャーシ | `custom:te-panel` | Device chassis: screws, model name, katakana subtitle, rows of cards |
-| **GR-2** グループ | `custom:te-group` | Several modules on one shared tile |
-| **PP-3** ポップアップ | `custom:te-popup` | A key that opens a dialog holding any cards |
-| **KN-3** ノブ | `custom:te-knob` | Rotary knob |
-| **FD-6** フェーダー | `custom:te-fader` | Fader with LED ladder |
-| **DL-7** ダイヤル | `custom:te-dial` | Platter dial with hub screen |
-| **TG-1** トグル | `custom:te-toggle` | Round button with pill LED |
-| **BT-4** ボタン | `custom:te-button` | Round / square / K.O. key button |
-| **SW-5** セレクター | `custom:te-selector` | Mode selector: rotary switch or latching mode keys |
-| **SL-2** スライド | `custom:te-slide` | Slide-to-confirm switch for locks, garage doors, valves |
-| **KP-12** テンキー | `custom:te-keypad` | Alarm keypad: PIN, arm modes, hold to disarm |
-| **LD-8** インジケーター | `custom:te-leds` | Row of labelled status LEDs |
-| **VU-10** メーター | `custom:te-meter` | Level meter: LED bar or analog needle |
-| **SP-1** スピーカー | `custom:te-grille` | Decorative speaker grille, optional LED |
-| **BL-0** ブランク | `custom:te-spacer` | Empty cell to keep rows lined up |
-| **PD-16** パッド | `custom:te-pads` | K.O. II pad grid for scenes, scripts, switches |
-| **DP-5** 十字キー | `custom:te-dpad` | Directional pad |
-| **DS-8** ディスプレイ | `custom:te-display` | Main pixel screen: marquee, chips, progress |
-| **DS-2** ミニ | `custom:te-mini-display` | Small screen row: icon + name/state |
-| **SG-7** セグメント | `custom:te-segment` | Seven-segment numerals: value, clock, timer |
-| **DS-64** マトリクス | `custom:te-matrix` | Large square dot-matrix: history graphs, appliance animations |
-| **CL-16** カラー | `custom:te-color-picker` | Light color wheel with saved slots |
-| **CT-27** 色温度 | `custom:te-color-temp` | Warm→cool white for tunable-white lights, with presets |
+- **24 cards, one file.** Everything ships in a single `te-components.js` with no external requests.
+- **Point it at an entity.** Lights, media players, thermostats, fans, covers, locks, alarms and more work
+  without any service configuration.
+- **Visual editor.** Every card shows up in the card picker with a live preview and a form editor.
+- **Silver or black body**, four screen styles, optional haptics and click sounds, full keyboard support.
+
+## Contents
+
+- [Install](#install)
+- [Quick start](#quick-start)
+- [Components](#components)
+- [Shared options](#shared-options)
+- [Containers](#containers): CH-1 · GR-2 · PP-3
+- [Controls](#controls): KN-3 · FD-6 · DL-7 · TG-1 · BT-4 · SW-5 · SL-2 · KP-12 · PD-16 · DP-5 · CL-16 · CT-27
+- [Screens and indicators](#screens-and-indicators): DS-8 · DS-2 · SG-7 · DS-64 · VU-10 · LD-8
+- [Layout and decoration](#layout-and-decoration): SP-1 · BL-0
+- [Theming](#theming)
+- [Development](#development)
+- [License](#license)
 
 ## Install
 
+Requires Home Assistant 2024.8 or newer.
+
 ### HACS (recommended)
 
-1. HACS → ⋮ → **Custom repositories** → add this repo's URL, category **Dashboard**.
+1. HACS → ⋮ → **Custom repositories** → add `https://github.com/cernst11/te-components`, category **Dashboard**.
 2. Install **TE Components**, then reload the browser.
 
 ### Manual
 
-Download `te-components.js` from the latest release into `config/www/`, then add a dashboard resource:
+Download `te-components.js` from the [latest release](https://github.com/cernst11/te-components/releases/latest)
+into `config/www/`, then add a dashboard resource (**Settings → Dashboards → ⋮ → Resources**):
 
 ```yaml
 url: /local/te-components.js
@@ -49,6 +46,8 @@ type: module
 ```
 
 ## Quick start
+
+Add any card from the card picker (search for "TE" or a model name like "KN-3"), or paste YAML:
 
 ```yaml
 type: custom:te-panel
@@ -83,7 +82,39 @@ A complete example dashboard (TV remote, lights, climate, scenes) is in
 [`examples/dashboard.yaml`](examples/dashboard.yaml). Paste it into **Edit dashboard → ⋮ → Raw configuration
 editor** and swap in your own entity IDs.
 
-## Common options
+## Components
+
+| Model | Card | What it is |
+|---|---|---|
+| **Containers** | | |
+| [**CH-1** シャーシ](#ch-1-panel) | `custom:te-panel` | Device chassis: screws, model name, katakana subtitle, rows of cards, tab pages |
+| [**GR-2** グループ](#gr-2-group) | `custom:te-group` | Several modules on one shared tile |
+| [**PP-3** ポップアップ](#pp-3-popup) | `custom:te-popup` | A key that opens a dialog holding any cards |
+| **Controls** | | |
+| [**KN-3** ノブ](#kn-3-knob) | `custom:te-knob` | Rotary knob |
+| [**FD-6** フェーダー](#fd-6-fader) | `custom:te-fader` | Fader with LED ladder |
+| [**DL-7** ダイヤル](#dl-7-dial) | `custom:te-dial` | TP-7 platter dial with hub screen |
+| [**TG-1** トグル](#tg-1-toggle) | `custom:te-toggle` | TX-6 round toggle with pill LED |
+| [**BT-4** ボタン](#bt-4-button) | `custom:te-button` | Round / square / K.O. key button |
+| [**SW-5** セレクター](#sw-5-selector) | `custom:te-selector` | Mode selector: rotary switch or latching mode keys |
+| [**SL-2** スライド](#sl-2-slide-switch) | `custom:te-slide` | Slide-to-confirm switch for locks, garage doors, valves |
+| [**KP-12** テンキー](#kp-12-alarm-keypad) | `custom:te-keypad` | Alarm keypad: PIN, arm modes, hold to disarm |
+| [**PD-16** パッド](#pd-16-pads) | `custom:te-pads` | K.O. II pad grid for scenes, scripts, switches |
+| [**DP-5** 十字キー](#dp-5-d-pad) | `custom:te-dpad` | Directional pad for remotes |
+| [**CL-16** カラー](#cl-16-color-picker) | `custom:te-color-picker` | Light color wheel with saved slots |
+| [**CT-27** 色温度](#ct-27-color-temp) | `custom:te-color-temp` | Warm→cool white for tunable-white lights, with presets |
+| **Screens and indicators** | | |
+| [**DS-8** ディスプレイ](#ds-8-display) | `custom:te-display` | Main pixel screen: marquee, chips, progress |
+| [**DS-2** ミニ](#ds-2-mini-display) | `custom:te-mini-display` | Small screen row: icon + name/state |
+| [**SG-7** セグメント](#sg-7-segment) | `custom:te-segment` | Seven-segment numerals: value, clock, timer |
+| [**DS-64** マトリクス](#ds-64-matrix) | `custom:te-matrix` | Large dot-matrix: history graphs, appliance animations |
+| [**VU-10** メーター](#vu-10-meter) | `custom:te-meter` | Level meter: LED bar or analog needle |
+| [**LD-8** インジケーター](#ld-8-led-strip) | `custom:te-leds` | Row of labelled status LEDs |
+| **Layout and decoration** | | |
+| [**SP-1** スピーカー](#sp-1-grille) | `custom:te-grille` | Decorative speaker grille, optional LED |
+| [**BL-0** ブランク](#bl-0-spacer) | `custom:te-spacer` | Empty cell to keep rows lined up |
+
+## Shared options
 
 All cards accept:
 
@@ -94,9 +125,11 @@ All cards accept:
 | `body` | `silver` | `silver` or `black` (TX-6 / TP-7 black) |
 | `feedback` | `off` | Interactive cards: `haptic`, `sound` or `both` — a tick per knob/selector detent, a click per key press. Set `te-feedback` in your HA theme to turn it on everywhere |
 
-### Value controls (knob, fader, dial)
+Cards with a screen take `screen`: `vfd-amber` (default), `vfd-blue`, `oled` or `lcd`.
 
-For these domains, `entity` is all you need. The card reads and writes the right attribute:
+### Value controls
+
+KN-3, FD-6 and DL-7 need only an `entity` for these domains. The card reads and writes the right attribute:
 
 | Domain | Reads | Writes |
 |---|---|---|
@@ -107,10 +140,14 @@ For these domains, `entity` is all you need. The card reads and writes the right
 | `fan` | `percentage` | `fan.set_percentage` |
 | `cover` / `valve` | `current_position` | `*.set_*_position` |
 
-Override with `attribute`, `min`, `max`, `step`, `unit`, `decimals`, `percent`. Knobs and faders show the
-live value in the sublabel line while you adjust them; that line is always reserved so nothing shifts.
-Set `show_value: false` to turn it off. For any other entity, provide
-`set_action` and put `"{{ value }}"` where the new value goes:
+Override with `attribute`, `min`, `max`, `step`, `unit`, `decimals`, `percent`. `attribute: color_temp_kelvin`
+on a light drives its white temperature. Knobs and faders show the live value in the sublabel line while you
+adjust them; that line is always reserved so nothing shifts. Set `show_value: false` to turn it off.
+
+On a thermostat (`climate`, `water_heater`) the line under the control shows what it is doing: `HEATING` /
+`COOLING` in orange while it runs, otherwise `ON` or `OFF`. A `sublabel` replaces it.
+
+For any other entity, provide `set_action` and put `"{{ value }}"` where the new value goes:
 
 ```yaml
 type: custom:te-knob
@@ -129,17 +166,132 @@ control is focused.
 
 ### Actions
 
-Buttons, toggles and screens use Home Assistant's standard action objects (`tap_action`, `hold_action`):
-`toggle`, `more-info`, `navigate`, `url`, `perform-action`, `none`. Two extras for media players:
-`cycle-source` and `mute`. A `perform-action` with no `target` is sent to the card's `entity`.
+Buttons, toggles, pads and screens use Home Assistant's standard action objects (`tap_action`, `hold_action`):
+`toggle`, `more-info`, `navigate`, `url`, `perform-action`, `none`. A `perform-action` with no `target` is sent
+to the card's `entity`. Extras:
 
-`light-dialog` opens the light dialog (the one behind CL-16 and CT-27) for the card's light, or for `entity:`.
-It shows brightness, plus a COLOR page and/or a WHITE page depending on what the light supports; lights that do
-both get a COLOR | WHITE switch. `mode: color` or `mode: white` picks the first page.
+| Action | |
+|---|---|
+| `cycle-source` | Media player: step to the next source |
+| `mute` | Media player: toggle mute |
+| `light-dialog` | Open the light dialog for the card's light (or `entity:`): brightness plus a COLOR and/or WHITE page, depending on what the light supports. `mode: color` / `mode: white` picks the first page |
 
-## Cards
+## Containers
 
-<details><summary><b>KN-3 knob</b> — <code>custom:te-knob</code></summary>
+### CH-1 Panel
+
+`custom:te-panel` — the device chassis: screws, a model name, a katakana subtitle, and rows of any cards
+(TE cards or HA's own).
+
+```yaml
+type: custom:te-panel
+title: TE—HOME
+caption: Living room
+subtitle: リビング
+reset_after: 120
+cards:
+  - { type: custom:te-segment, clock: true }      # always shown
+tabs:
+  - label: Lights
+    cards:
+      - [ { type: custom:te-fader, entity: light.kitchen }, { type: custom:te-fader, entity: light.hallway } ]
+  - label: Climate
+    color: grey
+    cards:
+      - [ { type: custom:te-selector, entity: climate.living_room }, { type: custom:te-selector, entity: climate.living_room, list: preset_modes, style: keys } ]
+```
+
+| Option | Default | |
+|---|---|---|
+| `title` / `caption` / `subtitle` | — | Model name, caption and katakana line on the faceplate |
+| `faceplate` | `false` | Put the title on a lighter screwed-on faceplate (K.O. / MIC FX) |
+| `cards` | — | Rows; a list inside a row puts cards side by side |
+| `tabs` | — | Strings, or `{label, color, cards}` |
+| `default_tab` | `0` | Tab selected on load |
+| `reset_after` | — | Seconds without a touch before going back to `default_tab` (wall displays) |
+| `gap` | `8` | Card spacing in px |
+| `body` | `silver` | Inherited by the cards inside |
+
+**Pages:** give a tab its own `cards` and the strip switches pages — the selected tab sits pressed in with its
+LED lit (arrow keys move between tabs). The panel's own `cards` stay on screen above every page, and tabs
+without `cards` are decoration.
+
+**Bracket labels** (K.O. II `BPM — METRONOME`): write a row as `{ bracket, cards }`. A string spans the
+whole row; a list splits it, each item spanning `span` cards (default 1); an empty label leaves those cards
+without a bracket. Works in PP-3 popups too.
+
+```yaml
+cards:
+  - bracket: [{ label: TRANSPORT, span: 3 }, OUT]
+    cards:
+      - { type: custom:te-button, glyph: prev }
+      - { type: custom:te-button, glyph: play }
+      - { type: custom:te-button, glyph: next }
+      - { type: custom:te-knob, entity: media_player.tv, label: VOL }
+```
+
+### GR-2 Group
+
+`custom:te-group` — several modules on one shared tile, e.g. a mini display above a fader.
+
+```yaml
+type: custom:te-group
+direction: column
+cards:
+  - { type: custom:te-mini-display, entity: light.kitchen, show_name: false }
+  - { type: custom:te-fader, entity: light.kitchen, label: KITCHEN }
+```
+
+| Option | Default | |
+|---|---|---|
+| `cards` | — | Cards to group |
+| `direction` | `row` | `row` or `column` |
+| `gap` | `12` | px |
+| `tile` | `true` | Draw the shared tile |
+| `body` | `silver` | Inherited by the cards inside |
+
+### PP-3 Popup
+
+`custom:te-popup` — a key on the dashboard; tapping it opens a dialog with any cards inside, laid out in rows
+like CH-1. Close with the ×, Escape or the backdrop. Dialogs opened from inside it (like CL-16) stack on top.
+
+```yaml
+type: custom:te-popup
+label: Car
+icon: mdi:car-electric
+title: Model 3
+cards:
+  - type: custom:te-matrix
+    mode: appliance
+    animation: car
+    entity: sensor.model_3_charging
+  - - type: custom:te-mini-display
+      entity: sensor.model_3_battery
+    - type: custom:te-mini-display
+      entity: sensor.model_3_time_to_full
+```
+
+| Option | Default | |
+|---|---|---|
+| `label`, `icon`, `glyph`, `entity` | `More` | Style the default trigger (a grey K.O. key; `entity` lights its LED) |
+| `trigger` | K.O. key | Any card config to use as the trigger instead; its own tap action is disabled |
+| `title` | `label` | Dialog heading |
+| `width` / `gap` | `420` / `8` | Dialog width and card spacing in px |
+| `body` | inherited | `silver` or `black`; passed to the cards inside |
+
+## Controls
+
+### KN-3 Knob
+
+`custom:te-knob` — rotary knob. Drag vertically to set a value. See [Value controls](#value-controls) for
+supported domains.
+
+```yaml
+type: custom:te-knob
+entity: media_player.living_room
+cap: orange
+label: VOL
+```
 
 | Option | Default | |
 |---|---|---|
@@ -147,9 +299,16 @@ both get a COLOR | WHITE switch. `mode: color` or `mode: white` picks the first 
 | `size` | `l` | `s` (36px), `m` (52px), `l` (64px) |
 | `socket` | `false` | Sit the knob in a sunk ring |
 
-</details>
+### FD-6 Fader
 
-<details><summary><b>FD-6 fader</b> — <code>custom:te-fader</code></summary>
+`custom:te-fader` — fader with an LED dot ladder, vertical or horizontal. See [Value controls](#value-controls).
+
+```yaml
+type: custom:te-fader
+entity: light.kitchen
+label: KITCHEN
+cap: round
+```
 
 | Option | Default | |
 |---|---|---|
@@ -160,24 +319,26 @@ both get a COLOR | WHITE switch. `mode: color` or `mode: white` picks the first 
 | `gradient` | — | CSS background for the groove |
 | `label_tap_action` | mute / toggle | What tapping the sublabel does |
 
-</details>
+### DL-7 Dial
 
-<details><summary><b>DL-7 dial</b> — <code>custom:te-dial</code></summary>
+`custom:te-dial` — TP-7 style platter dial with a value screen in the hub. Spin it to set a value; see
+[Value controls](#value-controls).
+
+```yaml
+type: custom:te-dial
+entity: climate.living_room
+size: 200
+```
 
 | Option | Default | |
 |---|---|---|
 | `size` | `180` | Diameter in px |
 | `screen` | `vfd-amber` | Hub screen style |
 
-On a thermostat (`climate`, `water_heater`) the line under the dial shows what it is doing: `HEATING` /
-`COOLING` in orange while it runs, otherwise `ON` or `OFF`. A `sublabel` replaces it. Knobs and faders on a
-thermostat show the same line.
+### TG-1 Toggle
 
-</details>
-
-<details><summary><b>TG-1 toggle</b> — <code>custom:te-toggle</code></summary>
-
-Works with locks too: lit while locked, a tap locks, and unlocking takes a hold (the sublabel reads HOLD).
+`custom:te-toggle` — TX-6 FX style round toggle with a pill LED. Works with locks too: lit while locked, a tap
+locks, and unlocking takes a hold (the sublabel reads HOLD).
 
 ```yaml
 type: custom:te-toggle
@@ -193,25 +354,35 @@ label: DOOR
 | `confirm_unlock` | `true` | Locks only: unlocking needs a press-and-hold, locking is a tap |
 | `hold_time` | `700` | ms, for `confirm_unlock` |
 
-</details>
+### BT-4 Button
 
-<details><summary><b>BT-4 button</b> — <code>custom:te-button</code></summary>
+`custom:te-button` — momentary button: round, square or K.O. key, with an optional hold action.
+
+```yaml
+type: custom:te-button
+shape: key
+color: accent
+glyph: play
+tap_action:
+  action: perform-action
+  perform_action: media_player.media_play_pause
+  target: { entity_id: media_player.living_room }
+```
 
 | Option | Default | |
 |---|---|---|
 | `shape` | `round` | `round`, `square`, `key` (K.O. key, label printed on top) |
 | `color` | `light` | `light`, `dark`, `grey`, `accent` |
-| `icon` / `glyph` | — | MDI icon, or glyph: `record`, `play`, `stop`, `pause`, `plus`, `minus`, `dot`, or any text |
+| `icon` / `glyph` | — | MDI icon, or glyph: `record`, `play`, `stop`, `pause`, `prev`, `next`, `plus`, `minus`, `dot`, or any text |
 | `tap_action` / `hold_action` | `toggle` if entity | |
 | `hold_time` | `600` | ms |
 | `hold_to_confirm` | `false` | Tap does nothing; hold runs `tap_action` |
 | `active_entity`, `active_attribute`, `active_state` | — | Lights the LED when matched |
 
-</details>
+### SW-5 Selector
 
-<details><summary><b>SW-5 selector</b> — <code>custom:te-selector</code></summary>
-
-Pick one of several options. `entity` is usually enough; the options and service come from the domain:
+`custom:te-selector` — pick one of several options with a detented rotary switch or a row of latching keys.
+`entity` is usually enough; the options and service come from the domain:
 
 | Domain | Options | Writes |
 |---|---|---|
@@ -245,14 +416,38 @@ Set `list` to use another of the entity's lists — a thermostat's presets next 
 | `options` | from the entity | Relabel or limit: `[{value: Spotify, label: SPOT}, …]` |
 | `set_action` | — | For other entities; `"{{ value }}"` is the chosen option |
 
-</details>
+### SL-2 Slide switch
 
-<details><summary><b>KP-12 alarm keypad</b> — <code>custom:te-keypad</code></summary>
+`custom:te-slide` — TP-7 style side switch. Slide the thumb all the way across to commit; let go early and it
+springs back, so a stray tap can't open the garage. Arrow keys work too.
 
-For `alarm_control_panel`. Type the code, then press an arm key; hold the disarm key to disarm. The arm keys
-follow the panel's `supported_features`, their LEDs show the armed mode and blink while arming. A wrong code
-(HA rejects the service call) flashes `WRONG CODE` on the screen. Panels without a `code_format` hide the
-number pad. A focused screen also takes digits, Backspace, Escape (clear) and Enter (disarm).
+```yaml
+type: custom:te-slide
+entity: cover.garage_door
+label: GARAGE
+```
+
+| Domain | Left | Right |
+|---|---|---|
+| `lock` | locked (`lock.lock`) | unlocked (`lock.unlock`) |
+| `cover` | closed (`cover.close_cover`) | open (`cover.open_cover`) |
+| `valve` | closed | open |
+| anything else | off (`*.turn_off`) | on (`*.turn_on`) |
+
+While the entity is `locking`/`opening`/… the thumb waits at the target and its LED blinks. The safe end lights
+neutral, the open end orange.
+
+| Option | Default | |
+|---|---|---|
+| `left_label` / `right_label` | from the domain | Relabel the ends |
+
+### KP-12 Alarm keypad
+
+`custom:te-keypad` — for `alarm_control_panel`. Type the code, then press an arm key; hold the disarm key to
+disarm. The arm keys follow the panel's `supported_features`, their LEDs show the armed mode and blink while
+arming. A wrong code (HA rejects the service call) flashes `WRONG CODE` on the screen. Panels without a
+`code_format` hide the number pad. A focused screen also takes digits, Backspace, Escape (clear) and Enter
+(disarm).
 
 ```yaml
 type: custom:te-keypad
@@ -267,103 +462,9 @@ modes: [home, away]     # optional; default = what the panel supports
 | `screen` | `vfd-amber` | Screen style |
 | `sublabel` | `Hold to disarm` | Text on the disarm key |
 
-</details>
+### PD-16 Pads
 
-<details><summary><b>SL-2 slide switch</b> — <code>custom:te-slide</code></summary>
-
-Slide the thumb all the way across to commit; let go early and it springs back, so a stray tap can't open the
-garage. Arrow keys work too.
-
-| Domain | Left | Right |
-|---|---|---|
-| `lock` | locked (`lock.lock`) | unlocked (`lock.unlock`) |
-| `cover` | closed (`cover.close_cover`) | open (`cover.open_cover`) |
-| `valve` | closed | open |
-| anything else | off (`*.turn_off`) | on (`*.turn_on`) |
-
-While the entity is `locking`/`opening`/… the thumb waits at the target and its LED blinks. The safe end lights
-neutral, the open end orange. Relabel with `left_label` / `right_label`.
-
-</details>
-
-<details><summary><b>LD-8 LED strip</b> — <code>custom:te-leds</code></summary>
-
-```yaml
-type: custom:te-leds
-summary: OPEN            # prints "2 OPEN" under the strip
-entities:
-  - binary_sensor.front_door
-  - entity: binary_sensor.hall_motion
-    label: Motion
-  - entity: person.alex
-    color: neutral        # ink instead of orange, for plain status
-```
-
-Lit means `on`/`open` for sensors and switches, `home` for people, not `locked` for locks, not `closed` for
-covers, not `disarmed` for alarms. Leaks, smoke, `triggered` and `jammed` blink. Override with `on_state` and
-`blink`. Tap an LED for more-info. `columns` wraps the row.
-
-</details>
-
-<details><summary><b>VU-10 meter</b> — <code>custom:te-meter</code></summary>
-
-```yaml
-type: custom:te-meter
-entity: sensor.power
-max: 2000
-warn: 1200          # segments above light orange
-segments: 16
-```
-
-| Option | Default | |
-|---|---|---|
-| `style` | `bar` | `bar` (LED segments in a screen window) or `needle` (analog VU, accent arc above `warn`) |
-| `orientation` | `horizontal` | Bar only |
-| `min` / `max` | 0 / 100, or from the domain | Sensors usually need `max` |
-| `warn` | — | Threshold in the entity's units |
-| `peak` | `true` | Hold the highest recent segment for 2.5s |
-| `screen` | `vfd-amber` | Bar window style |
-| `show_value` | `true` | Value under the meter |
-
-</details>
-
-<details><summary><b>SP-1 grille</b> — <code>custom:te-grille</code></summary>
-
-A decorative speaker grille module — the MIC FX dot field or a round K.O. II speaker. Give it an `entity`
-(a speaker) and it gets an LED that lights while playing, and opens more-info on tap.
-
-```yaml
-type: custom:te-grille
-pattern: round        # or grid
-height: 120
-entity: media_player.kitchen
-```
-
-| Option | Default | |
-|---|---|---|
-| `pattern` | `grid` | `grid` (dot field across the card) or `round` (concentric rings) |
-| `height` | `72` | px |
-| `pitch` | `7` | Hole spacing in px |
-| `entity` | — | Optional; lights the LED while on/playing |
-
-</details>
-
-<details><summary><b>BL-0 spacer</b> — <code>custom:te-spacer</code></summary>
-
-An empty cell. Rows in CH-1/GR-2 split their width evenly, so a spacer holds a column open — e.g. to push
-ON/OFF keys under the last faders of a room.
-
-```yaml
-- [ { type: custom:te-spacer }, { type: custom:te-button, label: "On" }, { type: custom:te-button, label: "Off" } ]
-```
-
-| Option | Default | |
-|---|---|---|
-| `height` | — | Minimum height in px; otherwise it takes its row's height |
-
-</details>
-
-<details><summary><b>PD-16 pads</b> — <code>custom:te-pads</code></summary>
+`custom:te-pads` — K.O. II pad grid for scenes, scripts and switches.
 
 ```yaml
 type: custom:te-pads
@@ -380,34 +481,112 @@ pads:
 
 Scenes run `scene.turn_on`, scripts `script.turn_on`, automations `automation.trigger`, buttons `press`;
 anything else toggles. The most recently activated scene stays lit; other entities light while `on`.
-Each pad takes `label`, `icon`/`glyph`, `color` (`light`, `grey`, `dark`, `accent`), `tap_action`, `hold_action`.
 
-</details>
+| Option | Default | |
+|---|---|---|
+| `pads` | — | Each pad: `entity`, `label`, `icon`/`glyph`, `color` (`light`, `grey`, `dark`, `accent`), `tap_action`, `hold_action` |
+| `columns` | up to 4 | Pads per row |
+| `hold_time` | `600` | ms |
 
-<details><summary><b>DP-5 d-pad</b> — <code>custom:te-dpad</code></summary>
+### DP-5 D-pad
 
-Sends `remote.send_command` to `entity`. Override `commands: {up, down, left, right, ok}` or give full
-`actions: {up: <action>, ...}`.
+`custom:te-dpad` — directional pad that sends `remote.send_command` to `entity`.
 
-</details>
+```yaml
+type: custom:te-dpad
+entity: remote.living_room_tv
+commands:
+  ok: DPAD_CENTER
+```
 
-<details><summary><b>DS-8 display</b> — <code>custom:te-display</code></summary>
+| Option | Default | |
+|---|---|---|
+| `commands` | `DPAD_UP`, `DPAD_DOWN`, `DPAD_LEFT`, `DPAD_RIGHT`, … | `{up, down, left, right, ok}` command names |
+| `actions` | — | Full action per direction: `{up: <action>, …}`; replaces the command |
+
+### CL-16 Color picker
+
+`custom:te-color-picker` — a color swatch for a light. Tap it for the light dialog: HS wheel and brightness, plus
+a COLOR | WHITE switch if the light also does tunable white.
+
+```yaml
+type: custom:te-color-picker
+entity: light.desk_strip
+slots: [input_text.color_1, input_text.color_2, input_text.color_3]
+```
+
+| Option | Default | |
+|---|---|---|
+| `slots` | — | Up to 3 `input_text` entities: hold a slot to save the current color, tap it to recall |
+
+### CT-27 Color temp
+
+`custom:te-color-temp` — for lights that support `color_temp`. Tap the swatch for a warm→cool fader (sends
+`color_temp_kelvin`; range from the light's `min_color_temp_kelvin`/`max_color_temp_kelvin`), brightness, and
+presets. The value line shows the current white, e.g. `2700K`.
+
+```yaml
+type: custom:te-color-temp
+entity: light.bedroom
+presets: [{ label: Candle, kelvin: 2200 }, 4000, 6500]
+```
+
+| Option | Default | |
+|---|---|---|
+| `presets` | Warm 2700 / Neutral 4000 / Day 6500 | List of `{label, kelvin}` or plain numbers |
+| `min` / `max` | from the light | Override the kelvin range |
+
+## Screens and indicators
+
+### DS-8 Display
+
+`custom:te-display` — the main pixel screen, with marquee text, status chips and a progress bar. Media players
+show artist – title automatically.
+
+```yaml
+type: custom:te-display
+entity: media_player.living_room
+progress: true
+chips:
+  - { entity: media_player.living_room, attribute: shuffle, value: true, label: SHUF }
+```
 
 | Option | Default | |
 |---|---|---|
 | `screen` | `vfd-amber` | `vfd-amber`, `vfd-blue`, `oled`, `lcd` |
-| `attribute`, `unit`, `decimals` | — | Media players show artist – title automatically |
+| `attribute`, `unit`, `decimals` | — | What to show for non-media entities |
 | `progress` | `false` | Segmented media progress bar |
 | `chips` | `[]` | Status chips: `{entity, attribute?, value, label}` or `{entity, number: true}` |
 | `height` | `92` | px |
 | `text_size` | `2` | Dot size in px |
 | `demo` | `false` | Cycle fake tracks (no entity needed) |
 
-</details>
+### DS-2 Mini display
 
-<details><summary><b>SG-7 segment</b> — <code>custom:te-segment</code></summary>
+`custom:te-mini-display` — a compact screen row: pixel icon plus name and state. Pair it with a fader or knob in
+a GR-2 group.
 
-Big seven-segment numerals with unlit ghost segments and glow.
+```yaml
+type: custom:te-mini-display
+entity: sensor.living_room_temperature
+icon: thermometer
+```
+
+| Option | Default | |
+|---|---|---|
+| `icon` | `bulb` | `bulb`, `lamp`, `downlight`, `thermometer`, `droplet`, `molecule`, `plug`, `battery`, `blinds`, or `none` (text uses the whole screen) |
+| `compact` | `false` | Two lines: name above, value below |
+| `show_name` | `true` | `false` shows the value only (e.g. above a fader that carries the name) |
+| `attribute`, `unit`, `decimals` | from the entity | |
+| `scroll` | `false` | Marquee long text |
+| `screen` | `vfd-amber` | |
+| `tap_action` | toggle / more-info | |
+| `hold_action` | `light-dialog` for lights, else more-info | Long-press (500ms) |
+
+### SG-7 Segment
+
+`custom:te-segment` — big seven-segment numerals with unlit ghost segments and glow, for a value, a clock, or an
+HA timer counting down.
 
 ```yaml
 type: custom:te-segment
@@ -425,25 +604,9 @@ screen: lcd
 | `height` | `96` | px |
 | `tap_action` | `more-info` | |
 
-</details>
+### DS-64 Matrix
 
-<details><summary><b>DS-2 mini display</b> — <code>custom:te-mini-display</code></summary>
-
-| Option | Default | |
-|---|---|---|
-| `icon` | `bulb` | `bulb`, `lamp`, `downlight`, `thermometer`, `droplet`, `molecule`, `plug`, `battery`, `blinds`, or `none` (text uses the whole screen) |
-| `compact` | `false` | Two lines: name above, value below |
-| `show_name` | `true` | `false` shows the value only (e.g. above a fader that carries the name) |
-| `scroll` | `false` | Marquee long text |
-| `screen` | `vfd-amber` | |
-| `tap_action` | toggle / more-info | |
-| `hold_action` | `light-dialog` for lights, else more-info | Long-press (500ms) |
-
-</details>
-
-<details><summary><b>DS-64 matrix</b> — <code>custom:te-matrix</code></summary>
-
-A 64×64 dot-matrix screen. Everything is drawn in dots, so it looks like the hardware.
+`custom:te-matrix` — a 64×64 dot-matrix screen. Everything is drawn in dots, so it looks like the hardware.
 
 **Graph** (default): a big value plus the entity's history, loaded from HA's recorder and updated live.
 
@@ -469,6 +632,12 @@ remaining_entity: sensor.washer_remaining   # minutes, "h:mm:ss", or a finish ti
 progress_entity: sensor.washer_progress     # percent
 ```
 
+`fan` spins at the fan's `percentage`; the washer spins fast when the status contains `spin`.
+
+`car` is an EV side profile. While charging (any active state), the wall charger appears and a cable runs
+from it to the charge port with pulses flowing in; if the status contains `driving`, the wheels turn and the road
+scrolls. `progress_entity` (battery %) drives the bar and the % readout.
+
 | Option | Default | |
 |---|---|---|
 | `mode` | `graph` (`appliance` if `animation` is set) | |
@@ -476,151 +645,105 @@ progress_entity: sensor.washer_progress     # percent
 | `dots` / `aspect` | `64` / `1` | Dots across; height ÷ width (`0.6` makes a wide graph) |
 | `hours`, `style`, `min`, `max` | `24`, `area`, auto | Graph window, style and y range |
 | `unit`, `decimals` | from the entity | Value formatting |
+| `animation` | — | `washer`, `dryer`, `dishwasher`, `fan`, `car` |
 | `active_state` | any state except off/idle/standby/done/… | State(s) that count as running |
 | `status_entity` | `entity` | Shown in the footer (e.g. `RINSE`); while it reads `none`/`unknown`, the footer shows `entity` |
+| `remaining_entity` / `progress_entity` | — | Time left and percent done |
 | `tap_action` | `more-info` | |
 
-`fan` spins at the fan's `percentage`; the washer spins fast when the status contains `spin`.
+### VU-10 Meter
 
-`car` is a Model 3 side profile. While charging (any active state), the wall charger appears and a cable runs
-from it to the charge port with pulses flowing in; if the status contains `driving`, the wheels turn and the road
-scrolls. `progress_entity` (battery %) drives the bar and the % readout.
-
-```yaml
-type: custom:te-matrix
-mode: appliance
-animation: car
-entity: sensor.model_3_charging            # charging / complete / disconnected …
-label: MODEL 3
-progress_entity: sensor.model_3_battery
-remaining_entity: sensor.model_3_time_to_full
-```
-
-</details>
-
-<details><summary><b>CL-16 color picker</b> — <code>custom:te-color-picker</code></summary>
-
-`entity` is a light. `slots` takes up to 3 `input_text` entities: hold a slot to save the current color,
-tap it to recall the color. If the light also does tunable white, the dialog has a COLOR | WHITE switch.
-
-</details>
-
-<details><summary><b>CT-27 color temp</b> — <code>custom:te-color-temp</code></summary>
-
-`entity` is a light that supports `color_temp`. Tap the swatch for a warm→cool fader (sends
-`color_temp_kelvin`; range from the light's `min_color_temp_kelvin`/`max_color_temp_kelvin`), brightness, and presets.
-The value line shows the current white, e.g. `2700K`.
-
-| Option | Default | |
-|---|---|---|
-| `presets` | Warm 2700 / Neutral 4000 / Day 6500 | List of `{label, kelvin}` or plain numbers |
-| `min` / `max` | from the light | Override the kelvin range |
-
-Knobs and faders can also drive color temperature: `attribute: color_temp_kelvin` on a light entity.
-
-</details>
-
-<details><summary><b>PP-3 popup</b> — <code>custom:te-popup</code></summary>
-
-A key on the dashboard; tapping it opens a dialog with any cards inside, laid out in rows like CH-1.
-Close with the ×, Escape or the backdrop. Dialogs opened from inside it (like CL-16) stack on top.
+`custom:te-meter` — level meter for power, battery, CO₂ or volume: a segmented LED bar or an analog needle,
+with a warn threshold and peak hold.
 
 ```yaml
-type: custom:te-popup
-label: Car
-icon: mdi:car-electric
-title: Model 3
-cards:
-  - type: custom:te-matrix
-    mode: appliance
-    animation: car
-    entity: sensor.model_3_charging
-  - - type: custom:te-mini-display
-      entity: sensor.model_3_battery
-    - type: custom:te-mini-display
-      entity: sensor.model_3_time_to_full
+type: custom:te-meter
+entity: sensor.power
+max: 2000
+warn: 1200          # segments above light orange
+segments: 16
 ```
 
 | Option | Default | |
 |---|---|---|
-| `label`, `icon`, `glyph`, `entity` | `More` | Style the default trigger (a grey K.O. key; `entity` lights its LED) |
-| `trigger` | K.O. key | Any card config to use as the trigger instead; its own tap action is disabled |
-| `title` | `label` | Dialog heading |
-| `width` / `gap` | `420` / `8` | Dialog width and card spacing in px |
-| `body` | inherited | `silver` or `black`; passed to the cards inside |
+| `style` | `bar` | `bar` (LED segments in a screen window) or `needle` (analog VU, accent arc above `warn`) |
+| `orientation` | `horizontal` | Bar only |
+| `segments` | `12` | Bar segment count (3–32) |
+| `min` / `max` | 0 / 100, or from the domain | Sensors usually need `max` |
+| `warn` | — | Threshold in the entity's units |
+| `peak` | `true` | Hold the highest recent segment for 2.5s |
+| `screen` | `vfd-amber` | Bar window style |
+| `show_value` | `true` | Value under the meter |
 
-</details>
+### LD-8 LED strip
 
-<details><summary><b>GR-2 group / CH-1 panel</b></summary>
-
-Group: `cards`, `direction` (`row`/`column`), `gap`, `tile` (default `true`).
-
-Panel: `title`, `caption`, `subtitle`, `faceplate`, `tabs` (strings or `{label, color, cards}`), `gap` (default 8),
-`cards` (rows).
-
-**Pages:** give a tab its own `cards` and the strip switches pages — the selected tab sits pressed in with its
-LED lit (arrow keys move between tabs). The panel's own `cards` stay on screen above every page, and tabs
-without `cards` stay decoration. `default_tab` (index, default 0) is selected on load; `reset_after: 120` goes
-back to it after two minutes without a touch, for wall displays.
+`custom:te-leds` — a row of labelled status LEDs for doors, windows, motion and presence.
 
 ```yaml
-type: custom:te-panel
-title: TE—HOME
-reset_after: 120
-cards:
-  - { type: custom:te-segment, clock: true }      # always shown
-tabs:
-  - label: Lights
-    cards:
-      - [ { type: custom:te-fader, entity: light.kitchen }, { type: custom:te-fader, entity: light.hallway } ]
-  - label: Climate
-    color: grey
-    cards:
-      - [ { type: custom:te-selector, entity: climate.living_room }, { type: custom:te-selector, entity: climate.living_room, list: preset_modes, style: keys } ]
+type: custom:te-leds
+summary: OPEN            # prints "2 OPEN" under the strip
+entities:
+  - binary_sensor.front_door
+  - entity: binary_sensor.hall_motion
+    label: Motion
+  - entity: person.alex
+    color: neutral        # ink instead of orange, for plain status
 ```
 
-**Bracket labels** (K.O. II `BPM — METRONOME`): write a row as `{ bracket, cards }`. A string spans the
-whole row; a list splits it, each item spanning `span` cards (default 1); an empty label leaves those cards
-without a bracket. Works in PP-3 popups too.
+Lit means `on`/`open` for sensors and switches, `home` for people, not `locked` for locks, not `closed` for
+covers, not `disarmed` for alarms. Leaks, smoke, `triggered` and `jammed` blink. Tap an LED for more-info.
+
+| Option | Default | |
+|---|---|---|
+| `entities` | — | Entity IDs, or `{entity, label, color, on_state, blink}` |
+| `summary` | — | Word printed after the count of lit LEDs |
+| `columns` | one row | Wrap after this many LEDs |
+
+## Layout and decoration
+
+### SP-1 Grille
+
+`custom:te-grille` — a decorative speaker grille: the MIC FX dot field or a round K.O. II speaker. Give it an
+`entity` (a speaker) and it gets an LED that lights while playing, and opens more-info on tap.
 
 ```yaml
-cards:
-  - bracket: [{ label: TRANSPORT, span: 3 }, OUT]
-    cards:
-      - { type: custom:te-button, glyph: prev }
-      - { type: custom:te-button, glyph: play }
-      - { type: custom:te-button, glyph: next }
-      - { type: custom:te-knob, entity: media_player.tv, label: VOL }
+type: custom:te-grille
+pattern: round        # or grid
+height: 120
+entity: media_player.kitchen
 ```
-`body` on a panel or group is inherited by its children.
 
-</details>
+| Option | Default | |
+|---|---|---|
+| `pattern` | `grid` | `grid` (dot field across the card) or `round` (concentric rings) |
+| `height` | `72` | px |
+| `pitch` | `7` | Hole spacing in px |
+| `entity` | — | Optional; lights the LED while on/playing |
+
+### BL-0 Spacer
+
+`custom:te-spacer` — an empty cell. Rows in CH-1/PP-3 split their width evenly, so a spacer holds a column open —
+e.g. to push ON/OFF keys under the last faders of a room.
+
+```yaml
+- [ { type: custom:te-spacer }, { type: custom:te-button, label: "On" }, { type: custom:te-button, label: "Off" } ]
+```
+
+| Option | Default | |
+|---|---|---|
+| `height` | — | Minimum height in px; otherwise it takes its row's height |
 
 ## Theming
 
-- **Black body everywhere:** add `te-theme: black` to your HA theme, or set `body: black` per card or panel.
-- **Accent color:** `te-theme-accent: "#e8551d"` in your HA theme.
-- **Font:** `te-font-family: "Inter"` (the font must be loaded by your theme).
-- **Haptics / click sounds:** `te-feedback: haptic` (or `sound`, `both`). Haptics work in the HA companion
-  apps (and Android browsers); sounds need a first tap on the page before browsers allow audio.
+Set these in your [HA theme](https://www.home-assistant.io/integrations/frontend/#defining-themes) to apply them
+to every card:
 
-## Migrating from the original single-file version
-
-| Old | New |
+| Theme variable | |
 |---|---|
-| `domain` / `service` / `value_key` | Not needed for supported domains; otherwise `set_action` |
-| `cap_color` | `cap` |
-| `container: true` | `socket: true` |
-| `theme: amber` / `blue` | `screen: vfd-amber` / `vfd-blue` (old values still work) |
-| `icons:` on te-display | `chips:` (old key still works) |
-| te-button `domain`/`service`/`data` | `tap_action: {action: perform-action, perform_action: x.y, data: …}` |
-| te-button `action: cycle_source` | `tap_action: {action: cycle-source}` |
-| te-button `hold_ms` | `hold_to_confirm: true` + `hold_time` |
-| te-button `accent: true` | `color: accent` |
-| te-button `active_value` | `active_state` (shown as an LED) |
-| te-fader `toggle_action: mute` / `toggle_*` | `label_tap_action` |
-| te-mini-display `readonly: true` | `tap_action: {action: none}` |
-| te-mini-display `toggle_*` | `tap_action` |
+| `te-theme: black` | Black body everywhere (or `body: black` per card or panel) |
+| `te-theme-accent: "#e8551d"` | Accent color |
+| `te-font-family: "Inter"` | Font (it must be loaded by your theme) |
+| `te-feedback: haptic` | Or `sound`, `both`. Haptics work in the HA companion apps (and Android browsers); sounds need a first tap on the page before browsers allow audio |
 
 ## Development
 
@@ -631,9 +754,11 @@ npm run dev        # playground at http://localhost:5173 with a mock Home Assist
 npm run export:dashboard   # regenerate examples/dashboard.yaml from playground/dashboard.ts
 npm run build      # dist/te-components.js
 npm run typecheck
+npm test           # unit tests (Vitest); npm run test:watch while working
 ```
 
-See `DESIGN.md` for the design guidelines and `AGENTS.md` for architecture notes.
+See [`DESIGN.md`](DESIGN.md) for the design guidelines, [`AGENTS.md`](AGENTS.md) for architecture notes and
+how to add a component, and [`CONTRIBUTING.md`](CONTRIBUTING.md) before opening a pull request.
 
 ## License
 
