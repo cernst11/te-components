@@ -27,6 +27,8 @@ const TAB_SCHEMA = [
       { name: "color", selector: { select: { mode: "dropdown", options: TAB_COLORS.map((c) => ({ value: c, label: c })) } } },
     ],
   },
+  // set it to make the tab a link (e.g. to another view) instead of a page
+  { name: "tap_action", selector: { ui_action: {} } },
 ];
 const BRACKET_SCHEMA = [{ name: "bracket", selector: { text: {} } }];
 const bracketHelp = () => "Printed over this row's cards, like BPM — METRONOME on the K.O. II. Leave empty for none.";

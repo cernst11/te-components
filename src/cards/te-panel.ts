@@ -1,6 +1,7 @@
 import { css, html, type PropertyValues } from "lit";
 import { classMap } from "lit/directives/class-map.js";
 import { styleMap } from "lit/directives/style-map.js";
+import type { ActionConfig } from "../core/actions";
 import { TeBaseCard, type BaseConfig } from "../core/base-card";
 import { buildRows, forwardHass, renderRows, rowCards, rowStyles, type Rows } from "../core/child-cards";
 import { configForm, F } from "../core/form";
@@ -13,13 +14,15 @@ interface Tab {
   color: "light" | "dark" | "grey" | "accent";
   /** Rows shown while this tab is selected; tabs without cards are decoration. */
   cards?: PanelConfig["cards"];
+  /** Makes the tab a link: tapping runs this (e.g. navigate to another view) instead of opening a page. */
+  tap_action?: ActionConfig;
 }
 
 interface PanelConfig extends BaseConfig {
   title: string;
   caption: string;
   subtitle: string;
-  /** K.O.-style tab strip along the top edge; tabs with `cards` switch pages. */
+  /** K.O.-style tab strip along the top edge; tabs with `cards` switch pages, tabs with `tap_action` are links. */
   tabs: Tab[];
   /** Tab selected on load (index); -1 starts with no page open. */
   default_tab: number;
@@ -241,7 +244,8 @@ export class TePanel extends TeBaseCard<PanelConfig> {
     if (next === undefined) return;
     ev.preventDefault();
     this.select(next);
-    (this.renderRoot.querySelectorAll<HTMLElement>("button.tab")[next] as HTMLElement | undefined)?.focus();
+    // every tab (page, link or decoration) is a .tab, so the strip index is the tab index
+    this.renderRoot.querySelectorAll<HTMLElement>(".tabs > .tab")[next]?.focus();
   }
 
   getCardSize() {
@@ -279,6 +283,12 @@ export class TePanel extends TeBaseCard<PanelConfig> {
     const firstPage = this.tabRows.findIndex((r) => r.length);
     const tab = (t: Tab, i: number) => {
       const style = styleMap({ "--bg": bg(t), "--ink": ink(t) });
+      // a link tab: one strip shared by several views, each lighting its own tab (`default_tab`)
+      if (t.tap_action && t.tap_action.action !== "none") {
+        return html`<button class="tab" style=${style} role="link" @click=${() => this.run(t.tap_action)}>
+          <span class="led"></span><span class="tab-name">${t.label}</span>
+        </button>`;
+      }
       if (!paged || !this.tabRows[i].length) return html`<div class="tab" style=${style}><span class="tab-name">${t.label}</span></div>`;
       const on = i === this._tab;
       return html`<button

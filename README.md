@@ -212,7 +212,7 @@ tabs:
 | `title` / `caption` / `subtitle` | — | Model name, caption and katakana line on the faceplate |
 | `faceplate` | `false` | Put the title on a lighter screwed-on faceplate (K.O. / MIC FX) |
 | `cards` | — | Rows; a list inside a row puts cards side by side |
-| `tabs` | — | Strings, or `{label, color, cards}` |
+| `tabs` | — | Strings, or `{label, color, cards, tap_action}` |
 | `default_tab` | `0` | Tab selected on load; `-1` starts with no page open |
 | `reset_after` | — | Seconds without a touch before going back to `default_tab` (wall displays) |
 | `gap` | `8` | Card spacing in px |
@@ -221,6 +221,23 @@ tabs:
 **Pages:** give a tab its own `cards` and the strip switches pages — the selected tab sits pressed in with its
 LED lit (arrow keys move between tabs); tap the lit tab again to close its page. The panel's own `cards` stay on
 screen above every page, and tabs without `cards` are decoration.
+
+**Links:** a tab with a `tap_action` runs it instead of opening a page. Give each room its own view with the
+same tab strip: on each view, the room's own tab holds its `cards` (set `default_tab` to it so it's lit) and
+the other tabs navigate to their views. Each phone page then only loads one room.
+
+```yaml
+# view /dashboard-te/m-bedroom
+type: custom:te-panel
+title: BEDROOM
+default_tab: 1
+tabs:
+  - { label: Home, tap_action: { action: navigate, navigation_path: /dashboard-te/m-home } }
+  - label: Bedroom
+    cards:
+      - [ { type: custom:te-fader, entity: light.bedroom }, { type: custom:te-knob, entity: fan.bedroom } ]
+  - { label: Office, tap_action: { action: navigate, navigation_path: /dashboard-te/m-office } }
+```
 
 **Bracket labels** (K.O. II `BPM — METRONOME`): write a row as `{ bracket, cards }`. A string spans the
 whole row; a list splits it, each item spanning `span` cards (default 1); an empty label leaves those cards

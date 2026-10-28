@@ -17,7 +17,7 @@ async function mount(config: Record<string, unknown>) {
   return el;
 }
 
-const tabs = (el: HTMLElement) => [...el.shadowRoot!.querySelectorAll<HTMLElement>("button.tab")];
+const tabs = (el: HTMLElement) => [...el.shadowRoot!.querySelectorAll<HTMLElement>("button.tab[role=tab]")];
 const page = (el: HTMLElement) => el.shadowRoot!.querySelector(".page");
 const lit = (el: HTMLElement) => tabs(el).map((t) => t.getAttribute("aria-selected"));
 const click = async (el: HTMLElement & { updateComplete: Promise<unknown> }, t: HTMLElement) => {
@@ -88,4 +88,32 @@ it("six tabs fit a phone-width panel", async () => {
   const last = tabs(el)[5].getBoundingClientRect();
   expect(last.right).toBeLessThanOrEqual(strip.right + 0.5);
   expect(tabs(el).map((t) => t.textContent!.trim())).toEqual(labels);
+});
+
+it("arrow keys focus the right tab past a decorative one", async () => {
+  const el = await mount({});
+  tabs(el)[0].focus();
+  tabs(el)[0].dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true, composed: true }));
+  await el.updateComplete;
+  expect(el.shadowRoot!.activeElement?.textContent?.trim()).toBe("B");
+});
+
+it("a tab with tap_action is a link: it runs the action and never opens a page", async () => {
+  const el = await mount({
+    default_tab: 1,
+    tabs: [{ label: "Home", tap_action: { action: "navigate", navigation_path: "/te-test/home" } }, { label: "Bed", cards: [fader] }],
+  });
+  const link = el.shadowRoot!.querySelector<HTMLElement>("button.tab[role=link]")!;
+  expect(link.textContent!.trim()).toBe("Home");
+  expect(lit(el)).toEqual(["true"]); // the room's own tab is lit
+  const before = location.href;
+  const changed = vi.fn();
+  window.addEventListener("location-changed", changed);
+  await click(el, link);
+  window.removeEventListener("location-changed", changed);
+  const path = location.pathname;
+  history.replaceState(null, "", before);
+  expect(path).toBe("/te-test/home");
+  expect(changed).toHaveBeenCalledOnce();
+  expect(lit(el)).toEqual(["true"]); // the page is still open
 });
