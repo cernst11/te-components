@@ -202,6 +202,7 @@ export class TeMatrix extends TeBaseCard<MatrixConfig> {
       const hist = await fetchHistory(this.hass!, c.entity, c.hours);
       const since = hist.length ? hist[hist.length - 1].t : 0;
       this.samples = [...hist, ...this.samples.filter((s) => s.t > since)];
+      this.screen.invalidate();
     } catch (err) {
       console.warn("te-matrix: history unavailable", err);
     } finally {
@@ -343,12 +344,14 @@ export class TeMatrix extends TeBaseCard<MatrixConfig> {
     b.text(b.fitText(status, W - 2 - (right ? DotBuffer.textWidth(right) + 3 : 0)), 1, footer, active ? LIT : DIM);
   }
 
-  private draw(f: Frame) {
-    if (!this._config) return;
+  private draw(f: Frame): boolean {
+    if (!this._config) return false;
     this.buf.clear();
     if (this._config.mode === "graph") this.drawGraph();
     else this.drawAppliance(f);
     this.painter.paint(f.ctx, this.buf, screenTheme(this._config.screen), 6 * f.dpr);
+    // a graph only changes with new samples; a running appliance animates (and counts down)
+    return this._config.mode === "appliance" && this.isActive();
   }
 
   render() {

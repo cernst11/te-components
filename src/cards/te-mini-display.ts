@@ -42,6 +42,8 @@ const ICON_ZONE = 46;
 export class TeMiniDisplay extends TeBaseCard<MiniDisplayConfig> {
   private screen = new ScreenController(this, (f) => this.draw(f));
   private strips = new StripCache();
+  /** Set while drawing: some line is scrolling. */
+  private scrolling = false;
   private marquees: Record<"line" | "name" | "value", Marquee> = { line: newMarquee(), name: newMarquee(), value: newMarquee() };
   private hold = new HoldGesture(this, {
     time: () => 500,
@@ -135,7 +137,7 @@ export class TeMiniDisplay extends TeBaseCard<MiniDisplayConfig> {
       m = metrics(sz);
       strip = this.strips.get(text, m, theme.fg, theme);
     }
-    drawLine(f.ctx, strip, {
+    const scrolls = drawLine(f.ctx, strip, {
       x0,
       y: y + (glyphHeight(full) - glyphHeight(m)) / 2,
       availW,
@@ -145,11 +147,13 @@ export class TeMiniDisplay extends TeBaseCard<MiniDisplayConfig> {
       dt: f.dt,
       m,
     });
+    this.scrolling ||= scrolls;
     return glyphHeight(full);
   }
 
-  private draw(f: Frame) {
-    if (!this._config) return;
+  private draw(f: Frame): boolean {
+    if (!this._config) return false;
+    this.scrolling = false;
     const { ctx, h, dpr } = f;
     const theme = screenTheme(this._config.screen);
     const { name, value, lit } = this.lines();
@@ -169,6 +173,7 @@ export class TeMiniDisplay extends TeBaseCard<MiniDisplayConfig> {
       this.line("line", value ? `${name}  ${value}` : name, f, 2, (h - glyphHeight(m)) / 2, false);
     }
     if (theme.mesh) applyMesh(ctx);
+    return this.scrolling;
   }
 
   render() {

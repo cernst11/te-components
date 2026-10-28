@@ -242,8 +242,8 @@ export class TeDisplay extends TeBaseCard<DisplayConfig> {
     return bottom + barH;
   }
 
-  private draw(f: Frame) {
-    if (!this._config) return;
+  private draw(f: Frame): boolean {
+    if (!this._config) return false;
     const { ctx, w, h, dpr } = f;
     const theme = screenTheme(this._config.screen);
     clear(ctx, theme);
@@ -259,7 +259,7 @@ export class TeDisplay extends TeBaseCard<DisplayConfig> {
     ctx.beginPath();
     ctx.rect(0, top, w, h - top - bottom);
     ctx.clip();
-    drawLine(ctx, strip, {
+    const scrolling = drawLine(ctx, strip, {
       x0: margin,
       y: top + (h - top - bottom - glyphHeight(m)) / 2,
       availW: w - margin * 2,
@@ -271,6 +271,8 @@ export class TeDisplay extends TeBaseCard<DisplayConfig> {
     });
     ctx.restore();
     if (theme.mesh) applyMesh(ctx);
+    // the progress bar advances while playing; demo mode cycles tracks
+    return scrolling || this._config.demo || (this._config.progress && !!this.progress()?.playing);
   }
 
   render() {

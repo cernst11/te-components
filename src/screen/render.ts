@@ -111,14 +111,15 @@ export interface LineOptions {
   m: DotMetrics;
 }
 
-/** Draws a strip, stepping it one dot column at a time when it overflows (VFD-style marquee). */
-export function drawLine(ctx: CanvasRenderingContext2D, strip: TextStrip, o: LineOptions) {
+/** Draws a strip, stepping it one dot column at a time when it overflows (VFD-style marquee). Returns true while it scrolls. */
+export function drawLine(ctx: CanvasRenderingContext2D, strip: TextStrip, o: LineOptions): boolean {
   const blit = (x: number) => ctx.drawImage(strip.canvas, Math.round(x) - strip.pad, Math.round(o.y) - strip.pad);
   ctx.save();
   ctx.beginPath();
   ctx.rect(o.x0, 0, o.availW, ctx.canvas.height);
   ctx.clip();
-  if (!o.scroll || strip.width <= o.availW) {
+  const scrolling = o.scroll && strip.width > o.availW;
+  if (!scrolling) {
     blit(o.align === "center" ? o.x0 + Math.max(0, (o.availW - strip.width) / 2) : o.x0);
   } else {
     const mq = o.marquee;
@@ -143,6 +144,7 @@ export function drawLine(ctx: CanvasRenderingContext2D, strip: TextStrip, o: Lin
     blit(o.x0 + mq.offset + loop);
   }
   ctx.restore();
+  return scrolling;
 }
 
 const meshes = new WeakMap<CanvasRenderingContext2D, CanvasPattern>();

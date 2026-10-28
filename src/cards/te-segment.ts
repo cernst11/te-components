@@ -118,8 +118,8 @@ export class TeSegment extends TeBaseCard<SegmentConfig> {
     this.screen.attach(this.renderRoot.querySelector("canvas"));
   }
 
-  /** Text for the digits, the small unit beside them, and whether the colon is lit this frame. */
-  private content(): { text: string; unit: string; colon: boolean } {
+  /** Text for the digits, the small unit beside them, whether the colon is lit this frame, and whether it changes with time. */
+  private content(): { text: string; unit: string; colon: boolean; live?: boolean } {
     const c = this._config!;
     const blink = !c.blink || Math.floor(Date.now() / 500) % 2 === 0;
     if (c.clock) {
@@ -129,14 +129,14 @@ export class TeSegment extends TeBaseCard<SegmentConfig> {
       if (c.hour12) h = h % 12 || 12;
       const mm = String(d.getMinutes()).padStart(2, "0");
       const text = `${c.hour12 ? h : String(h).padStart(2, "0")}:${mm}${c.seconds ? `:${String(d.getSeconds()).padStart(2, "0")}` : ""}`;
-      return { text, unit: suffix, colon: c.seconds || blink };
+      return { text, unit: suffix, colon: c.seconds || blink, live: true };
     }
     const st = this.stateObj();
     if (!st) return { text: "----", unit: "", colon: true };
     if (domainOf(c.entity) === "timer") {
       const sec = timerSeconds(st);
       // a running timer's colon blinks; paused/idle stays solid
-      return { text: sec === undefined ? "--:--" : fmtDuration(sec), unit: st.state === "active" ? "" : st.state.toUpperCase(), colon: st.state !== "active" || blink };
+      return { text: sec === undefined ? "--:--" : fmtDuration(sec), unit: st.state === "active" ? "" : st.state.toUpperCase(), colon: st.state !== "active" || blink, live: st.state === "active" };
     }
     const attr = c.attribute ? displayAttribute(st, c.attribute) : undefined;
     const raw = attr ? attr.raw : st.state;
@@ -145,12 +145,12 @@ export class TeSegment extends TeBaseCard<SegmentConfig> {
     return { text, unit: (c.unit ?? (attr ? attr.unit : st.attributes.unit_of_measurement) ?? "").toUpperCase(), colon: true };
   }
 
-  private draw(f: Frame) {
-    if (!this._config) return;
+  private draw(f: Frame): boolean {
+    if (!this._config) return false;
     const { ctx, w, h, dpr } = f;
     const theme = screenTheme(this._config.screen);
     clear(ctx, theme);
-    const { text, unit, colon } = this.content();
+    const { text, unit, colon, live } = this.content();
     const cells = toCells(text, this._config.digits, colon);
 
     const unitM = pixelMetrics(Math.max(1, Math.round(h / dpr / 40)), dpr);
@@ -168,6 +168,7 @@ export class TeSegment extends TeBaseCard<SegmentConfig> {
     drawCells(ctx, cells, x, y, digitH, theme);
     if (unitStrip) ctx.drawImage(unitStrip.canvas, Math.round(x + total - unitStrip.width) - unitStrip.pad, Math.round(y) - unitStrip.pad);
     if (theme.mesh) applyMesh(ctx);
+    return !!live;
   }
 
   render() {

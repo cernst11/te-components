@@ -328,8 +328,8 @@ export class TeKeypad extends TeBaseCard<KeypadConfig> {
     };
   }
 
-  private draw(f: Frame) {
-    if (!this._config) return;
+  private draw(f: Frame): boolean {
+    if (!this._config) return false;
     const { ctx, w, h, dpr } = f;
     const theme = screenTheme(this._config.screen);
     clear(ctx, theme);
@@ -340,8 +340,9 @@ export class TeKeypad extends TeBaseCard<KeypadConfig> {
     const rightW = right ? textWidth(right, m) + 8 * dpr : 0;
     const off = blink && !f.reducedMotion && Math.floor(Date.now() / 400) % 2 === 1;
     if (left !== this.marquee.text) this.marquee = newMarquee(left);
+    let scrolling = false;
     if (!off) {
-      drawLine(ctx, this.strips.get(left, m, alert ? theme.fg2 : theme.fg, theme), {
+      scrolling = drawLine(ctx, this.strips.get(left, m, alert ? theme.fg2 : theme.fg, theme), {
         x0: pad,
         y,
         availW: w - pad * 2 - rightW,
@@ -357,6 +358,8 @@ export class TeKeypad extends TeBaseCard<KeypadConfig> {
       ctx.drawImage(strip.canvas, Math.round(w - pad - strip.width) - strip.pad, Math.round(y) - strip.pad);
     }
     if (theme.mesh) applyMesh(ctx);
+    // a blinking line keeps going even on its dark frames (where it isn't drawn)
+    return scrolling || (blink && !f.reducedMotion);
   }
 
   render() {

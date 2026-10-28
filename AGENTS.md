@@ -45,7 +45,8 @@ src/
   theme/tokens.ts       ALL design tokens incl. lighting/elevation; black body via :host([data-body=black])
   theme/shared.ts       base styles (.card, .label, .led, .screw, .socket, focus ring)
   screen/               canvas screen engine: 5x7 font, themes (vfd-amber/vfd-blue/oled/lcd),
-                        cached text strips + stepped marquee, ScreenController (30fps, pauses off-screen),
+                        cached text strips + stepped marquee, ScreenController (draws on host update; loops at
+                        its fps only while draw() returns true, i.e. something moves; pauses off-screen),
                         mini icons, te-pixel-text (static pixel text),
                         matrix.ts (DotBuffer + MatrixPainter for DS-64), segments.ts (seven-segment cells for SG-7), animations.ts (washer/dryer/dishwasher/fan)
   cards/te-*.ts         one file per card

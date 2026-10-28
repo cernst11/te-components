@@ -11,8 +11,15 @@ export interface Frame {
 }
 
 /**
- * Owns a screen canvas: DPR-aware sizing, a capped-FPS draw loop that pauses when
- * off-screen or the tab is hidden, and restarts when the card is re-attached.
+ * Draws a frame; returns true while the screen is animating (marquee, blink, clock) so the
+ * controller keeps the loop running. A static screen draws once and waits for the next change.
+ */
+export type DrawFn = (f: Frame) => boolean | void;
+
+/**
+ * Owns a screen canvas: DPR-aware sizing and a capped-FPS draw loop that only runs while the
+ * screen animates. It redraws after every host update, on resize and when scrolled back into
+ * view; it pauses when off-screen or the tab is hidden, and restarts when the card is re-attached.
  */
 export class ScreenController implements ReactiveController {
   private canvas?: HTMLCanvasElement;
@@ -26,7 +33,7 @@ export class ScreenController implements ReactiveController {
 
   constructor(
     host: ReactiveControllerHost,
-    private draw: (f: Frame) => void,
+    private draw: DrawFn,
     private fps = 30,
   ) {
     host.addController(this);
@@ -46,6 +53,16 @@ export class ScreenController implements ReactiveController {
 
   hostDisconnected() {
     this.teardown();
+  }
+
+  /** The host re-rendered: its state may have changed, so draw it. */
+  hostUpdated() {
+    this.invalidate();
+  }
+
+  /** Draws on the next frame; call it when something the screen shows changed outside a host update. */
+  invalidate() {
+    this.start();
   }
 
   private setup() {
@@ -76,28 +93,37 @@ export class ScreenController implements ReactiveController {
     const h = Math.max(1, Math.round(c.clientHeight * dpr));
     if (c.width !== w) c.width = w;
     if (c.height !== h) c.height = h;
+    // a resize clears the canvas; draw again right away
     this.lastDraw = 0;
+    this.start();
   }
 
   private start() {
-    if (!this.raf && this.canvas) this.raf = requestAnimationFrame(this.tick);
+    if (!this.raf && this.canvas && this.visible) this.raf = requestAnimationFrame(this.tick);
   }
 
   private tick = (now: number) => {
     this.raf = 0;
     if (!this.canvas || !this.ctx || !this.visible) return;
-    if (now - this.lastDraw >= 1000 / this.fps - 1) {
-      const dt = this.lastDraw ? Math.min(0.1, (now - this.lastDraw) / 1000) : 0;
-      this.lastDraw = now;
-      this.draw({
-        ctx: this.ctx,
-        w: this.canvas.width,
-        h: this.canvas.height,
-        dpr: window.devicePixelRatio || 1,
-        dt,
-        reducedMotion: this.motion.matches,
-      });
+    if (now - this.lastDraw < 1000 / this.fps - 1) {
+      this.raf = requestAnimationFrame(this.tick);
+      return;
     }
-    this.raf = requestAnimationFrame(this.tick);
+    const dt = this.lastDraw ? Math.min(0.1, (now - this.lastDraw) / 1000) : 0;
+    const animating = this.draw({
+      ctx: this.ctx,
+      w: this.canvas.width,
+      h: this.canvas.height,
+      dpr: window.devicePixelRatio || 1,
+      dt,
+      reducedMotion: this.motion.matches,
+    });
+    if (animating) {
+      this.lastDraw = now;
+      this.raf = requestAnimationFrame(this.tick);
+    } else {
+      // idle: the next draw (after a change) starts with dt 0 and isn't held back by the fps cap
+      this.lastDraw = 0;
+    }
   };
 }
