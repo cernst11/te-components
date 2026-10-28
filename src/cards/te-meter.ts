@@ -166,11 +166,17 @@ export class TeMeter extends TeBaseCard<MeterConfig> {
     const frac = r.value === null ? 0 : fracOf(r, r.value);
     const now = Date.now();
     if (frac >= this.peakFrac || now - this.peakAt > PEAK_HOLD_MS) {
+      // a new peak, or the hold ran out: the peak sits on the level
       this.peakFrac = frac;
       this.peakAt = now;
       clearTimeout(this.peakTimer);
-      // drop the peak back to the level once the hold expires
-      this.peakTimer = setTimeout(() => this.requestUpdate(), PEAK_HOLD_MS + 50);
+      this.peakTimer = undefined;
+    } else if (!this.peakTimer) {
+      // the level fell below a held peak: drop the peak once the hold expires
+      this.peakTimer = setTimeout(() => {
+        this.peakTimer = undefined;
+        this.requestUpdate();
+      }, this.peakAt + PEAK_HOLD_MS - now + 50);
     }
   }
 
