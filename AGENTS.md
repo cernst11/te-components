@@ -103,6 +103,13 @@ Dot-matrix drawing (DotBuffer, fonts, DS-64 animations) is snapshotted as ASCII;
 check the diff and run `npx vitest run -u`. When you add a domain to `DOMAIN_SPECS`/`OPTION_SPECS`, add its row
 to the table tests.
 
+Performance budgets (`test/browser/perf.test.ts`, on the playground's example dashboard; counts, not timings):
+the idle dashboard runs at most 5 animation loops (the things that move in the mock home) and nothing re-renders
+while idle (catches self-rearming timers); a state change re-renders only the leaf cards whose config names that
+entity outside `*_action` fields (catches a missing `watchedEntities`). Adding something that moves to the example
+dashboard means raising the loop budget, with the reason. `npm run size` (CI, after the build) fails when the
+gzipped bundle passes the budget in `scripts/check-size.mjs`; raise it in the same PR when growth is intended.
+
 ## Testing without the Chrome extension
 
 Headless Chrome can be driven over the DevTools protocol with Node's built-in `WebSocket`

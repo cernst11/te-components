@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "size": "node scripts/check-size.mjs",
     "typecheck": "tsc --noEmit",
     "export:dashboard": "node scripts/export-dashboard.ts",
     "test": "vitest run",
